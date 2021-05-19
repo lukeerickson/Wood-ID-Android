@@ -12,10 +12,8 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
@@ -33,7 +31,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public class FirstFragment extends Fragment {
+public class FirstFragment extends Fragment implements InferenceLogViewAdapter.ItemListener {
 
     private FragmentFirstBinding binding;
     private Executor executor = Executors.newSingleThreadExecutor();
@@ -72,7 +70,7 @@ public class FirstFragment extends Fragment {
                     AppDatabase.class, "wood-id").build();
             List<InferencesLog> logs = db.inferencesLogDAO().getAll();
             getActivity().runOnUiThread(()-> {
-                logList.setAdapter(new InferenceLogViewAdapter(getActivity(), logs));
+                logList.setAdapter(new InferenceLogViewAdapter(getActivity(), logs, this));
                 logList.setLayoutManager(new LinearLayoutManager(getActivity()));
             });
         });
@@ -116,8 +114,20 @@ public class FirstFragment extends Fragment {
             db.inferencesLogDAO().insertAll(log);
             List<InferencesLog> logs = db.inferencesLogDAO().getAll();
             getActivity().runOnUiThread(()-> {
-                logList.setAdapter(new InferenceLogViewAdapter(getActivity(), logs));
+                logList.setAdapter(new InferenceLogViewAdapter(getActivity(), logs, this));
                 logList.setLayoutManager(new LinearLayoutManager(getActivity()));
+            });
+        });
+    }
+
+    @Override
+    public void onDeleteItem(InferenceLogViewAdapter inferenceLogViewAdapter, int position, InferencesLog loginfo) {
+        executor.execute(() -> {
+            AppDatabase db = Room.databaseBuilder(getActivity().getApplicationContext(),
+                    AppDatabase.class, "wood-id").build();
+            db.inferencesLogDAO().delete(loginfo);
+            getActivity().runOnUiThread(()-> {
+                inferenceLogViewAdapter.notifyItemRemoved(position);
             });
         });
     }

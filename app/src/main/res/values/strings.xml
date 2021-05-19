@@ -4,4 +4,5 @@
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">Wood ID</string>
     <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="action_clear">Clear</string>
 </resources>

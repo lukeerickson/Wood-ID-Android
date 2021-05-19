@@ -89,6 +89,14 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
 
+        if (id== R.id.action_clear) {
+            executor.execute(()-> {
+                AppDatabase db = Room.databaseBuilder(this.getApplicationContext(),
+                        AppDatabase.class, "wood-id").build();
+                db.inferencesLogDAO().deleteAll();
+            });
+        }
+
         return super.onOptionsItemSelected(item);
     }
 

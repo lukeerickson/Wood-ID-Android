@@ -23,10 +23,29 @@
                 android:id="@+id/class_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextView"
+                android:text="Specimen"
                 android:layout_marginLeft="10dp"
                 android:layout_centerVertical="true"
                 android:layout_toRightOf="@id/wood_specimen_image"/>
+            <TextView
+                android:id="@+id/score"
+                android:layout_marginTop="10dp"
+                android:layout_below="@id/class_label"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_toRightOf="@id/wood_specimen_image"
+                android:text="100.0"
+                android:textSize="10sp"
+                android:layout_width="wrap_content"></TextView>
+            <ImageButton
+                android:id="@+id/deleteLogItem"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_centerVertical="true"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="10dp"
+                android:padding="5dp"
+                app:srcCompat="@drawable/ic_delete_black_24dp" />
         </RelativeLayout>
 
     </androidx.cardview.widget.CardView>
