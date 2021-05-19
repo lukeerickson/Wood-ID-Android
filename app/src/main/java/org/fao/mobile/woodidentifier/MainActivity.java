@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
+    private NavController navController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,23 +65,9 @@ public class MainActivity extends AppCompatActivity {
 
         setSupportActionBar(binding.toolbar);
 
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+        this.navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-
-        binding.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                int permission = ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE);
-
-                if (permission != PackageManager.PERMISSION_GRANTED) {
-                    Utils.verifyStoragePermissions(MainActivity.this);
-                } else {
-                    ImagePicker.with(MainActivity.this).galleryOnly()
-                            .start();
-                }
-            }
-        });
     }
 
     @Override
@@ -115,30 +102,5 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == Activity.RESULT_OK) {
-            Uri uri = data.getData();
-
-            ModelHelper modelHelper = ModelHelper.getHelperInstance(this);
-            try {
-                ModelHelper.Result result = modelHelper.runInference(uri.getPath());
-                AppDatabase db = Room.databaseBuilder(getApplicationContext(),
-                        AppDatabase.class, "wood-id").build();
-                InferencesLog log = InferencesLog.fromResult(result);
-                log.imagePath = uri.getPath();
-                saveLog(db, log);
-                Toast.makeText(this, "Image is Likely " + result.getClassIndex() + ": " + result.getClassLabel() + " score: " + result.getScore(), Toast.LENGTH_LONG).show();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        } else if (resultCode == ImagePicker.RESULT_ERROR) {
-            Toast.makeText(this, ImagePicker.getError(data), Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "Task Cancelled", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void saveLog(AppDatabase db, InferencesLog log) {
-        executor.execute(() -> db.inferencesLogDAO().insertAll(log));
     }
 }
