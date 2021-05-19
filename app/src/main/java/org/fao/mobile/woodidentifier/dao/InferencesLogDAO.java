@@ -18,11 +18,14 @@ public interface InferencesLogDAO {
     List<InferencesLog> loadAllByIds(int[] userIds);
 
     @Query("SELECT * FROM inferences_log WHERE uid=:uid")
-    InferencesLog findByUid(String uid);
+    InferencesLog findByUid(int uid);
 
     @Insert
     void insertAll(InferencesLog... logs);
 
     @Delete
     void delete(InferencesLog log);
+
+    @Query("SELECT COUNT(*) from inferences_log")
+    int count();
 }
