@@ -2,13 +2,16 @@ package org.fao.mobile.woodidentifier;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -33,6 +36,8 @@ import java.util.concurrent.Executors;
 
 public class FirstFragment extends Fragment implements InferenceLogViewAdapter.ItemListener {
 
+    private static final int CAPTURE_IMAGE = 101;
+    private static final String TAG = FirstFragment.class.getCanonicalName();
     private FragmentFirstBinding binding;
     private Executor executor = Executors.newSingleThreadExecutor();
     private RecyclerView logList;
@@ -43,20 +48,14 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
             Bundle savedInstanceState
     ) {
         binding = FragmentFirstBinding.inflate(inflater, container, false);
-        this.logList = (RecyclerView) binding.inferenceLogList;
-        binding.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                int permission = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE);
-
-                if (permission != PackageManager.PERMISSION_GRANTED) {
-                    Utils.verifyStoragePermissions(getActivity());
-                } else {
-                    ImagePicker.with(FirstFragment.this).galleryOnly().start();
-                 }
-            }
-        });
-        return binding.getRoot();
+        this.logList = binding.inferenceLogList;
+        binding.fab.setOnClickListener(this::onClick);
+        if (checkCameraHardware(getActivity())) {
+            binding.fabCamera.setVisibility(View.VISIBLE);
+            binding.fabCamera.setOnClickListener(this::onClick);
+        }
+        final RelativeLayout root = binding.getRoot();
+        return root;
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
@@ -64,12 +63,22 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
         refresh();
     }
 
+    private boolean checkCameraHardware(Context context) {
+        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
+            // this device has a camera
+            return true;
+        } else {
+            // no camera on this device
+            return false;
+        }
+    }
+
     private void refresh() {
         executor.execute(() -> {
             AppDatabase db = Room.databaseBuilder(getActivity().getApplicationContext(),
                     AppDatabase.class, "wood-id").build();
             List<InferencesLog> logs = db.inferencesLogDAO().getAll();
-            getActivity().runOnUiThread(()-> {
+            getActivity().runOnUiThread(() -> {
                 logList.setAdapter(new InferenceLogViewAdapter(getActivity(), logs, this));
                 logList.setLayoutManager(new LinearLayoutManager(getActivity()));
             });
@@ -85,6 +94,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "on Activity result");
         if (resultCode == Activity.RESULT_OK) {
             Uri uri = data.getData();
 
@@ -113,7 +123,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
         executor.execute(() -> {
             db.inferencesLogDAO().insertAll(log);
             List<InferencesLog> logs = db.inferencesLogDAO().getAll();
-            getActivity().runOnUiThread(()-> {
+            getActivity().runOnUiThread(() -> {
                 logList.setAdapter(new InferenceLogViewAdapter(getActivity(), logs, this));
                 logList.setLayoutManager(new LinearLayoutManager(getActivity()));
             });
@@ -126,9 +136,35 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
             AppDatabase db = Room.databaseBuilder(getActivity().getApplicationContext(),
                     AppDatabase.class, "wood-id").build();
             db.inferencesLogDAO().delete(loginfo);
-            getActivity().runOnUiThread(()-> {
+            getActivity().runOnUiThread(() -> {
                 inferenceLogViewAdapter.notifyItemRemoved(position);
             });
         });
+    }
+
+    private void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.fab:
+                int permission = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE);
+
+                if (PackageManager.PERMISSION_GRANTED != permission) {
+                    Utils.verifyStoragePermissions(getActivity());
+                } else {
+                    ImagePicker.with(FirstFragment.this).galleryOnly().start();
+                }
+
+                break;
+            case R.id.fab_camera:
+                permission = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA);
+
+                if (PackageManager.PERMISSION_GRANTED != permission) {
+                    Utils.verifyCameraPermissions(getActivity());
+                } else {
+                    Intent intent = new Intent(getActivity(), ImageCaptureActivity.class);
+                    startActivityForResult(intent, CAPTURE_IMAGE);
+                }
+                break;
+        }
+
     }
 }
