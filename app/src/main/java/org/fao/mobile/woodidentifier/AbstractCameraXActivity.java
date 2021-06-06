@@ -1,8 +1,11 @@
 package org.fao.mobile.woodidentifier;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -10,7 +13,9 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
+import android.util.Range;
 import android.util.Size;
+import android.view.DragEvent;
 import android.view.View;
 import android.widget.Toast;
 
@@ -19,17 +24,23 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.WorkerThread;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.core.Camera;
+import androidx.camera.core.CameraControl;
 import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ExposureState;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
+import androidx.camera.core.ZoomState;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.LiveData;
 import androidx.room.Room;
 
+import com.google.android.material.slider.Slider;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import org.fao.mobile.woodidentifier.models.InferencesLog;
@@ -43,7 +54,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
-public abstract class AbstractCameraXActivity extends AppCompatActivity implements View.OnClickListener {
+public abstract class AbstractCameraXActivity extends AppCompatActivity implements View.OnClickListener, Slider.OnChangeListener {
     private static final int REQUEST_CODE_CAMERA_PERMISSION = 200;
     private static final String[] PERMISSIONS = {Manifest.permission.CAMERA};
     private static final String TAG = AbstractCameraXActivity.class.getCanonicalName();
@@ -53,6 +64,9 @@ public abstract class AbstractCameraXActivity extends AppCompatActivity implemen
     private long mLastAnalysisResultTime;
     private View takePicture;
     private ImageCapture imageCapture;
+    private Camera camera;
+    private Slider zoomControl;
+    private Slider exposureControl;
 
     protected abstract int getContentViewLayoutId();
 
@@ -67,7 +81,14 @@ public abstract class AbstractCameraXActivity extends AppCompatActivity implemen
         super.onCreate(savedInstanceState);
         setContentView(getContentViewLayoutId());
         this.takePicture = findViewById(R.id.fab_take_picture);
+        this.zoomControl = (Slider) findViewById(R.id.zoom_control);
+        this.exposureControl = (Slider) findViewById(R.id.exposure_control);
+
+        setupDefaultValues();
+
         takePicture.setOnClickListener(this);
+        zoomControl.addOnChangeListener(this);
+        exposureControl.addOnChangeListener(this);
         startBackgroundThread();
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
@@ -79,6 +100,13 @@ public abstract class AbstractCameraXActivity extends AppCompatActivity implemen
         } else {
             setupCameraX();
         }
+    }
+
+    private void setupDefaultValues() {
+        SharedPreferences prefs = this.getSharedPreferences(
+                "camera_settings", Context.MODE_PRIVATE);
+        zoomControl.setValue(prefs.getFloat("zoom", (float) 0f));
+        exposureControl.setValue(prefs.getFloat("exposure", 0f));
     }
 
     @Override
@@ -135,19 +163,20 @@ public abstract class AbstractCameraXActivity extends AppCompatActivity implemen
             try {
                 ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
                 final Preview preview = new Preview.Builder().build();
-
                 preview.setSurfaceProvider(textureView.getSurfaceProvider());
-                Size size = new Size(512,512);
+                Size size = new Size(512, 512);
                 this.imageCapture =
                         new ImageCapture.Builder()
                                 .setTargetRotation(textureView.getDisplay().getRotation())
                                 .setTargetResolution(size)
                                 .build();
-
                 cameraProvider.unbindAll();
+                this.camera = cameraProvider.bindToLifecycle(AbstractCameraXActivity.this, CameraSelector.DEFAULT_BACK_CAMERA, imageCapture, preview);
 
-                cameraProvider.bindToLifecycle(AbstractCameraXActivity.this, CameraSelector.DEFAULT_BACK_CAMERA, imageCapture, preview);
-
+                SharedPreferences prefs = this.getSharedPreferences(
+                        "camera_settings", Context.MODE_PRIVATE);
+                setCameraZoom(prefs.getFloat("zoom", (float) 0f));
+                setCameraExposure(prefs.getFloat("exposure", 0f));
             } catch (ExecutionException e) {
                 e.printStackTrace();
             } catch (InterruptedException e) {
@@ -169,7 +198,6 @@ public abstract class AbstractCameraXActivity extends AppCompatActivity implemen
             case R.id.fab_take_picture:
                 DateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddhhmmss");
                 File file = getPhotoFileUri("capture_" + simpleDateFormat.format(new Date()) + ".jpg");
-
 
                 ImageCapture.OutputFileOptions outputFileOptions =
                         new ImageCapture.OutputFileOptions.Builder(file).build();
@@ -211,5 +239,39 @@ public abstract class AbstractCameraXActivity extends AppCompatActivity implemen
         File file = new File(mediaStorageDir.getPath() + File.separator + fileName);
 
         return file;
+    }
+
+
+    @SuppressLint("UnsafeOptInUsageError")
+    @Override
+    public void onValueChange(Slider slider, float value, boolean fromUser) {
+        float sliderValue = slider.getValue();
+        if (slider.getId() == R.id.zoom_control) {
+            setCameraZoom(sliderValue);
+            SharedPreferences prefs = this.getSharedPreferences(
+                    "camera_settings", Context.MODE_PRIVATE);
+            prefs.edit().putFloat("zoom", sliderValue).commit();
+        } else if (slider.getId() == R.id.exposure_control) {
+            setCameraExposure(sliderValue);
+            SharedPreferences prefs = this.getSharedPreferences(
+                    "camera_settings", Context.MODE_PRIVATE);
+            prefs.edit().putFloat("exposure", sliderValue).commit();
+        }
+    }
+
+    @SuppressLint("UnsafeOptInUsageError")
+    private void setCameraExposure(float sliderValue) {
+        ExposureState exposureState = camera.getCameraInfo().getExposureState();
+        Range<Integer> range = exposureState.getExposureCompensationRange();
+        int exposureRange = (int) ((range.getUpper() - range.getLower()) * sliderValue + range.getLower());
+        camera.getCameraControl().setExposureCompensationIndex(exposureRange);
+    }
+
+    private void setCameraZoom(float sliderValue) {
+        LiveData<ZoomState> zoomState = camera.getCameraInfo().getZoomState();
+        ZoomState zoom = zoomState.getValue();
+        float zoomRatio = (zoom.getMaxZoomRatio() - zoom.getMinZoomRatio()) * sliderValue + zoom.getMinZoomRatio();
+        Log.d(TAG, "changing zoom to " + zoomRatio);
+        camera.getCameraControl().setZoomRatio(zoomRatio);
     }
 }
