@@ -28,6 +28,15 @@
                 android:layout_centerVertical="true"
                 android:layout_toRightOf="@id/wood_specimen_image"/>
             <TextView
+                android:id="@+id/filename"
+                android:text="image.png"
+                android:layout_marginLeft="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_above="@id/class_label"
+                android:layout_toRightOf="@id/wood_specimen_image"
+                />
+            <TextView
                 android:id="@+id/score"
                 android:layout_marginTop="10dp"
                 android:layout_below="@id/class_label"

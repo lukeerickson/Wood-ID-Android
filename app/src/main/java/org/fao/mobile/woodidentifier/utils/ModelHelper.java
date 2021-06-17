@@ -3,6 +3,8 @@ package org.fao.mobile.woodidentifier.utils;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.ExifInterface;
+import android.net.Uri;
 import android.os.SystemClock;
 import android.util.Log;
 import android.widget.Toast;
@@ -18,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +62,44 @@ public class ModelHelper {
     }
 
     public static final class Result {
+        private int[] top;
+        float[] scores;
+        int height;
+
+        public int[] getTop() {
+            return top;
+        }
+
+        public void setTop(int[] top) {
+            this.top = top;
+        }
+
+        public float[] getScores() {
+            return scores;
+        }
+
+        public void setScores(float[] scores) {
+            this.scores = scores;
+        }
+
+        public int getHeight() {
+            return height;
+        }
+
+        public void setHeight(int height) {
+            this.height = height;
+        }
+
+        public int getWidth() {
+            return width;
+        }
+
+        public void setWidth(int width) {
+            this.width = width;
+        }
+
+        int width;
+
         public int getClassIndex() {
             return classIndex;
         }
@@ -80,6 +121,10 @@ public class ModelHelper {
             this.classLabel = classLabel;
             this.score = score;
         }
+
+        public void putTopK(int[] top) {
+            this.top = top;
+        }
     }
 
     public ModelHelper(String modelAbsolutePath, List<String> classLabels) {
@@ -88,9 +133,7 @@ public class ModelHelper {
         this.classLabels = classLabels;
     }
 
-    public Result runInference(String imagePath) throws IOException {
-        Log.d(TAG, "Loading file from " + imagePath);
-        try(FileInputStream fis = new FileInputStream(imagePath.replace("document/raw:",""))) {
+    public Result runInference(InputStream fis) throws IOException {
             Bitmap bitmapA;
             bitmapA = BitmapFactory.decodeStream(fis);
             Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmapA, INPUT_TENSOR_WIDTH, INPUT_TENSOR_HEIGHT, true);
@@ -115,8 +158,12 @@ public class ModelHelper {
             Log.d(TAG, "Inference done " + scores.length + " total scores. took = " + moduleForwardDuration + "ms");
             int[] top = Utils.topK(scores, scores.length);
             Log.i(TAG, "result " + top[0] + ": " + classLabels.get(top[0]));
+            Result resultBuffer = new Result(top[0], classLabels.get(top[0]), scores[top[0]]);
 
-            return new Result(top[0], classLabels.get(top[0]), scores[top[0]]);
-        }
+            resultBuffer.setTop(top);
+            resultBuffer.setScores(scores);
+            resultBuffer.setHeight(bitmapA.getHeight());
+            resultBuffer.setWidth(bitmapA.getWidth());
+            return resultBuffer;
     }
 }

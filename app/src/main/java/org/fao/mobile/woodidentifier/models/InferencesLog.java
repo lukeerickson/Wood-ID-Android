@@ -29,6 +29,9 @@ public class InferencesLog {
     @ColumnInfo(name = "imagePath")
     public String imagePath;
 
+    @ColumnInfo(name = "originalFilename")
+    public String originalFilename;
+
     public static InferencesLog fromResult(ModelHelper.Result result) {
         InferencesLog inferencesLog = new InferencesLog();
         inferencesLog.timestamp = System.currentTimeMillis();

@@ -20,6 +20,7 @@ import android.util.Log;
 import android.view.View;
 
 import androidx.core.app.ActivityCompat;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -27,6 +28,7 @@ import androidx.navigation.ui.NavigationUI;
 import androidx.room.Room;
 
 import org.fao.mobile.woodidentifier.databinding.ActivityMainBinding;
+import org.fao.mobile.woodidentifier.models.InferenceLogViewModel;
 import org.fao.mobile.woodidentifier.models.InferencesLog;
 import org.fao.mobile.woodidentifier.utils.ModelHelper;
 import org.fao.mobile.woodidentifier.utils.Utils;
@@ -55,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
     private NavController navController;
+    private InferenceLogViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);
-
+        this.viewModel = new ViewModelProvider(this).get(InferenceLogViewModel.class);
         this.navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
@@ -94,6 +97,9 @@ public class MainActivity extends AppCompatActivity {
                 AppDatabase db = Room.databaseBuilder(this.getApplicationContext(),
                         AppDatabase.class, "wood-id").build();
                 db.inferencesLogDAO().deleteAll();
+                runOnUiThread(()-> {
+                    viewModel.updateCount(0);
+                });
             });
         }
 

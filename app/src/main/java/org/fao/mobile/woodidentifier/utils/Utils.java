@@ -33,19 +33,6 @@ public class Utils {
             Manifest.permission.CAMERA
     };
 
-    public static String[] LABELS = {"Albizia",
-            "Detarium",
-            "Dialium",
-            "Hymenaea",
-            "Inga",
-            "Morus",
-            "Nauclea",
-            "Robinia",
-            "Swietenia",
-            "Tectona",
-            "Ulmus_americana",
-            "Ulmus_rubra"};
-
     /**
      * Checks if the app has permission to write to device storage
      * <p>
@@ -125,6 +112,32 @@ public class Utils {
                     REQUEST_CAMERA
             );
         }
+    }
+
+    public static String showArray(int data[]) {
+        StringBuilder stringBuilder = new StringBuilder();
+        int counter = 0;
+        for(int d : data) {
+            stringBuilder.append(d);
+            if (counter < data.length - 1) {
+                stringBuilder.append(",");
+            }
+            counter++;
+        }
+        return stringBuilder.toString();
+    }
+
+    public static String showArray(float data[]) {
+        StringBuilder stringBuilder = new StringBuilder();
+        int counter = 0;
+        for(float d : data) {
+            stringBuilder.append(d);
+            if (counter < data.length - 1) {
+                stringBuilder.append(",");
+            }
+            counter++;
+        }
+        return stringBuilder.toString();
     }
 }
 

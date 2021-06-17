@@ -2,11 +2,16 @@ package org.fao.mobile.woodidentifier;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
+import android.renderscript.ScriptGroup;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,20 +22,30 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
+import androidx.room.util.StringUtil;
 
 import com.github.dhaval2404.imagepicker.ImagePicker;
 
+import org.apache.commons.io.FileUtils;
 import org.fao.mobile.woodidentifier.adapters.InferenceLogViewAdapter;
 import org.fao.mobile.woodidentifier.databinding.FragmentFirstBinding;
+import org.fao.mobile.woodidentifier.models.InferenceLogViewModel;
 import org.fao.mobile.woodidentifier.models.InferencesLog;
 import org.fao.mobile.woodidentifier.utils.ModelHelper;
 import org.fao.mobile.woodidentifier.utils.Utils;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -38,9 +53,12 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
 
     private static final int CAPTURE_IMAGE = 101;
     private static final String TAG = FirstFragment.class.getCanonicalName();
+    private static final String EXIF_TAG_CLASS = "ML_CLASS";
+    private static final String EXIF_TOP_K = "ML_TOP_K";
     private FragmentFirstBinding binding;
     private Executor executor = Executors.newSingleThreadExecutor();
     private RecyclerView logList;
+    private InferenceLogViewModel viewModel;
 
     @Override
     public View onCreateView(
@@ -49,6 +67,12 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
     ) {
         binding = FragmentFirstBinding.inflate(inflater, container, false);
         this.logList = binding.inferenceLogList;
+        this.viewModel = new ViewModelProvider(getActivity()).get(InferenceLogViewModel.class);
+        viewModel.getCount().observe(getViewLifecycleOwner(), (count) -> {
+            refresh();
+        });
+
+        logList.setLayoutManager(new LinearLayoutManager(getActivity()));
         binding.fab.setOnClickListener(this::onClick);
         if (checkCameraHardware(getActivity())) {
             binding.fabCamera.setVisibility(View.VISIBLE);
@@ -80,7 +104,6 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
             List<InferencesLog> logs = db.inferencesLogDAO().getAll();
             getActivity().runOnUiThread(() -> {
                 logList.setAdapter(new InferenceLogViewAdapter(getActivity(), logs, this));
-                logList.setLayoutManager(new LinearLayoutManager(getActivity()));
             });
         });
     }
@@ -91,26 +114,72 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
         binding = null;
     }
 
+    public String getFileName(Uri uri) {
+        String result = null;
+        if (uri.getScheme().equals("content")) {
+            Cursor cursor = getActivity().getContentResolver().query(uri, null, null, null, null);
+            try {
+                if (cursor != null && cursor.moveToFirst()) {
+                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        if (result == null) {
+            result = uri.getPath();
+            int cut = result.lastIndexOf('/');
+            if (cut != -1) {
+                result = result.substring(cut + 1);
+            }
+        }
+        return result;
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, "on Activity result");
+        Log.d(TAG, "XXXXXX on Activity result");
         if (resultCode == Activity.RESULT_OK) {
             Uri uri = data.getData();
 
             ModelHelper modelHelper = ModelHelper.getHelperInstance(getActivity());
-            try {
-                ModelHelper.Result result = modelHelper.runInference(uri.getPath());
-                AppDatabase db = Room.databaseBuilder(getActivity().getApplicationContext(),
+            executor.execute(()-> {
+
+                try (InputStream inputStream = getActivity().getContentResolver().openInputStream(uri);) {
+                    File localCopyPath = new File(getActivity().getFilesDir(), UUID.randomUUID().toString() + ".jpg");
+                    FileUtils.copyToFile(inputStream, localCopyPath);
+
+                    try(InputStream is = new FileInputStream(localCopyPath)) {
+                        ModelHelper.Result result = modelHelper.runInference(is);
+                        Log.i(TAG,    "topk " +  Utils.showArray(result.getTop()));
+                        Log.i(TAG,    "scores " + Utils.showArray(result.getScores()));
+                        AppDatabase db = Room.databaseBuilder(getActivity().getApplicationContext(),
                         AppDatabase.class, "wood-id").build();
-                InferencesLog log = InferencesLog.fromResult(result);
-                log.imagePath = uri.getPath();
-                saveLog(db, log);
-                refresh();
-                Toast.makeText(getActivity(), "Image is Likely " + result.getClassIndex() + ": " + result.getClassLabel() + " score: " + result.getScore(), Toast.LENGTH_LONG).show();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+                        InferencesLog log = InferencesLog.fromResult(result);
+                        log.imagePath = Uri.fromFile(localCopyPath).toString();
+                        log.originalFilename = getFileName(uri);
+                        saveLog(db, log);
+                        refresh();
+                        getActivity().runOnUiThread(()->{
+                            Toast.makeText(getActivity(), "Image is Likely " + result.getClassIndex() + ": " + result.getClassLabel() + " score: " + result.getScore(), Toast.LENGTH_LONG).show();
+                        });
+                    }
+
+
+//                try {
+//                    ExifInterface exif = new ExifInterface(new File(actualPath));
+//                    exif.setAttribute(EXIF_TAG_CLASS, result.getClassLabel());
+//                    exif.saveAttributes();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+
+                 } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+
 
         } else if (resultCode == ImagePicker.RESULT_ERROR) {
             Toast.makeText(getActivity(), ImagePicker.getError(data), Toast.LENGTH_SHORT).show();
@@ -125,7 +194,6 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
             List<InferencesLog> logs = db.inferencesLogDAO().getAll();
             getActivity().runOnUiThread(() -> {
                 logList.setAdapter(new InferenceLogViewAdapter(getActivity(), logs, this));
-                logList.setLayoutManager(new LinearLayoutManager(getActivity()));
             });
         });
     }

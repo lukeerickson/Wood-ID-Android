@@ -1,6 +1,7 @@
 package org.fao.mobile.woodidentifier.adapters;
 
 import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,10 +48,11 @@ public class InferenceLogViewAdapter  extends RecyclerView.Adapter<InferenceLogV
     public void onBindViewHolder(InferenceLogViewAdapter.ViewHolder holder, int position) {
         InferencesLog inferenceLog = logs.get(position);
         holder.deleteButton.setOnClickListener(this);
-        holder.deleteButton.setTag(position);
-        holder.getTextView().setText(inferenceLog.classLabel);
+        holder.deleteButton.setTag(inferenceLog);
+        holder.getTextView().setText(inferenceLog.classLabel + " (" + inferenceLog.classIndex + ")");
         holder.getScoreView().setText(Float.toString(inferenceLog.score));
-        Glide.with(context).load(new File(inferenceLog.imagePath.replace("/document/raw:", ""))).into(holder.getWoodImage());
+        holder.getFilename().setText(inferenceLog.originalFilename);
+        Glide.with(context).load(Uri.decode(inferenceLog.imagePath)).into(holder.getWoodImage());
     }
 
     @Override
@@ -61,9 +63,9 @@ public class InferenceLogViewAdapter  extends RecyclerView.Adapter<InferenceLogV
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.deleteLogItem) {
-            int position = (Integer)v.getTag();
-            InferencesLog loginfo = logs.remove(position);
-            itemListener.onDeleteItem(this, position, loginfo);
+            InferencesLog log = (InferencesLog)v.getTag();
+            itemListener.onDeleteItem(this, logs.indexOf(log), log);
+            logs.remove(log);
         }
     }
 
@@ -75,6 +77,7 @@ public class InferenceLogViewAdapter  extends RecyclerView.Adapter<InferenceLogV
         private final TextView textView;
         private final ImageView woodImage;
         private final TextView scoreView;
+        private final TextView filename;
 
         public ImageButton getDeleteButton() {
             return deleteButton;
@@ -85,6 +88,7 @@ public class InferenceLogViewAdapter  extends RecyclerView.Adapter<InferenceLogV
         public ViewHolder(View view) {
             super(view);
             // Define click listener for the ViewHolder's View
+            filename = (TextView) view.findViewById(R.id.filename);
             textView = (TextView) view.findViewById(R.id.class_label);
             scoreView = (TextView) view.findViewById(R.id.score);
             woodImage = (ImageView)view.findViewById(R.id.wood_specimen_image);
@@ -101,6 +105,10 @@ public class InferenceLogViewAdapter  extends RecyclerView.Adapter<InferenceLogV
 
         public TextView getScoreView() {
             return scoreView;
+        }
+
+        public TextView getFilename() {
+            return filename;
         }
     }
 

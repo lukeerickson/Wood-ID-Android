@@ -3,20 +3,28 @@ package org.fao.mobile.woodidentifier;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.media.ExifInterface;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.util.Range;
 import android.util.Size;
 import android.view.DragEvent;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -47,7 +55,10 @@ import org.fao.mobile.woodidentifier.models.InferencesLog;
 import org.fao.mobile.woodidentifier.utils.ModelHelper;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -67,6 +78,8 @@ public abstract class AbstractCameraXActivity extends AppCompatActivity implemen
     private Camera camera;
     private Slider zoomControl;
     private Slider exposureControl;
+    private EditText zoomValue;
+    private EditText exposureValue;
 
     protected abstract int getContentViewLayoutId();
 
@@ -83,12 +96,48 @@ public abstract class AbstractCameraXActivity extends AppCompatActivity implemen
         this.takePicture = findViewById(R.id.fab_take_picture);
         this.zoomControl = (Slider) findViewById(R.id.zoom_control);
         this.exposureControl = (Slider) findViewById(R.id.exposure_control);
+        this.zoomValue = (EditText) findViewById(R.id.zoom_value);
+        this.exposureValue = (EditText) findViewById(R.id.exposure_value);
 
         setupDefaultValues();
 
         takePicture.setOnClickListener(this);
         zoomControl.addOnChangeListener(this);
         exposureControl.addOnChangeListener(this);
+        exposureValue.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                float manualSliderValue = Float.parseFloat(s.toString());
+                exposureControl.setValue(manualSliderValue / 100f);
+            }
+        });
+        zoomValue.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                float manualSliderValue = Float.parseFloat(s.toString());
+                zoomControl.setValue(manualSliderValue / 100f);
+            }
+        });
         startBackgroundThread();
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
@@ -107,6 +156,8 @@ public abstract class AbstractCameraXActivity extends AppCompatActivity implemen
                 "camera_settings", Context.MODE_PRIVATE);
         zoomControl.setValue(prefs.getFloat("zoom", (float) 0f));
         exposureControl.setValue(prefs.getFloat("exposure", 0f));
+        exposureValue.setText(Integer.toString((int)(prefs.getFloat("exposure", 0f) * 100f)));
+        zoomValue.setText(Integer.toString((int)(prefs.getFloat("zoom", 0f) * 100f)));
     }
 
     @Override
@@ -197,17 +248,23 @@ public abstract class AbstractCameraXActivity extends AppCompatActivity implemen
         switch (v.getId()) {
             case R.id.fab_take_picture:
                 DateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddhhmmss");
-                File file = getPhotoFileUri("capture_" + simpleDateFormat.format(new Date()) + ".jpg");
-
+                Uri fileUri = getPhotoFileUri("capture_" + simpleDateFormat.format(new Date()) + ".jpg");
+                ImageCapture.Metadata metadata = new ImageCapture.Metadata();
+                OutputStream outputStream = null;
+                try {
+                    outputStream = getContentResolver().openOutputStream(fileUri);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
                 ImageCapture.OutputFileOptions outputFileOptions =
-                        new ImageCapture.OutputFileOptions.Builder(file).build();
+                        new ImageCapture.OutputFileOptions.Builder(outputStream).setMetadata(metadata).build();
 
                 imageCapture.takePicture(outputFileOptions, ContextCompat.getMainExecutor(this),
                         new ImageCapture.OnImageSavedCallback() {
                             @Override
                             public void onImageSaved(ImageCapture.OutputFileResults outputFileResults) {
                                 Intent intent = new Intent();
-                                intent.setData(Uri.fromFile(file));
+                                intent.setData(fileUri);
                                 AbstractCameraXActivity.this.setResult(Activity.RESULT_OK, intent);
                                 AbstractCameraXActivity.this.finish();
                             }
@@ -224,21 +281,25 @@ public abstract class AbstractCameraXActivity extends AppCompatActivity implemen
         }
     }
 
-    public File getPhotoFileUri(String fileName) {
-        // Get safe storage directory for photos
-        // Use `getExternalFilesDir` on Context to access package-specific directories.
-        // This way, we don't need to request external read/write runtime permissions.
-        File mediaStorageDir = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), TAG);
+    public Uri getPhotoFileUri(String fileName) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);
+            values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpg");
+            values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES);
+            Uri uri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            return uri;
+        } else {
+            File mediaStorageDir = new File(getExternalFilesDir(Environment.DIRECTORY_DCIM), TAG);
 
-        // Create the storage directory if it does not exist
-        if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()) {
-            Log.e(TAG, "failed to create directory");
+            // Create the storage directory if it does not exist
+            if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()) {
+                Log.e(TAG, "failed to create directory");
+            }
+            File image = new File(mediaStorageDir, fileName);
+            return Uri.fromFile(image);
         }
 
-        // Return the file target for the photo based on filename
-        File file = new File(mediaStorageDir.getPath() + File.separator + fileName);
-
-        return file;
     }
 
 
@@ -265,6 +326,9 @@ public abstract class AbstractCameraXActivity extends AppCompatActivity implemen
         Range<Integer> range = exposureState.getExposureCompensationRange();
         int exposureRange = (int) ((range.getUpper() - range.getLower()) * sliderValue + range.getLower());
         camera.getCameraControl().setExposureCompensationIndex(exposureRange);
+        if (!exposureValue.getText().equals(Float.toString(sliderValue))) {
+            exposureValue.setText(Float.toString((int)(sliderValue * 100f)));
+        }
     }
 
     private void setCameraZoom(float sliderValue) {
@@ -273,5 +337,8 @@ public abstract class AbstractCameraXActivity extends AppCompatActivity implemen
         float zoomRatio = (zoom.getMaxZoomRatio() - zoom.getMinZoomRatio()) * sliderValue + zoom.getMinZoomRatio();
         Log.d(TAG, "changing zoom to " + zoomRatio);
         camera.getCameraControl().setZoomRatio(zoomRatio);
+        if (!zoomValue.getText().equals(Float.toString(sliderValue))) {
+            zoomValue.setText(Float.toString((int)(sliderValue * 100f)));
+        }
     }
 }
