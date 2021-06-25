@@ -4,7 +4,6 @@ import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
-import androidx.room.RawQuery;
 
 import org.fao.mobile.woodidentifier.models.InferencesLog;
 
@@ -19,10 +18,13 @@ public interface InferencesLogDAO {
     List<InferencesLog> loadAllByIds(int[] userIds);
 
     @Query("SELECT * FROM inferences_log WHERE uid=:uid")
-    InferencesLog findByUid(int uid);
+    InferencesLog findByUid(long uid);
 
     @Insert
-    void insertAll(InferencesLog... logs);
+    long insert(InferencesLog log);
+
+    @Insert
+    long[] insertAll(InferencesLog... logs);
 
     @Delete
     void delete(InferencesLog log);

@@ -32,6 +32,7 @@ import com.github.dhaval2404.imagepicker.ImagePicker;
 
 import org.apache.commons.io.FileUtils;
 import org.fao.mobile.woodidentifier.adapters.InferenceLogViewAdapter;
+import org.fao.mobile.woodidentifier.callbacks.DBCallback;
 import org.fao.mobile.woodidentifier.databinding.FragmentFirstBinding;
 import org.fao.mobile.woodidentifier.models.InferenceLogViewModel;
 import org.fao.mobile.woodidentifier.models.InferencesLog;
@@ -144,6 +145,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
             Uri uri = data.getData();
 
             ModelHelper modelHelper = ModelHelper.getHelperInstance(getActivity());
+
             executor.execute(()-> {
 
                 try (InputStream inputStream = getActivity().getContentResolver().openInputStream(uri);) {
@@ -156,24 +158,18 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
                         Log.i(TAG,    "scores " + Utils.showArray(result.getScores()));
                         AppDatabase db = Room.databaseBuilder(getActivity().getApplicationContext(),
                         AppDatabase.class, "wood-id").build();
-                        InferencesLog log = InferencesLog.fromResult(result);
+                        InferencesLog log = InferencesLog.fromResult(result, modelHelper.getClassLabels());
                         log.imagePath = Uri.fromFile(localCopyPath).toString();
                         log.originalFilename = getFileName(uri);
-                        saveLog(db, log);
-                        refresh();
-                        getActivity().runOnUiThread(()->{
-                            Toast.makeText(getActivity(), "Image is Likely " + result.getClassIndex() + ": " + result.getClassLabel() + " score: " + result.getScore(), Toast.LENGTH_LONG).show();
+                        saveLog(db, log, (inferencesLog) -> {
+                            refresh();
+                            Intent intent = new Intent(getActivity(), DetailsActivity.class);
+                            intent.putExtra("uid", inferencesLog.uid);
+                            Log.i(TAG, "uid = " + inferencesLog.uid);
+                            getActivity().startActivity(intent);
                         });
                     }
 
-
-//                try {
-//                    ExifInterface exif = new ExifInterface(new File(actualPath));
-//                    exif.setAttribute(EXIF_TAG_CLASS, result.getClassLabel());
-//                    exif.saveAttributes();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
 
                  } catch (IOException e) {
                     e.printStackTrace();
@@ -188,12 +184,14 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
         }
     }
 
-    private void saveLog(AppDatabase db, InferencesLog log) {
+    private void saveLog(AppDatabase db, InferencesLog log, DBCallback callback) {
         executor.execute(() -> {
-            db.inferencesLogDAO().insertAll(log);
+            log.uid = db.inferencesLogDAO().insert(log);
+            Log.i(TAG," uid saved " + log.uid);
             List<InferencesLog> logs = db.inferencesLogDAO().getAll();
             getActivity().runOnUiThread(() -> {
                 logList.setAdapter(new InferenceLogViewAdapter(getActivity(), logs, this));
+                callback.onDone(log);
             });
         });
     }

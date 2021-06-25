@@ -1,6 +1,7 @@
 package org.fao.mobile.woodidentifier.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,13 +14,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 
+import org.fao.mobile.woodidentifier.DetailsActivity;
 import org.fao.mobile.woodidentifier.R;
 import org.fao.mobile.woodidentifier.models.InferencesLog;
+import org.fao.mobile.woodidentifier.utils.Utils;
 
 import java.io.File;
 import java.util.List;
 
-public class InferenceLogViewAdapter  extends RecyclerView.Adapter<InferenceLogViewAdapter.ViewHolder> implements View.OnClickListener {
+public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogViewAdapter.ViewHolder> implements View.OnClickListener {
 
     private final ItemListener itemListener;
 
@@ -36,22 +39,33 @@ public class InferenceLogViewAdapter  extends RecyclerView.Adapter<InferenceLogV
         this.logs = logs;
         this.itemListener = listener;
     }
+
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         // Create a new view, which defines the UI of the list item
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.inference_log_item, viewGroup, false);
+        view.setOnClickListener(this::onClickMain);
         return new ViewHolder(view);
+    }
+
+    private void onClickMain(View view) {
+        Intent intent = new Intent(context, DetailsActivity.class);
+        InferencesLog inferencesLog = (InferencesLog) view.getTag();
+        intent.putExtra("uid", inferencesLog.uid);
+        context.startActivity(intent);
     }
 
     @Override
     public void onBindViewHolder(InferenceLogViewAdapter.ViewHolder holder, int position) {
         InferencesLog inferenceLog = logs.get(position);
+        holder.getView().setTag(inferenceLog);
+        holder.getDeleteButton().setTag(inferenceLog);
         holder.deleteButton.setOnClickListener(this);
-        holder.deleteButton.setTag(inferenceLog);
         holder.getTextView().setText(inferenceLog.classLabel + " (" + inferenceLog.classIndex + ")");
         holder.getScoreView().setText(Float.toString(inferenceLog.score));
         holder.getFilename().setText(inferenceLog.originalFilename);
+        holder.getTimestamp().setText(Utils.timestampToString(inferenceLog.timestamp));
         Glide.with(context).load(Uri.decode(inferenceLog.imagePath)).into(holder.getWoodImage());
     }
 
@@ -63,7 +77,7 @@ public class InferenceLogViewAdapter  extends RecyclerView.Adapter<InferenceLogV
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.deleteLogItem) {
-            InferencesLog log = (InferencesLog)v.getTag();
+            InferencesLog log = (InferencesLog) v.getTag();
             itemListener.onDeleteItem(this, logs.indexOf(log), log);
             logs.remove(log);
         }
@@ -79,6 +93,18 @@ public class InferenceLogViewAdapter  extends RecyclerView.Adapter<InferenceLogV
         private final TextView scoreView;
         private final TextView filename;
 
+        public TextView getTimestamp() {
+            return timestamp;
+        }
+
+        private final TextView timestamp;
+
+        public View getView() {
+            return view;
+        }
+
+        private final View view;
+
         public ImageButton getDeleteButton() {
             return deleteButton;
         }
@@ -87,12 +113,14 @@ public class InferenceLogViewAdapter  extends RecyclerView.Adapter<InferenceLogV
 
         public ViewHolder(View view) {
             super(view);
+            this.view = view;
             // Define click listener for the ViewHolder's View
             filename = (TextView) view.findViewById(R.id.filename);
             textView = (TextView) view.findViewById(R.id.class_label);
             scoreView = (TextView) view.findViewById(R.id.score);
-            woodImage = (ImageView)view.findViewById(R.id.wood_specimen_image);
+            woodImage = (ImageView) view.findViewById(R.id.wood_specimen_image);
             deleteButton = (ImageButton) view.findViewById(R.id.deleteLogItem);
+            timestamp = (TextView) view.findViewById(R.id.timestamp);
         }
 
         public TextView getTextView() {

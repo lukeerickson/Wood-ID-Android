@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".DetailsActivity">
+
+    <ImageView
+        android:layout_margin="10dp"
+        android:id="@+id/imageSample"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        tools:layout_editor_absoluteX="2dp"
+        tools:layout_editor_absoluteY="4dp"
+        tools:srcCompat="@tools:sample/backgrounds/scenic" />
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_margin="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ScrollView
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/label"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="filename.jpg"
+                    android:textSize="18sp" />
+                <TextView
+                    android:layout_marginTop="10dp"
+                    android:id="@+id/class_label"
+                    android:textSize="12sp"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"/>
+                <LinearLayout
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical"
+                    android:id="@+id/topKcontainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                </LinearLayout>
+                <TextView
+                    android:id="@+id/description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+        </ScrollView>
+        <Button
+            android:layout_weight="0"
+            android:id="@+id/close_button"
+            android:layout_alignParentBottom="true"
+            android:text="@string/action_close"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+</LinearLayout>

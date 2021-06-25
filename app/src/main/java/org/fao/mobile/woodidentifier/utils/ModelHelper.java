@@ -33,6 +33,7 @@ public class ModelHelper {
     private static final String CLASS_LABELS = "labels.txt";
     private final Module mModule;
     private static ModelHelper instance = null;
+    private final FloatBuffer mInputTensorBuffer;
 
     List<String> classLabels;
 
@@ -57,13 +58,18 @@ public class ModelHelper {
             Log.d(TAG, "Total classes " + classLabels.size());
             final String moduleFileAbsoluteFilePath = new File(assetPath).getAbsolutePath();
             instance = new ModelHelper(moduleFileAbsoluteFilePath, classLabels);
+
         }
         return instance;
     }
 
+    public List<String> getClassLabels() {
+        return classLabels;
+    }
+
     public static final class Result {
         private int[] top;
-        float[] scores;
+        Float[] scores;
         int height;
 
         public int[] getTop() {
@@ -74,11 +80,11 @@ public class ModelHelper {
             this.top = top;
         }
 
-        public float[] getScores() {
+        public Float[] getScores() {
             return scores;
         }
 
-        public void setScores(float[] scores) {
+        public void setScores(Float[] scores) {
             this.scores = scores;
         }
 
@@ -131,13 +137,13 @@ public class ModelHelper {
         Log.d(TAG, "Loading mobile model ..." + modelAbsolutePath);
         this.mModule = Module.load(modelAbsolutePath);
         this.classLabels = classLabels;
+        this.mInputTensorBuffer = Tensor.allocateFloatBuffer(3 * INPUT_TENSOR_WIDTH * INPUT_TENSOR_HEIGHT);
     }
 
     public Result runInference(InputStream fis) throws IOException {
             Bitmap bitmapA;
             bitmapA = BitmapFactory.decodeStream(fis);
             Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmapA, INPUT_TENSOR_WIDTH, INPUT_TENSOR_HEIGHT, true);
-            FloatBuffer mInputTensorBuffer = Tensor.allocateFloatBuffer(3 * INPUT_TENSOR_WIDTH * INPUT_TENSOR_HEIGHT);
             Tensor mInputTensor = Tensor.fromBlob(mInputTensorBuffer, new long[]{1, 3, INPUT_TENSOR_HEIGHT, INPUT_TENSOR_WIDTH});
             TensorImageUtils.bitmapToFloatBuffer(scaledBitmap,
                     0,
@@ -149,19 +155,23 @@ public class ModelHelper {
                     mInputTensorBuffer,
                     0);
             final long moduleForwardStartTime = SystemClock.elapsedRealtime();
-            Log.d(TAG, "running inference ...");
+            Log.i(TAG, "running inference ...");
             final Tensor outputTensor = mModule.forward(IValue.from(mInputTensor)).toTensor();
 
             final long moduleForwardDuration = SystemClock.elapsedRealtime() - moduleForwardStartTime;
 
             final float[] scores = outputTensor.getDataAsFloatArray();
-            Log.d(TAG, "Inference done " + scores.length + " total scores. took = " + moduleForwardDuration + "ms");
+            Log.i(TAG, "Inference done " + scores.length + " total scores. took = " + moduleForwardDuration + "ms");
             int[] top = Utils.topK(scores, scores.length);
             Log.i(TAG, "result " + top[0] + ": " + classLabels.get(top[0]));
             Result resultBuffer = new Result(top[0], classLabels.get(top[0]), scores[top[0]]);
 
             resultBuffer.setTop(top);
-            resultBuffer.setScores(scores);
+            Float floats[] = new Float[scores.length];
+            for(int i = 0; i < scores.length; i++) {
+                floats[i] = scores[i];
+            }
+            resultBuffer.setScores(floats);
             resultBuffer.setHeight(bitmapA.getHeight());
             resultBuffer.setWidth(bitmapA.getWidth());
             return resultBuffer;

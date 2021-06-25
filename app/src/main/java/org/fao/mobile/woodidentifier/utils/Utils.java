@@ -8,16 +8,22 @@ import android.content.pm.PackageManager;
 import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.FragmentActivity;
 
 import org.fao.mobile.woodidentifier.Constants;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Date;
 
 public class Utils {
     // Storage Permissions
@@ -117,7 +123,7 @@ public class Utils {
     public static String showArray(int data[]) {
         StringBuilder stringBuilder = new StringBuilder();
         int counter = 0;
-        for(int d : data) {
+        for (int d : data) {
             stringBuilder.append(d);
             if (counter < data.length - 1) {
                 stringBuilder.append(",");
@@ -127,10 +133,10 @@ public class Utils {
         return stringBuilder.toString();
     }
 
-    public static String showArray(float data[]) {
+    public static String showArray(Float data[]) {
         StringBuilder stringBuilder = new StringBuilder();
         int counter = 0;
-        for(float d : data) {
+        for (float d : data) {
             stringBuilder.append(d);
             if (counter < data.length - 1) {
                 stringBuilder.append(",");
@@ -138,6 +144,23 @@ public class Utils {
             counter++;
         }
         return stringBuilder.toString();
+    }
+
+    public static String timestampToString(long timestamp) {
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(new Date(timestamp).toInstant(), ZoneId.systemDefault());
+        return localDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+    }
+
+    public static String readFileToStringSimple(File f) throws IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        try (FileReader fileReader = new FileReader(f);
+             BufferedReader bufferedReader = new BufferedReader(fileReader)) {
+
+            while (bufferedReader.ready()) {
+                stringBuilder.append(bufferedReader.readLine() + "\n");
+            }
+            return stringBuilder.toString();
+        }
     }
 }
 
