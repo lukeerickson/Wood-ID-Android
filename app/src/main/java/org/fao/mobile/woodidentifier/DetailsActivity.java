@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.room.Room;
 
 import com.bumptech.glide.Glide;
+import com.codepoetics.protonpack.StreamUtils;
 
 import org.fao.mobile.woodidentifier.models.InferencesLog;
 import org.fao.mobile.woodidentifier.utils.Species;
@@ -31,6 +32,7 @@ public class DetailsActivity extends AppCompatActivity {
     private WoodIdentifierApplication application;
     private TextView description;
     private ViewGroup topKcontainer;
+    private ViewGroup referenceImageContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +46,7 @@ public class DetailsActivity extends AppCompatActivity {
         this.closeButton = findViewById(R.id.close_button);
         this.description = findViewById(R.id.description);
         this.topKcontainer = findViewById(R.id.topKcontainer);
+        this.referenceImageContainer = findViewById(R.id.reference_images_container);
         this.application = (WoodIdentifierApplication) getApplication();
         closeButton.setOnClickListener((v) -> {
             finish();
@@ -58,19 +61,31 @@ public class DetailsActivity extends AppCompatActivity {
                 classLabel.setText(species.getScientificName() + "(" + inferenceLog.classLabel + ")");
                 filename.setText(inferenceLog.originalFilename);
                 description.setText(species.getDescription());
-                populateTopK(topKcontainer, inferenceLog.top);
+                referenceImageContainer.removeAllViews();
+                Arrays.stream(species.getReferenceImages()).forEachOrdered(imageRef -> {
+                    View view = LayoutInflater.from(referenceImageContainer.getContext())
+                            .inflate(R.layout.reference_image, referenceImageContainer, false);
+                    ImageView referenceImage = view.findViewById(R.id.reference_image);
+                    Glide.with(DetailsActivity.this).load(imageRef).into(referenceImage);
+                    referenceImageContainer.addView(view);
+                });
+                populateTopK(topKcontainer, inferenceLog.top, inferenceLog.scores, inferenceLog.topKRaw);
                 Glide.with(DetailsActivity.this).load(Uri.decode(inferenceLog.imagePath)).into(sampleImageView);
             });
         });
     }
 
-    private void populateTopK(ViewGroup viewGroup, String[] score) {
+    private void populateTopK(ViewGroup viewGroup, String[] names, Double[] scores, Integer[] topKRaw) {
         topKcontainer.removeAllViews();
-        Arrays.stream(score).forEach(name -> {
+
+        StreamUtils.zipWithIndex(Arrays.stream(names)).forEachOrdered(namesWithIndex -> {
+            Double scoreValue = scores[topKRaw[(int) namesWithIndex.getIndex()].intValue()];
             View view = LayoutInflater.from(viewGroup.getContext())
                     .inflate(R.layout.topk_item, viewGroup, false);
             TextView classLabel = view.findViewById(R.id.class_label);
-            classLabel.setText(name);
+            TextView scoreLabel = view.findViewById(R.id.score_value);
+            classLabel.setText(namesWithIndex.getValue());
+            scoreLabel.setText(String.format("%.4g%n", scoreValue));
             topKcontainer.addView(view);
         });
     }

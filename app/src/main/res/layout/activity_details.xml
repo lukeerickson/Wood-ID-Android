@@ -34,15 +34,32 @@
                     android:layout_height="wrap_content"
                     android:text="filename.jpg"
                     android:textSize="18sp" />
+                <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <androidx.appcompat.widget.LinearLayoutCompat
+                        android:id="@+id/reference_images_container"
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                    </androidx.appcompat.widget.LinearLayoutCompat>
+                </ScrollView>
                 <TextView
                     android:layout_marginTop="10dp"
                     android:id="@+id/class_label"
-                    android:textSize="12sp"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
                     android:layout_height="wrap_content"
                     android:layout_width="match_parent"/>
-                <LinearLayout
+                <TextView
                     android:layout_marginTop="10dp"
+                    android:textSize="14sp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Top K scores"></TextView>
+                <LinearLayout
                     android:orientation="vertical"
+                    android:paddingTop="5dp"
                     android:id="@+id/topKcontainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">

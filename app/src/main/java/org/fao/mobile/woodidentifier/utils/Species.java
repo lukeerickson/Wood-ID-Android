@@ -21,7 +21,7 @@ public class Species {
 
     String scientificName;
     String description;
-    String referenceImages[];
+    private String[] referenceImages;
 
     public Species() {
 
@@ -30,5 +30,10 @@ public class Species {
     public Species(String className, String scientificName) {
         this.className = className;
         this.scientificName = scientificName;
+        this.referenceImages = new String[0];
+    }
+
+    public void setReferenceImages(String[] referenceImages) {
+        this.referenceImages = referenceImages;
     }
 }

@@ -3,11 +3,8 @@ package org.fao.mobile.woodidentifier.utils;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.ExifInterface;
-import android.net.Uri;
 import android.os.SystemClock;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.pytorch.IValue;
 import org.pytorch.Module;
@@ -16,7 +13,6 @@ import org.pytorch.torchvision.TensorImageUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -68,23 +64,23 @@ public class ModelHelper {
     }
 
     public static final class Result {
-        private int[] top;
-        Float[] scores;
+        private Integer[] top;
+        Double[] scores;
         int height;
 
-        public int[] getTop() {
+        public Integer[] getTop() {
             return top;
         }
 
-        public void setTop(int[] top) {
+        public void setTop(Integer[] top) {
             this.top = top;
         }
 
-        public Float[] getScores() {
+        public Double[] getScores() {
             return scores;
         }
 
-        public void setScores(Float[] scores) {
+        public void setScores(Double[] scores) {
             this.scores = scores;
         }
 
@@ -128,7 +124,7 @@ public class ModelHelper {
             this.score = score;
         }
 
-        public void putTopK(int[] top) {
+        public void putTopK(Integer[] top) {
             this.top = top;
         }
     }
@@ -162,16 +158,16 @@ public class ModelHelper {
 
             final float[] scores = outputTensor.getDataAsFloatArray();
             Log.i(TAG, "Inference done " + scores.length + " total scores. took = " + moduleForwardDuration + "ms");
-            int[] top = Utils.topK(scores, scores.length);
+            Integer[] top = Utils.topK(scores, scores.length);
             Log.i(TAG, "result " + top[0] + ": " + classLabels.get(top[0]));
             Result resultBuffer = new Result(top[0], classLabels.get(top[0]), scores[top[0]]);
 
             resultBuffer.setTop(top);
-            Float floats[] = new Float[scores.length];
+            Double doubles[] = new Double[scores.length];
             for(int i = 0; i < scores.length; i++) {
-                floats[i] = scores[i];
+                doubles[i] = (double)scores[i];
             }
-            resultBuffer.setScores(floats);
+            resultBuffer.setScores(doubles);
             resultBuffer.setHeight(bitmapA.getHeight());
             resultBuffer.setWidth(bitmapA.getWidth());
             return resultBuffer;

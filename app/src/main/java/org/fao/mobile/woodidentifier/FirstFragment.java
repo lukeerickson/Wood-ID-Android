@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.location.LocationManager;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -146,8 +147,8 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
 
             ModelHelper modelHelper = ModelHelper.getHelperInstance(getActivity());
 
-            executor.execute(()-> {
 
+            executor.execute(()-> {
                 try (InputStream inputStream = getActivity().getContentResolver().openInputStream(uri);) {
                     File localCopyPath = new File(getActivity().getFilesDir(), UUID.randomUUID().toString() + ".jpg");
                     FileUtils.copyToFile(inputStream, localCopyPath);
@@ -159,6 +160,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
                         AppDatabase db = Room.databaseBuilder(getActivity().getApplicationContext(),
                         AppDatabase.class, "wood-id").build();
                         InferencesLog log = InferencesLog.fromResult(result, modelHelper.getClassLabels());
+
                         log.imagePath = Uri.fromFile(localCopyPath).toString();
                         log.originalFilename = getFileName(uri);
                         saveLog(db, log, (inferencesLog) -> {
@@ -169,7 +171,6 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
                             getActivity().startActivity(intent);
                         });
                     }
-
 
                  } catch (IOException e) {
                     e.printStackTrace();

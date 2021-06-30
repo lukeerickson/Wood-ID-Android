@@ -65,7 +65,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
-public abstract class AbstractCameraXActivity extends AppCompatActivity implements View.OnClickListener, Slider.OnChangeListener {
+public abstract class AbstractCameraXActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int REQUEST_CODE_CAMERA_PERMISSION = 200;
     private static final String[] PERMISSIONS = {Manifest.permission.CAMERA};
     private static final String TAG = AbstractCameraXActivity.class.getCanonicalName();
@@ -76,10 +76,6 @@ public abstract class AbstractCameraXActivity extends AppCompatActivity implemen
     private View takePicture;
     private ImageCapture imageCapture;
     private Camera camera;
-    private Slider zoomControl;
-    private Slider exposureControl;
-    private EditText zoomValue;
-    private EditText exposureValue;
 
     protected abstract int getContentViewLayoutId();
 
@@ -89,55 +85,18 @@ public abstract class AbstractCameraXActivity extends AppCompatActivity implemen
     protected Handler mBackgroundHandler;
     protected Handler mUIHandler;
 
+    protected abstract void afterOnCreate();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(getContentViewLayoutId());
+        afterOnCreate();
         this.takePicture = findViewById(R.id.fab_take_picture);
-        this.zoomControl = (Slider) findViewById(R.id.zoom_control);
-        this.exposureControl = (Slider) findViewById(R.id.exposure_control);
-        this.zoomValue = (EditText) findViewById(R.id.zoom_value);
-        this.exposureValue = (EditText) findViewById(R.id.exposure_value);
-
         setupDefaultValues();
 
         takePicture.setOnClickListener(this);
-        zoomControl.addOnChangeListener(this);
-        exposureControl.addOnChangeListener(this);
-        exposureValue.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                float manualSliderValue = Float.parseFloat(s.toString());
-                exposureControl.setValue(manualSliderValue / 100f);
-            }
-        });
-        zoomValue.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                float manualSliderValue = Float.parseFloat(s.toString());
-                zoomControl.setValue(manualSliderValue / 100f);
-            }
-        });
         startBackgroundThread();
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
@@ -152,12 +111,7 @@ public abstract class AbstractCameraXActivity extends AppCompatActivity implemen
     }
 
     private void setupDefaultValues() {
-        SharedPreferences prefs = this.getSharedPreferences(
-                "camera_settings", Context.MODE_PRIVATE);
-        zoomControl.setValue(prefs.getFloat("zoom", (float) 0f));
-        exposureControl.setValue(prefs.getFloat("exposure", 0f));
-        exposureValue.setText(Integer.toString((int)(prefs.getFloat("exposure", 0f) * 100f)));
-        zoomValue.setText(Integer.toString((int)(prefs.getFloat("zoom", 0f) * 100f)));
+
     }
 
     @Override
@@ -299,46 +253,29 @@ public abstract class AbstractCameraXActivity extends AppCompatActivity implemen
             File image = new File(mediaStorageDir, fileName);
             return Uri.fromFile(image);
         }
-
     }
 
 
     @SuppressLint("UnsafeOptInUsageError")
-    @Override
-    public void onValueChange(Slider slider, float value, boolean fromUser) {
-        float sliderValue = slider.getValue();
-        if (slider.getId() == R.id.zoom_control) {
-            setCameraZoom(sliderValue);
-            SharedPreferences prefs = this.getSharedPreferences(
-                    "camera_settings", Context.MODE_PRIVATE);
-            prefs.edit().putFloat("zoom", sliderValue).commit();
-        } else if (slider.getId() == R.id.exposure_control) {
-            setCameraExposure(sliderValue);
-            SharedPreferences prefs = this.getSharedPreferences(
-                    "camera_settings", Context.MODE_PRIVATE);
-            prefs.edit().putFloat("exposure", sliderValue).commit();
-        }
-    }
-
-    @SuppressLint("UnsafeOptInUsageError")
-    private void setCameraExposure(float sliderValue) {
+    protected void setCameraExposure(float sliderValue) {
         ExposureState exposureState = camera.getCameraInfo().getExposureState();
         Range<Integer> range = exposureState.getExposureCompensationRange();
         int exposureRange = (int) ((range.getUpper() - range.getLower()) * sliderValue + range.getLower());
         camera.getCameraControl().setExposureCompensationIndex(exposureRange);
-        if (!exposureValue.getText().equals(Float.toString(sliderValue))) {
-            exposureValue.setText(Float.toString((int)(sliderValue * 100f)));
-        }
+        afterExposureSet(sliderValue);
+
     }
 
-    private void setCameraZoom(float sliderValue) {
+    protected abstract void afterExposureSet(float value);
+
+    protected void setCameraZoom(float sliderValue) {
         LiveData<ZoomState> zoomState = camera.getCameraInfo().getZoomState();
         ZoomState zoom = zoomState.getValue();
         float zoomRatio = (zoom.getMaxZoomRatio() - zoom.getMinZoomRatio()) * sliderValue + zoom.getMinZoomRatio();
         Log.d(TAG, "changing zoom to " + zoomRatio);
         camera.getCameraControl().setZoomRatio(zoomRatio);
-        if (!zoomValue.getText().equals(Float.toString(sliderValue))) {
-            zoomValue.setText(Float.toString((int)(sliderValue * 100f)));
-        }
+        afterZoomSet(sliderValue);
     }
+
+    protected abstract void afterZoomSet(float value);
 }

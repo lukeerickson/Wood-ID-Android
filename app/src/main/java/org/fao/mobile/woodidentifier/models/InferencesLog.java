@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Entity(tableName = "inferences_log")
 @TypeConverters({org.fao.mobile.woodidentifier.models.converters.TypeConverters.class})
@@ -46,7 +47,10 @@ public class InferencesLog {
     public String[] top;
 
     @ColumnInfo(name = "scores")
-    public Float[] scores;
+    public Double[] scores;
+
+    @ColumnInfo(name = "top_k_raw")
+    public Integer[] topKRaw;
 
     public static InferencesLog fromResult(ModelHelper.Result result, List<String> classLabels) {
         InferencesLog inferencesLog = new InferencesLog();
@@ -55,10 +59,10 @@ public class InferencesLog {
         inferencesLog.classLabel = result.getClassLabel();
         inferencesLog.score = result.getScore();
         inferencesLog.scores = result.getScores();
-        List<String> topK = Arrays.stream(result.getTop()).mapToObj(x -> classLabels.get(x)).collect(Collectors.toList());
+        inferencesLog.topKRaw = result.getTop();
+        List<String> topK = Arrays.stream(result.getTop()).flatMap(x -> Stream.of(classLabels.get(x.intValue()))).collect(Collectors.toList());
         inferencesLog.top = topK.toArray(new String[0]);
         return inferencesLog;
     }
-
 
 }

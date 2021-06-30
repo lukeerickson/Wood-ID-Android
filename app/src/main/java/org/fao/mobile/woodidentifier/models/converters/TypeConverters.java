@@ -12,7 +12,7 @@ public class TypeConverters {
     @TypeConverter
     public static String[] stringToArray(String str)  {
         try {
-            return StringUtils.split(str).toArray(new String[0]);
+            return StringUtils.split(str, new String[0]);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -25,17 +25,33 @@ public class TypeConverters {
     }
 
     @TypeConverter
-    public static Float[] stringToFloatArray(String str)  {
+    public static Double[] stringToDoubleArray(String str)  {
         try {
-            return StringUtils.split(str).toArray(new Float[0]);
+            return StringUtils.split(str, new Double[0]);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return new Float[0];
+        return new Double[0];
     }
 
     @TypeConverter
-    public static String arrayToString(Float[] f) {
+    public static Integer[] stringToIntArray(String str)  {
+        try {
+            return StringUtils.split(str, new Integer[0]);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return new Integer[0];
+    }
+
+    @TypeConverter
+    public static String arrayToInt(Integer[] f) {
         return StringUtils.join(Arrays.asList(f.clone()));
     }
+
+    @TypeConverter
+    public static String arrayToString(Double[] f) {
+        return StringUtils.join(Arrays.asList(f.clone()));
+    }
+
 }

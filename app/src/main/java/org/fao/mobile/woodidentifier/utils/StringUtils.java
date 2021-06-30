@@ -13,12 +13,12 @@ public class StringUtils {
         return jsonArray.toString();
     }
 
-    public static <T> List<T> split(String s) throws JSONException {
+    public static <T> T[] split(String s, T[] arr) throws JSONException {
         ArrayList<T> stringArrayList = new ArrayList<T>();
         JSONArray jsonArray = new JSONArray(s);
         for(int i = 0; i < jsonArray.length(); i++) {
-            stringArrayList.add((T)jsonArray.get(0));
+            stringArrayList.add((T)jsonArray.get(i));
         }
-        return stringArrayList;
+        return stringArrayList.toArray(arr);
     }
 }

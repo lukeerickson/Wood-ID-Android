@@ -83,11 +83,10 @@ public class Utils {
         return null;
     }
 
-    public static int[] topK(float[] a, final int topk) {
+    public static Integer[] topK(float[] a, final int topk) {
         float[] values = new float[topk];
         Arrays.fill(values, -Float.MAX_VALUE);
-        int[] ixs;
-        ixs = new int[topk];
+        Integer[] ixs  = new Integer[topk];
         Arrays.fill(ixs, -1);
 
         for (int i = 0; i < a.length; i++) {
@@ -133,10 +132,10 @@ public class Utils {
         return stringBuilder.toString();
     }
 
-    public static String showArray(Float data[]) {
+    public static <T> String showArray(T data[]) {
         StringBuilder stringBuilder = new StringBuilder();
         int counter = 0;
-        for (float d : data) {
+        for (T d : data) {
             stringBuilder.append(d);
             if (counter < data.length - 1) {
                 stringBuilder.append(",");

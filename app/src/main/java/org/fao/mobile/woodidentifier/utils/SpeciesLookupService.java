@@ -31,6 +31,15 @@ public class SpeciesLookupService {
             Species species = new Species();
             species.scientificName = speciesInfo.getString("scientific_name");
             species.description = speciesInfo.getString("description");
+            if (speciesInfo.has("reference_images")) {
+                JSONArray referenceImages = speciesInfo.getJSONArray("reference_images");
+                String[] referenceImageArr = new String[referenceImages.length()];
+                for (int i = 0; i < referenceImages.length(); i++)
+                    referenceImageArr[i] = referenceImages.getString(i);
+                species.setReferenceImages(referenceImageArr);
+            } else {
+                species.setReferenceImages(new String[0]);
+            }
             return species;
         } catch (JSONException e) {
             e.printStackTrace();
