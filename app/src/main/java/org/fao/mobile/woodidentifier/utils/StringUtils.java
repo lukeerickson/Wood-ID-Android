@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StringUtils {
-    public static <T> String join(List<T> list) {
+    public static <T> String joinAsJson(List<T> list) {
         JSONArray jsonArray = new JSONArray();
         list.stream().forEach(x -> jsonArray.put(x));
         return jsonArray.toString();

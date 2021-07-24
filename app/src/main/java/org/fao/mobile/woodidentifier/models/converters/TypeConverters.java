@@ -6,7 +6,6 @@ import org.fao.mobile.woodidentifier.utils.StringUtils;
 import org.json.JSONException;
 
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 public class TypeConverters {
     @TypeConverter
@@ -21,7 +20,7 @@ public class TypeConverters {
 
     @TypeConverter
     public static String stringArrayToString(String[] strs) {
-        return StringUtils.join(Arrays.asList(strs.clone()));
+        return StringUtils.joinAsJson(Arrays.asList(strs.clone()));
     }
 
     @TypeConverter
@@ -46,12 +45,12 @@ public class TypeConverters {
 
     @TypeConverter
     public static String arrayToInt(Integer[] f) {
-        return StringUtils.join(Arrays.asList(f.clone()));
+        return StringUtils.joinAsJson(Arrays.asList(f.clone()));
     }
 
     @TypeConverter
     public static String arrayToString(Double[] f) {
-        return StringUtils.join(Arrays.asList(f.clone()));
+        return StringUtils.joinAsJson(Arrays.asList(f.clone()));
     }
 
 }

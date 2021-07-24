@@ -20,7 +20,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.WoodIdentifier">
-        <activity android:name=".IdentifySampleActivity"></activity>
+        <activity android:name=".ImageCaptureActivity2" android:screenOrientation="portrait"></activity>
+        <activity android:name=".FirstRunActivity" android:screenOrientation="portrait" />
+        <activity
+            android:name=".RecalibrateCameraActivity"
+            android:screenOrientation="portrait"
+            android:label="@string/camera_calibration" />
         <activity android:name=".DetailsActivity" />
         <activity
             android:name=".MainActivity"

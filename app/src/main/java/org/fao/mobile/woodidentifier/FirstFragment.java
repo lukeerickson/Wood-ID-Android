@@ -227,7 +227,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
                 if (PackageManager.PERMISSION_GRANTED != permission) {
                     Utils.verifyCameraPermissions(getActivity());
                 } else {
-                    Intent intent = new Intent(getActivity(), ImageCaptureActivity.class);
+                    Intent intent = new Intent(getActivity(), ImageCaptureActivity2.class);
                     startActivityForResult(intent, CAPTURE_IMAGE);
                 }
                 break;

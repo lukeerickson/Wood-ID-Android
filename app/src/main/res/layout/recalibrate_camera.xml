@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black"
+    android:fitsSystemWindows="true">
+
+    <ViewStub
+        android:id="@+id/image_classification_texture_view_stub"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout="@layout/surface_view" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_take_picture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
+        android:layout_marginBottom="10dp"
+        app:srcCompat="@drawable/ic_camera_black_48dp" />
+
+    <ImageView
+        android:id="@+id/zoom_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/fab_take_picture"
+        android:layout_margin="10dp"
+        android:src="@drawable/ic_magnify_plus_outline_grey600_36dp" />
+
+    <ImageView
+        android:id="@+id/exposure_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:layout_alignTop="@id/exposure_control"
+        android:src="@drawable/ic_camera_metering_center_grey600_36dp" />
+    <ImageView
+        android:id="@+id/white_balance_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/white_balance_control"
+        android:layout_margin="10dp"
+        android:src="@drawable/ic_white_balance_incandescent_grey600_36dp" />
+    <Spinner
+        android:layout_margin="10dp"
+        android:id="@+id/lens_selector"
+        android:layout_above="@id/white_balance_control"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+    <EditText
+        android:id="@+id/white_balance_value"
+        android:inputType="number"
+        android:layout_alignTop="@id/white_balance_control"
+        android:layout_toRightOf="@id/exposure_icon"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"/>
+    <com.google.android.material.slider.Slider
+        android:id="@+id/white_balance_control"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/exposure_control"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="10dp"
+        android:valueFrom="1000"
+        android:valueTo="10000"
+        android:layout_toRightOf="@id/white_balance_value" />
+    <com.google.android.material.slider.Slider
+        android:id="@+id/zoom_control"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/fab_take_picture"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_toRightOf="@id/exposure_value" />
+    <EditText
+        android:id="@+id/zoom_value"
+        android:inputType="number"
+        android:layout_alignTop="@id/zoom_control"
+        android:layout_toRightOf="@id/zoom_icon"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"/>
+    <EditText
+        android:id="@+id/exposure_value"
+        android:inputType="number"
+        android:layout_alignTop="@id/exposure_control"
+        android:layout_toRightOf="@id/exposure_icon"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"/>
+    <com.google.android.material.slider.Slider
+        android:id="@+id/exposure_control"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_above="@id/zoom_control"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_toRightOf="@id/zoom_value" />
+
+</RelativeLayout>

@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraManager;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
@@ -34,6 +36,7 @@ import androidx.annotation.WorkerThread;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraControl;
+import androidx.camera.core.CameraInfo;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ExposureState;
 import androidx.camera.core.ImageCapture;
@@ -106,7 +109,11 @@ public abstract class AbstractCameraXActivity extends AppCompatActivity implemen
                     PERMISSIONS,
                     REQUEST_CODE_CAMERA_PERMISSION);
         } else {
-            setupCameraX();
+            try {
+                setupCameraX();
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -155,15 +162,23 @@ public abstract class AbstractCameraXActivity extends AppCompatActivity implemen
                         .show();
                 finish();
             } else {
-                setupCameraX();
+                try {
+                    setupCameraX();
+                } catch (CameraAccessException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
 
-    private void setupCameraX() {
+    private void setupCameraX() throws CameraAccessException {
         final PreviewView textureView = getCameraPreviewTextureView();
+        CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+        String[] cameras = manager.getCameraIdList();
+        Log.i(TAG, "number of cameras " + cameras.length);
 
         ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);
+
         cameraProviderFuture.addListener(() -> {
             try {
                 ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
@@ -176,6 +191,7 @@ public abstract class AbstractCameraXActivity extends AppCompatActivity implemen
                                 .setTargetResolution(size)
                                 .build();
                 cameraProvider.unbindAll();
+
                 this.camera = cameraProvider.bindToLifecycle(AbstractCameraXActivity.this, CameraSelector.DEFAULT_BACK_CAMERA, imageCapture, preview);
 
                 SharedPreferences prefs = this.getSharedPreferences(

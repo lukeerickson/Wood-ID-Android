@@ -31,6 +31,7 @@ import org.fao.mobile.woodidentifier.databinding.ActivityMainBinding;
 import org.fao.mobile.woodidentifier.models.InferenceLogViewModel;
 import org.fao.mobile.woodidentifier.models.InferencesLog;
 import org.fao.mobile.woodidentifier.utils.ModelHelper;
+import org.fao.mobile.woodidentifier.utils.SharedPrefsUtil;
 import org.fao.mobile.woodidentifier.utils.Utils;
 import org.pytorch.IValue;
 import org.pytorch.Module;
@@ -71,6 +72,16 @@ public class MainActivity extends AppCompatActivity {
         this.navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+
+        if (SharedPrefsUtil.isFirstRun(this)) {
+            SharedPrefsUtil.setFirstRun(this);
+            Intent intent = new Intent(this, FirstRunActivity.class);
+            startActivity(intent);
+        }
+    }
+
+    private boolean firstRun() {
+        return false;
     }
 
     @Override
@@ -101,6 +112,17 @@ public class MainActivity extends AppCompatActivity {
                     viewModel.updateCount(0);
                 });
             });
+        }
+
+        if (id == R.id.action_recalibrate) {
+            int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
+
+            if (PackageManager.PERMISSION_GRANTED != permission) {
+                Utils.verifyCameraPermissions(this);
+            } else {
+                Intent intent = new Intent(this, RecalibrateCameraActivity.class);
+                startActivity(intent);
+            }
         }
 
         return super.onOptionsItemSelected(item);
