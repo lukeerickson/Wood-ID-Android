@@ -40,11 +40,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="10dp"
-        android:text='Please attach the XyloPhone to your mobile device and tap on "Start Calibration" to begin'
+        android:text="@string/calibration_instructions"
         android:textSize="16sp"
         android:textStyle="bold"
         app:lineHeight="25dp"
-        tools:layout_editor_absoluteX="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textView"
         tools:layout_editor_absoluteY="113dp"
-        tools:text='Please attach the XyloPhone to your mobile device and tap on "Start Calibration" to begin' />
+
+        tools:text="@string/calibration_instructions"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

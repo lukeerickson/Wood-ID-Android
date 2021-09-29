@@ -1,5 +1,7 @@
 package org.fao.mobile.woodidentifier;
 
+import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.ZOOM;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -196,7 +198,7 @@ public abstract class AbstractCameraXActivity extends AppCompatActivity implemen
 
                 SharedPreferences prefs = this.getSharedPreferences(
                         "camera_settings", Context.MODE_PRIVATE);
-                setCameraZoom(prefs.getFloat("zoom", (float) 0f));
+                setCameraZoom(prefs.getFloat(ZOOM, (float) 0f));
                 setCameraExposure(prefs.getFloat("exposure", 0f));
             } catch (ExecutionException e) {
                 e.printStackTrace();

@@ -12,4 +12,5 @@
     <string name="action_close">Close</string>
     <string name="action_recalibrate">Recalibrate Camera</string>
     <string name="camera_calibration">Camera Calibration</string>
+    <string name="calibration_instructions">Please attach the XyloPhone to your mobile device, remove the cover, place on top of the sanded portion of a wood sample and tap on \"Start Calibration\" to begin</string>
 </resources>

@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import com.github.dhaval2404.imagepicker.ImagePicker;
@@ -31,6 +32,7 @@ import org.fao.mobile.woodidentifier.databinding.ActivityMainBinding;
 import org.fao.mobile.woodidentifier.models.InferenceLogViewModel;
 import org.fao.mobile.woodidentifier.models.InferencesLog;
 import org.fao.mobile.woodidentifier.utils.ModelHelper;
+import org.fao.mobile.woodidentifier.utils.PhoneAutoConfig;
 import org.fao.mobile.woodidentifier.utils.SharedPrefsUtil;
 import org.fao.mobile.woodidentifier.utils.Utils;
 import org.pytorch.IValue;
@@ -75,8 +77,11 @@ public class MainActivity extends AppCompatActivity {
 
         if (SharedPrefsUtil.isFirstRun(this)) {
             SharedPrefsUtil.setFirstRun(this);
-            Intent intent = new Intent(this, FirstRunActivity.class);
-            startActivity(intent);
+            String phoneId = Build.MANUFACTURER + "-" + Build.MODEL;
+            if (!PhoneAutoConfig.setPhoneSettingsFor(this, phoneId)) {
+                Intent intent = new Intent(this, FirstRunActivity.class);
+                startActivity(intent);
+            }
         }
     }
 

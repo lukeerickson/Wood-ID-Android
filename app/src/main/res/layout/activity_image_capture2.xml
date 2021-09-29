@@ -3,13 +3,22 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:keepScreenOn="true"
     android:background="@android:color/black"
     android:fitsSystemWindows="true">
-    <ViewStub
-        android:id="@+id/image_classification_texture_view_stub"
+    <FrameLayout
+        android:id="@+id/cameraFrame"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout="@layout/surface_view" />
+        android:layout_centerInParent="true"
+        android:layout_height="match_parent">
+        <ViewStub
+            android:id="@+id/image_classification_texture_view_stub"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout="@layout/surface_view"
+            />
+    </FrameLayout>
+
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_take_picture"

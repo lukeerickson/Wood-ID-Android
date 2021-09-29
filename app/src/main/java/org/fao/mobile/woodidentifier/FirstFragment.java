@@ -2,17 +2,13 @@ package org.fao.mobile.woodidentifier;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.location.LocationManager;
-import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
-import android.renderscript.ScriptGroup;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,7 +23,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
-import androidx.room.util.StringUtil;
 
 import com.github.dhaval2404.imagepicker.ImagePicker;
 
@@ -44,8 +39,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -146,20 +139,18 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
             Uri uri = data.getData();
 
             ModelHelper modelHelper = ModelHelper.getHelperInstance(getActivity());
-
-
             executor.execute(()-> {
                 try (InputStream inputStream = getActivity().getContentResolver().openInputStream(uri);) {
                     File localCopyPath = new File(getActivity().getFilesDir(), UUID.randomUUID().toString() + ".jpg");
                     FileUtils.copyToFile(inputStream, localCopyPath);
 
                     try(InputStream is = new FileInputStream(localCopyPath)) {
-                        ModelHelper.Result result = modelHelper.runInference(is);
+                        ModelHelper.Result result = modelHelper == null ? ModelHelper.Result.emptyResult() : modelHelper.runInference(is);
                         Log.i(TAG,    "topk " +  Utils.showArray(result.getTop()));
                         Log.i(TAG,    "scores " + Utils.showArray(result.getScores()));
                         AppDatabase db = Room.databaseBuilder(getActivity().getApplicationContext(),
                         AppDatabase.class, "wood-id").build();
-                        InferencesLog log = InferencesLog.fromResult(result, modelHelper.getClassLabels());
+                        InferencesLog log = InferencesLog.fromResult(result, modelHelper);
 
                         log.imagePath = Uri.fromFile(localCopyPath).toString();
                         log.originalFilename = getFileName(uri);

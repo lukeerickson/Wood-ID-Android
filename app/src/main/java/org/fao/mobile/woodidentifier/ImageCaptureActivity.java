@@ -1,5 +1,7 @@
 package org.fao.mobile.woodidentifier;
 
+import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.ZOOM;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -42,10 +44,10 @@ public class ImageCaptureActivity extends AbstractCameraXActivity implements Sli
 
         SharedPreferences prefs = this.getSharedPreferences(
                 "camera_settings", Context.MODE_PRIVATE);
-        zoomControl.setValue(prefs.getFloat("zoom", (float) 0f));
+        zoomControl.setValue(prefs.getFloat(ZOOM, (float) 0f));
         exposureControl.setValue(prefs.getFloat("exposure", 0f));
         exposureValue.setText(Integer.toString((int) (prefs.getFloat("exposure", 0f) * 100f)));
-        zoomValue.setText(Integer.toString((int) (prefs.getFloat("zoom", 0f) * 100f)));
+        zoomValue.setText(Integer.toString((int) (prefs.getFloat(ZOOM, 0f) * 100f)));
 
         zoomControl.addOnChangeListener(this);
         exposureControl.addOnChangeListener(this);
@@ -117,7 +119,7 @@ public class ImageCaptureActivity extends AbstractCameraXActivity implements Sli
             setCameraZoom(sliderValue);
             SharedPreferences prefs = this.getSharedPreferences(
                     "camera_settings", Context.MODE_PRIVATE);
-            prefs.edit().putFloat("zoom", sliderValue).commit();
+            prefs.edit().putFloat(ZOOM, sliderValue).commit();
         } else if (slider.getId() == R.id.exposure_control) {
             setCameraExposure(sliderValue);
             SharedPreferences prefs = this.getSharedPreferences(

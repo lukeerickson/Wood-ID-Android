@@ -37,7 +37,7 @@ public class ModelHelper {
         if (instance == null) {
             String assetPath = Utils.assetFilePath(context,
                     MODEL_MOBILE_PT);
-            assert assetPath != null;
+            if (assetPath == null) return null;
             String labelsPath = Utils.assetFilePath(context, CLASS_LABELS);
             File f = new File(labelsPath);
             List<String> classLabels = new ArrayList<>();
@@ -122,6 +122,13 @@ public class ModelHelper {
             this.classIndex = classIndex;
             this.classLabel = classLabel;
             this.score = score;
+        }
+
+        public static Result emptyResult() {
+            Result result = new Result(0, "", 0.0f);
+            result.setScores(new Double[0]);
+            result.setTop(new Integer[0]);
+            return result;
         }
 
         public void putTopK(Integer[] top) {

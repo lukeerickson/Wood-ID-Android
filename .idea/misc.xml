@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/layout/activity_first_run.xml" value="0.328125" />
+        <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/layout/activity_image_capture2.xml" value="0.253125" />
+        <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/layout/recalibrate_camera.xml" value="0.32864583333333336" />
+        <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/layout/sample_view_finder.xml" value="0.253125" />
+        <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/layout/surface_view.xml" value="0.253125" />
+      </map>
+    </option>
+  </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>

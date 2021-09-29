@@ -4,14 +4,24 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/black"
+    android:keepScreenOn="true"
     android:fitsSystemWindows="true">
-
-    <ViewStub
-        android:id="@+id/image_classification_texture_view_stub"
+    <RelativeLayout
+        android:id="@+id/cameraFrame"
+        android:layout_centerInParent="true"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout="@layout/surface_view" />
-
+        android:layout_height="match_parent">
+        <ViewStub
+            android:id="@+id/image_classification_texture_view_stub"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout="@layout/surface_view" />
+        <View
+            android:id="@+id/cropIndicator"
+            android:layout_centerInParent="true"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </RelativeLayout>
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_take_picture"
         android:layout_width="wrap_content"
@@ -19,10 +29,11 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        android:layout_marginBottom="10dp"
+        android:layout_marginStart="@dimen/fab_margin"
+        android:layout_marginTop="@dimen/fab_margin"
+        android:layout_marginEnd="@dimen/fab_margin"
+        android:layout_marginBottom="@dimen/fab_margin"
         app:srcCompat="@drawable/ic_camera_black_48dp" />
-
     <ImageView
         android:id="@+id/zoom_icon"
         android:layout_width="wrap_content"
@@ -45,12 +56,17 @@
         android:layout_alignTop="@id/white_balance_control"
         android:layout_margin="10dp"
         android:src="@drawable/ic_white_balance_incandescent_grey600_36dp" />
+
     <Spinner
-        android:layout_margin="10dp"
         android:id="@+id/lens_selector"
-        android:layout_above="@id/white_balance_control"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="40dp"
+        android:layout_above="@id/white_balance_control"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:background="@color/teal_200" />
     <EditText
         android:id="@+id/white_balance_value"
         android:inputType="number"

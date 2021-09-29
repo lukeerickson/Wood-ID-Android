@@ -11,6 +11,7 @@ import org.fao.mobile.woodidentifier.utils.ModelHelper;
 import org.fao.mobile.woodidentifier.utils.StringUtils;
 import org.json.JSONException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -52,7 +53,7 @@ public class InferencesLog {
     @ColumnInfo(name = "top_k_raw")
     public Integer[] topKRaw;
 
-    public static InferencesLog fromResult(ModelHelper.Result result, List<String> classLabels) {
+    public static InferencesLog fromResult(ModelHelper.Result result, ModelHelper helper) {
         InferencesLog inferencesLog = new InferencesLog();
         inferencesLog.timestamp = System.currentTimeMillis();
         inferencesLog.classIndex = result.getClassIndex();
@@ -60,6 +61,13 @@ public class InferencesLog {
         inferencesLog.score = result.getScore();
         inferencesLog.scores = result.getScores();
         inferencesLog.topKRaw = result.getTop();
+
+        List<String> classLabels;
+        if (helper !=null) {
+            classLabels = helper.getClassLabels();
+        } else {
+            classLabels = new ArrayList<>();
+        }
         List<String> topK = Arrays.stream(result.getTop()).flatMap(x -> Stream.of(classLabels.get(x.intValue()))).collect(Collectors.toList());
         inferencesLog.top = topK.toArray(new String[0]);
         return inferencesLog;
