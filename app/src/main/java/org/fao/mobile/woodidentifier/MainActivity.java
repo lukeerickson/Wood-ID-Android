@@ -11,6 +11,9 @@ import android.os.Build;
 import android.os.Bundle;
 
 import com.github.dhaval2404.imagepicker.ImagePicker;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.snackbar.Snackbar;
 
 import androidx.annotation.Nullable;
@@ -105,7 +108,8 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            return true;
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
         }
 
         if (id== R.id.action_clear) {

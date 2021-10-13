@@ -9,6 +9,8 @@ public class SharedPrefsUtil {
     public static final String FIRST_RUN = "first_run";
     public static final String CURRENT_CAMERA = "current_camera";
     public static final String ZOOM = "zoom";
+    public static final String WHITE_BALANCE = "white_balance";
+    public static final String AE_COMPENSATION = "ae_compensation";
 
     public static boolean isFirstRun(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(

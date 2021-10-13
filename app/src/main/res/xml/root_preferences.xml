@@ -1,0 +1,21 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="@string/camera_calibration">
+        <EditTextPreference
+            app:key="white_balance"
+            app:title="@string/white_balance"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:key="zoom"
+            app:title="@string/zoom"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:key="ae_compensation"
+            app:title="@string/ae_compensation"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/other_settings">
+    </PreferenceCategory>
+
+</PreferenceScreen>

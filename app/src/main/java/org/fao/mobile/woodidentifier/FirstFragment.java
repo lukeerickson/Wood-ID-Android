@@ -2,10 +2,12 @@ package org.fao.mobile.woodidentifier;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
@@ -25,6 +27,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
 import com.github.dhaval2404.imagepicker.ImagePicker;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.Task;
 
 import org.apache.commons.io.FileUtils;
 import org.fao.mobile.woodidentifier.adapters.InferenceLogViewAdapter;
@@ -139,36 +147,26 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
             Uri uri = data.getData();
 
             ModelHelper modelHelper = ModelHelper.getHelperInstance(getActivity());
-            executor.execute(()-> {
-                try (InputStream inputStream = getActivity().getContentResolver().openInputStream(uri);) {
-                    File localCopyPath = new File(getActivity().getFilesDir(), UUID.randomUUID().toString() + ".jpg");
-                    FileUtils.copyToFile(inputStream, localCopyPath);
+            FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
 
-                    try(InputStream is = new FileInputStream(localCopyPath)) {
-                        ModelHelper.Result result = modelHelper == null ? ModelHelper.Result.emptyResult() : modelHelper.runInference(is);
-                        Log.i(TAG,    "topk " +  Utils.showArray(result.getTop()));
-                        Log.i(TAG,    "scores " + Utils.showArray(result.getScores()));
-                        AppDatabase db = Room.databaseBuilder(getActivity().getApplicationContext(),
-                        AppDatabase.class, "wood-id").build();
-                        InferencesLog log = InferencesLog.fromResult(result, modelHelper);
+            if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Log.w(TAG, "No location permission");
+                identifySpecies(uri, modelHelper, null);
+            } else {
+                Log.d(TAG, "Getting last known location");
+                LocationRequest locationRequest = LocationRequest.create();
+                locationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
 
-                        log.imagePath = Uri.fromFile(localCopyPath).toString();
-                        log.originalFilename = getFileName(uri);
-                        saveLog(db, log, (inferencesLog) -> {
-                            refresh();
-                            Intent intent = new Intent(getActivity(), DetailsActivity.class);
-                            intent.putExtra("uid", inferencesLog.uid);
-                            Log.i(TAG, "uid = " + inferencesLog.uid);
-                            getActivity().startActivity(intent);
-                        });
+                fusedLocationClient.getCurrentLocation(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY, null).addOnSuccessListener((location) -> {
+                    if (location != null) {
+                        Log.d(TAG, "location = " + location.getLatitude() + "," + location.getLongitude());
+                        identifySpecies(uri, modelHelper, location);
+                    } else {
+                        Log.w(TAG, "Requested but failed to obtain a location");
+                        identifySpecies(uri, modelHelper, null);
                     }
-
-                 } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-
-
+                });
+            }
         } else if (resultCode == ImagePicker.RESULT_ERROR) {
             Toast.makeText(getActivity(), ImagePicker.getError(data), Toast.LENGTH_SHORT).show();
         } else {
@@ -176,10 +174,47 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
         }
     }
 
+    private void identifySpecies(Uri uri, ModelHelper modelHelper, Location location) {
+        executor.execute(() -> {
+            try (InputStream inputStream = getActivity().getContentResolver().openInputStream(uri);) {
+                File localCopyPath = new File(getActivity().getFilesDir(), UUID.randomUUID().toString() + ".jpg");
+                FileUtils.copyToFile(inputStream, localCopyPath);
+
+                try (InputStream is = new FileInputStream(localCopyPath)) {
+                    ModelHelper.Result result = modelHelper == null ? ModelHelper.Result.emptyResult() : modelHelper.runInference(is);
+                    Log.i(TAG, "topk " + Utils.showArray(result.getTop()));
+                    Log.i(TAG, "scores " + Utils.showArray(result.getScores()));
+                    AppDatabase db = Room.databaseBuilder(getActivity().getApplicationContext(),
+                            AppDatabase.class, "wood-id").build();
+                    InferencesLog log = InferencesLog.fromResult(result, modelHelper);
+
+                    if (location != null) {
+                        log.setLongitude(location.getLongitude());
+                        log.setLatitude(location.getLatitude());
+                        log.setLocationAccuracy(location.getAccuracy());
+                    }
+
+                    log.imagePath = Uri.fromFile(localCopyPath).toString();
+                    log.originalFilename = getFileName(uri);
+                    saveLog(db, log, (inferencesLog) -> {
+                        refresh();
+                        Intent intent = new Intent(getActivity(), DetailsActivity.class);
+                        intent.putExtra("uid", inferencesLog.uid);
+                        Log.i(TAG, "uid = " + inferencesLog.uid);
+                        getActivity().startActivity(intent);
+                    });
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
     private void saveLog(AppDatabase db, InferencesLog log, DBCallback callback) {
         executor.execute(() -> {
             log.uid = db.inferencesLogDAO().insert(log);
-            Log.i(TAG," uid saved " + log.uid);
+            Log.i(TAG, " uid saved " + log.uid);
             List<InferencesLog> logs = db.inferencesLogDAO().getAll();
             getActivity().runOnUiThread(() -> {
                 logList.setAdapter(new InferenceLogViewAdapter(getActivity(), logs, this));
@@ -201,11 +236,12 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
     }
 
     private void onClick(View view) {
+        int location_permission = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
         switch (view.getId()) {
             case R.id.fab:
                 int permission = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE);
 
-                if (PackageManager.PERMISSION_GRANTED != permission) {
+                if (PackageManager.PERMISSION_GRANTED != permission && PackageManager.PERMISSION_GRANTED != location_permission) {
                     Utils.verifyStoragePermissions(getActivity());
                 } else {
                     ImagePicker.with(FirstFragment.this).galleryOnly().start();
@@ -215,7 +251,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
             case R.id.fab_camera:
                 permission = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA);
 
-                if (PackageManager.PERMISSION_GRANTED != permission) {
+                if (PackageManager.PERMISSION_GRANTED != permission && PackageManager.PERMISSION_GRANTED != location_permission) {
                     Utils.verifyCameraPermissions(getActivity());
                 } else {
                     Intent intent = new Intent(getActivity(), ImageCaptureActivity2.class);

@@ -1,5 +1,6 @@
 package org.fao.mobile.woodidentifier;
 
+import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.WHITE_BALANCE;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.ZOOM;
 
 import android.content.Context;
@@ -98,7 +99,7 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
             Log.d(TAG, "changing white balance to " + colorTemp);
             SharedPreferences prefs = this.getSharedPreferences(
                     "camera_settings", Context.MODE_PRIVATE);
-            prefs.edit().putInt("white_balance", colorTemp).commit();
+            prefs.edit().putString(WHITE_BALANCE, Integer.toString(colorTemp)).commit();
 
             updateCameraState();
         }
@@ -115,7 +116,7 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
             SharedPreferences prefs = this.getSharedPreferences(
 
                     "camera_settings", Context.MODE_PRIVATE);
-            prefs.edit().putFloat(ZOOM, zoomRatio).commit();
+            prefs.edit().putString(ZOOM, Float.toString(zoomRatio)).commit();
 
             updateCameraState();
         }

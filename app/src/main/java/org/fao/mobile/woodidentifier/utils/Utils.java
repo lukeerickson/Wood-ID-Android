@@ -29,14 +29,24 @@ public class Utils {
     // Storage Permissions
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static final int REQUEST_CAMERA = 2;
+    private static final int REQUEST_FINE_LOCATION = 3;
 
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
     };
 
     private static String[] PERMISSIONS_CAMERA = {
-            Manifest.permission.CAMERA
+            Manifest.permission.CAMERA,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+    };
+
+    private static String[] PERMISSIONS_LOCATION = {
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
     };
 
     /**
@@ -56,6 +66,16 @@ public class Utils {
                     activity,
                     PERMISSIONS_STORAGE,
                     REQUEST_EXTERNAL_STORAGE
+            );
+        }
+    }
+
+    public static void verifyLocationPermissions(Activity activity) {
+        if (ActivityCompat.checkSelfPermission(activity,  Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                    activity,
+                    PERMISSIONS_LOCATION,
+                    REQUEST_FINE_LOCATION
             );
         }
     }

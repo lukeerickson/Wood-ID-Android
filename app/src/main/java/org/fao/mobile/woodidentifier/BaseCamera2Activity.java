@@ -1,5 +1,7 @@
 package org.fao.mobile.woodidentifier;
 
+import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.AE_COMPENSATION;
+import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.WHITE_BALANCE;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.ZOOM;
 
 import android.annotation.SuppressLint;
@@ -206,7 +208,7 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
         String phoneId = Build.MANUFACTURER + "-" + Build.MODEL;
         Log.i(TAG, "Phone ID " + phoneId);
         Log.i(TAG, "Total Cameras = " + cameraList.length);
-        setupDefaultConfigFromPhoneID(phoneId);
+
         for (String cameraId : cameraList) {
             Log.i(TAG, "camera = " + cameraId);
             try {
@@ -251,22 +253,6 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
         return backFacingCameras;
     }
 
-    private void setupDefaultConfigFromPhoneID(String phoneId) {
-        String assetPath = Utils.assetFilePath(this,
-                PHONE_DATABASE);
-        assert assetPath != null;
-        try {
-            JSONObject jObject = new JSONObject(Utils.readFileToStringSimple(new File(assetPath)));
-            if (jObject.has(phoneId)) {
-                JSONObject jsonObject = jObject.getJSONObject(phoneId);
-
-            }
-
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
     @SuppressLint("MissingPermission")
     @RequiresApi(api = Build.VERSION_CODES.R)
     protected void setupCamera(SurfaceHolder holder, CameraProperties cameraProperties) throws CameraAccessException {
@@ -295,9 +281,9 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                             try {
                                 SharedPreferences prefs = getSharedPreferences(
                                         "camera_settings", Context.MODE_PRIVATE);
-                                float zoomRatio = prefs.getFloat(ZOOM, 0f);
-                                int whiteBalance = prefs.getInt("white_balance", 5700);
-                                int aeCompensation = prefs.getInt("ae_compensation", 0);
+                                float zoomRatio = Float.parseFloat(prefs.getString(ZOOM, "0"));
+                                int whiteBalance = Integer.parseInt(prefs.getString("white_balance", "5700"));
+                                int aeCompensation = Integer.parseInt(prefs.getString("ae_compensation", "0"));
 
                                 CaptureRequest.Builder previewRequest = prepareCameraSettings(CameraDevice.TEMPLATE_PREVIEW, aeCompensation, whiteBalance, zoomRatio);
 
@@ -324,9 +310,9 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                             try {
                                 SharedPreferences prefs2 = getSharedPreferences(
                                         "camera_settings", Context.MODE_PRIVATE);
-                                float currentZoomRatio = prefs2.getFloat(ZOOM, 0f);
-                                int currentWhiteBalance = prefs2.getInt("white_balance", 5700);
-                                int currentAeCompensation = prefs2.getInt("ae_compensation", 0);
+                                float currentZoomRatio = Integer.parseInt(prefs2.getString(ZOOM, "0"));
+                                int currentWhiteBalance = Integer.parseInt(prefs2.getString("white_balance", "5700"));
+                                int currentAeCompensation = Integer.parseInt(prefs2.getString("ae_compensation", "0"));
 
                                 CaptureRequest.Builder captureRequest = prepareCameraSettings(CameraDevice.TEMPLATE_STILL_CAPTURE, currentAeCompensation, currentWhiteBalance, currentZoomRatio);
                                 captureRequest.set(CaptureRequest.JPEG_ORIENTATION, currentCameraCharacteristics.sensorOrientation);
@@ -432,9 +418,9 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
     protected void updateCameraState() throws CameraAccessException {
         SharedPreferences prefs = this.getSharedPreferences(
                 "camera_settings", Context.MODE_PRIVATE);
-        int colorTemp = prefs.getInt("white_balance", 5700);
-        int aeCompenstaion = prefs.getInt("ae_compensation", 0);
-        float zoomRatio = prefs.getFloat(ZOOM, 0);
+        int colorTemp = Integer.parseInt(prefs.getString(WHITE_BALANCE, "5700"));
+        int aeCompenstaion = Integer.parseInt(prefs.getString(AE_COMPENSATION, "0"));
+        float zoomRatio = Float.parseFloat(prefs.getString(ZOOM, "0"));
 
         CaptureRequest.Builder captureRequest = prepareCameraSettings(CameraDevice.TEMPLATE_PREVIEW, aeCompenstaion, colorTemp, zoomRatio);
         captureRequest.addTarget(holder.getSurface());

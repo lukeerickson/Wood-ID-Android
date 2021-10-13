@@ -53,6 +53,15 @@ public class InferencesLog {
     @ColumnInfo(name = "top_k_raw")
     public Integer[] topKRaw;
 
+    @ColumnInfo(name = "longitude")
+    private double longitude;
+
+    @ColumnInfo(name = "latitude")
+    private double latitude;
+
+    @ColumnInfo(name = "location_accuracy")
+    private float locationAccuracy;
+
     public static InferencesLog fromResult(ModelHelper.Result result, ModelHelper helper) {
         InferencesLog inferencesLog = new InferencesLog();
         inferencesLog.timestamp = System.currentTimeMillis();
@@ -73,4 +82,27 @@ public class InferencesLog {
         return inferencesLog;
     }
 
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLocationAccuracy(float locationAccuracy) {
+        this.locationAccuracy = locationAccuracy;
+    }
+
+    public float getLocationAccuracy() {
+        return locationAccuracy;
+    }
 }
