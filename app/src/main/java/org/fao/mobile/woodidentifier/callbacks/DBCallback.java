@@ -4,4 +4,6 @@ import org.fao.mobile.woodidentifier.models.InferencesLog;
 
 public interface DBCallback {
     void onDone(InferencesLog log);
+
+    void beforeSave(InferencesLog initialInferenceLog);
 }

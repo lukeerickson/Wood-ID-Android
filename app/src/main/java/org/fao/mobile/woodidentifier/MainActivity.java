@@ -2,6 +2,7 @@ package org.fao.mobile.woodidentifier;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -34,6 +35,7 @@ import androidx.room.Room;
 import org.fao.mobile.woodidentifier.databinding.ActivityMainBinding;
 import org.fao.mobile.woodidentifier.models.InferenceLogViewModel;
 import org.fao.mobile.woodidentifier.models.InferencesLog;
+import org.fao.mobile.woodidentifier.ui.login.LoginActivity;
 import org.fao.mobile.woodidentifier.utils.ModelHelper;
 import org.fao.mobile.woodidentifier.utils.PhoneAutoConfig;
 import org.fao.mobile.woodidentifier.utils.SharedPrefsUtil;
@@ -78,14 +80,8 @@ public class MainActivity extends AppCompatActivity {
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
 
-        if (SharedPrefsUtil.isFirstRun(this)) {
-            SharedPrefsUtil.setFirstRun(this);
-            String phoneId = Build.MANUFACTURER + "-" + Build.MODEL;
-            if (!PhoneAutoConfig.setPhoneSettingsFor(this, phoneId)) {
-                Intent intent = new Intent(this, FirstRunActivity.class);
-                startActivity(intent);
-            }
-        }
+        Intent splashIntent = new Intent(this, SplashActivity.class);
+        startActivity(splashIntent);
     }
 
     private boolean firstRun() {
@@ -106,23 +102,36 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_about) {
+            Intent intent = new Intent(this, AboutActivity.class);
+            startActivity(intent);
+        }
+        else
         if (id == R.id.action_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
         }
-
+        else
         if (id== R.id.action_clear) {
-            executor.execute(()-> {
-                AppDatabase db = Room.databaseBuilder(this.getApplicationContext(),
-                        AppDatabase.class, "wood-id").build();
-                db.inferencesLogDAO().deleteAll();
-                runOnUiThread(()-> {
-                    viewModel.updateCount(0);
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+            alertDialog.setMessage(R.string.confirm_delete_all);
+            alertDialog.setPositiveButton(R.string.yes, (dialog, which) -> {
+                executor.execute(()-> {
+                    AppDatabase db = Room.databaseBuilder(this.getApplicationContext(),
+                            AppDatabase.class, "wood-id").build();
+                    db.inferencesLogDAO().deleteAll();
+                    runOnUiThread(()-> {
+                        viewModel.updateCount(0);
+                    });
                 });
-            });
-        }
 
+            });
+            alertDialog.setNegativeButton(R.string.cancel, (dialog, which) -> {
+                dialog.dismiss();
+            });
+            alertDialog.show();
+        }
+        else
         if (id == R.id.action_recalibrate) {
             int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
 
@@ -133,6 +142,22 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         }
+        else
+            if (id == R.id.export_csv) {
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+                alertDialog.setMessage(R.string.confirm_csv_export);
+                alertDialog.setPositiveButton(R.string.yes, (dialog, which) -> {
+                    executor.execute(()-> {
+                        AppDatabase db = Room.databaseBuilder(this.getApplicationContext(),
+                                AppDatabase.class, "wood-id").build();
+                    });
+
+                });
+                alertDialog.setNegativeButton(R.string.cancel, (dialog, which) -> {
+                    dialog.dismiss();
+                });
+                alertDialog.show();
+            }
 
         return super.onOptionsItemSelected(item);
     }

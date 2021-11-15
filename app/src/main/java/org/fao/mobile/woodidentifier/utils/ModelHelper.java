@@ -1,10 +1,14 @@
 package org.fao.mobile.woodidentifier.utils;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.SystemClock;
 import android.util.Log;
+
+import androidx.annotation.Nullable;
+import androidx.preference.PreferenceManager;
 
 import org.pytorch.IValue;
 import org.pytorch.Module;
@@ -30,33 +34,42 @@ public class ModelHelper {
     private final Module mModule;
     private static ModelHelper instance = null;
     private final FloatBuffer mInputTensorBuffer;
+    private int cropFactor;
 
     List<String> classLabels;
 
     public static ModelHelper getHelperInstance(Context context) {
         if (instance == null) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+            int cropFactor = Integer.parseInt(prefs.getString(SharedPrefsUtil.CROP_FACTOR, "2048"));
             String assetPath = Utils.assetFilePath(context,
                     MODEL_MOBILE_PT);
-            if (assetPath == null) return null;
-            String labelsPath = Utils.assetFilePath(context, CLASS_LABELS);
-            File f = new File(labelsPath);
-            List<String> classLabels = new ArrayList<>();
-            Log.d(TAG, "Reading class labels");
-            try (FileReader fr = new FileReader(f); BufferedReader reader = new BufferedReader(fr)) {
-                while (reader.ready()) {
-                    classLabels.add(reader.readLine());
-                }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            List<String> classLabels = getClasses(context, assetPath);
+            if (classLabels == null) return null;
             Log.d(TAG, "Total classes " + classLabels.size());
             final String moduleFileAbsoluteFilePath = new File(assetPath).getAbsolutePath();
-            instance = new ModelHelper(moduleFileAbsoluteFilePath, classLabels);
-
+            instance = new ModelHelper(moduleFileAbsoluteFilePath, classLabels, cropFactor);
         }
         return instance;
+    }
+
+    @Nullable
+    private static List<String> getClasses(Context context, String assetPath) {
+        if (assetPath == null) return null;
+        String labelsPath = Utils.assetFilePath(context, CLASS_LABELS);
+        File f = new File(labelsPath);
+        List<String> classLabels = new ArrayList<>();
+        Log.d(TAG, "Reading class labels");
+        try (FileReader fr = new FileReader(f); BufferedReader reader = new BufferedReader(fr)) {
+            while (reader.ready()) {
+                classLabels.add(reader.readLine().toLowerCase());
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return classLabels;
     }
 
     public List<String> getClassLabels() {
@@ -136,47 +149,63 @@ public class ModelHelper {
         }
     }
 
-    public ModelHelper(String modelAbsolutePath, List<String> classLabels) {
-        Log.d(TAG, "Loading mobile model ..." + modelAbsolutePath);
+    public ModelHelper(String modelAbsolutePath, List<String> classLabels, int cropFactor) {
+        Log.d(TAG, "Loading mobile model ..." + modelAbsolutePath + " crop factor " + cropFactor);
         this.mModule = Module.load(modelAbsolutePath);
         this.classLabels = classLabels;
+        this.cropFactor = cropFactor;
         this.mInputTensorBuffer = Tensor.allocateFloatBuffer(3 * INPUT_TENSOR_WIDTH * INPUT_TENSOR_HEIGHT);
     }
 
     public Result runInference(InputStream fis) throws IOException {
-            Bitmap bitmapA;
-            bitmapA = BitmapFactory.decodeStream(fis);
-            Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmapA, INPUT_TENSOR_WIDTH, INPUT_TENSOR_HEIGHT, true);
-            Tensor mInputTensor = Tensor.fromBlob(mInputTensorBuffer, new long[]{1, 3, INPUT_TENSOR_HEIGHT, INPUT_TENSOR_WIDTH});
-            TensorImageUtils.bitmapToFloatBuffer(scaledBitmap,
-                    0,
-                    0,
-                    INPUT_TENSOR_WIDTH,
-                    INPUT_TENSOR_HEIGHT,
-                    TensorImageUtils.TORCHVISION_NORM_MEAN_RGB,
-                    TensorImageUtils.TORCHVISION_NORM_STD_RGB,
-                    mInputTensorBuffer,
-                    0);
-            final long moduleForwardStartTime = SystemClock.elapsedRealtime();
-            Log.i(TAG, "running inference ...");
-            final Tensor outputTensor = mModule.forward(IValue.from(mInputTensor)).toTensor();
+        Bitmap bitmapA;
+        bitmapA = BitmapFactory.decodeStream(fis);
 
-            final long moduleForwardDuration = SystemClock.elapsedRealtime() - moduleForwardStartTime;
+        if (bitmapA.getWidth() < cropFactor || bitmapA.getHeight() < cropFactor) {
+            Log.w(TAG, "Phone camera's resolution is too low for inference. Output resolution must be greater than " + cropFactor + " x " + cropFactor + ", bitmap is " + bitmapA.getWidth() + " x " + bitmapA.getHeight());
+            cropFactor = Math.min(bitmapA.getWidth(), bitmapA.getHeight());
+            Log.w(TAG, "crop factor adjusted to " + cropFactor + " x " + cropFactor);
+        }
 
-            final float[] scores = outputTensor.getDataAsFloatArray();
-            Log.i(TAG, "Inference done " + scores.length + " total scores. took = " + moduleForwardDuration + "ms");
-            Integer[] top = Utils.topK(scores, scores.length);
-            Log.i(TAG, "result " + top[0] + ": " + classLabels.get(top[0]));
-            Result resultBuffer = new Result(top[0], classLabels.get(top[0]), scores[top[0]]);
+        int startX = bitmapA.getWidth() / 2 - cropFactor / 2;
+        int startY = bitmapA.getHeight() / 2 - cropFactor / 2;
 
-            resultBuffer.setTop(top);
-            Double doubles[] = new Double[scores.length];
-            for(int i = 0; i < scores.length; i++) {
-                doubles[i] = (double)scores[i];
-            }
-            resultBuffer.setScores(doubles);
-            resultBuffer.setHeight(bitmapA.getHeight());
-            resultBuffer.setWidth(bitmapA.getWidth());
-            return resultBuffer;
+        //crop while respecting aspect ratio
+        Bitmap cropped = Bitmap.createBitmap(bitmapA, startX, startY, cropFactor, cropFactor, null, true);
+
+        //scale image to input tensor size
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(cropped, INPUT_TENSOR_WIDTH, INPUT_TENSOR_HEIGHT, true);
+        Tensor mInputTensor = Tensor.fromBlob(mInputTensorBuffer, new long[]{1, 3, INPUT_TENSOR_HEIGHT, INPUT_TENSOR_WIDTH});
+        TensorImageUtils.bitmapToFloatBuffer(scaledBitmap,
+                0,
+                0,
+                INPUT_TENSOR_WIDTH,
+                INPUT_TENSOR_HEIGHT,
+                TensorImageUtils.TORCHVISION_NORM_MEAN_RGB,
+                TensorImageUtils.TORCHVISION_NORM_STD_RGB,
+                mInputTensorBuffer,
+                0);
+
+        final long moduleForwardStartTime = SystemClock.elapsedRealtime();
+        Log.i(TAG, "running inference ...");
+        final Tensor outputTensor = mModule.forward(IValue.from(mInputTensor)).toTensor();
+
+        final long moduleForwardDuration = SystemClock.elapsedRealtime() - moduleForwardStartTime;
+
+        final float[] scores = outputTensor.getDataAsFloatArray();
+        Log.i(TAG, "Inference done " + scores.length + " total scores. took = " + moduleForwardDuration + "ms");
+        Integer[] top = Utils.topK(scores, scores.length);
+        Log.i(TAG, "result " + top[0] + ": " + classLabels.get(top[0]));
+        Result resultBuffer = new Result(top[0], classLabels.get(top[0]), scores[top[0]]);
+
+        resultBuffer.setTop(top);
+        Double doubles[] = new Double[scores.length];
+        for (int i = 0; i < scores.length; i++) {
+            doubles[i] = (double) scores[i];
+        }
+        resultBuffer.setScores(doubles);
+        resultBuffer.setHeight(bitmapA.getHeight());
+        resultBuffer.setWidth(bitmapA.getWidth());
+        return resultBuffer;
     }
 }

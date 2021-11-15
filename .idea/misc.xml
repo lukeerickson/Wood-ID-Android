@@ -3,12 +3,19 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.34479166666666666" />
+        <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/drawable/ic_launcher_background.xml" value="0.34479166666666666" />
+        <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/layout/activity_about.xml" value="0.3145833333333333" />
+        <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/layout/activity_details.xml" value="0.32864583333333336" />
         <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/layout/activity_first_run.xml" value="0.328125" />
         <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/layout/activity_image_capture2.xml" value="0.253125" />
+        <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/layout/activity_splash.xml" value="0.3182291666666667" />
         <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/layout/recalibrate_camera.xml" value="0.32864583333333336" />
         <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/layout/sample_view_finder.xml" value="0.253125" />
         <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/layout/settings_activity.xml" value="0.328125" />
         <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/layout/surface_view.xml" value="0.253125" />
+        <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.34479166666666666" />
+        <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.34479166666666666" />
         <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/xml/root_preferences.xml" value="0.328125" />
       </map>
     </option>

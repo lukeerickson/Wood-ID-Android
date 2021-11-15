@@ -13,9 +13,21 @@
             app:key="ae_compensation"
             app:title="@string/ae_compensation"
             app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:key="crop_factor"
+            app:title="@string/crop_factor"
+            app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/other_settings">
+        <SwitchPreference
+            app:key="location_tagging"
+            app:title="@string/enable_location_tagging"
+            app:useSimpleSummaryProvider="true"/>
+        <SwitchPreference
+            app:key="show_details_after_capture"
+            app:title="@string/show_details_popup"
+            app:useSimpleSummaryProvider="false"/>
     </PreferenceCategory>
 
 </PreferenceScreen>

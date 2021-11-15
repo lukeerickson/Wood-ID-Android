@@ -30,4 +30,8 @@
         android:layout_margin="@dimen/fab_margin"
         android:layout_marginBottom="10dp"
         app:srcCompat="@drawable/ic_camera_black_48dp" />
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_cancel"
+        app:srcCompat="@drawable/ic_close_thick_white_48dp"
+        style="@style/CancelButton" />
 </RelativeLayout>

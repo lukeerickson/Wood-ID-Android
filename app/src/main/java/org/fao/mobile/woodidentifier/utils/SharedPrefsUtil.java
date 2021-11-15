@@ -11,6 +11,8 @@ public class SharedPrefsUtil {
     public static final String ZOOM = "zoom";
     public static final String WHITE_BALANCE = "white_balance";
     public static final String AE_COMPENSATION = "ae_compensation";
+    public static final String LOCATION_TAGGING = "location_tagging";
+    public static final String CROP_FACTOR = "crop_factor";
 
     public static boolean isFirstRun(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(
@@ -35,5 +37,9 @@ public class SharedPrefsUtil {
         SharedPreferences prefs = context.getSharedPreferences(
                 APP_SETTINGS, Context.MODE_PRIVATE);
         prefs.edit().putInt(CURRENT_CAMERA, cameraId);
+    }
+
+    public static boolean isLoggedIn() {
+        return false;
     }
 }

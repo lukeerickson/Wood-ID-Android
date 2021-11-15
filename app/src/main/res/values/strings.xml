@@ -13,7 +13,7 @@
     <string name="action_recalibrate">Recalibrate Camera</string>
     <string name="camera_calibration">Camera Calibration</string>
     <string name="calibration_instructions">Please attach the XyloPhone to your mobile device, remove the cover, place on top of the sanded portion of a wood sample and tap on \"Start Calibration\" to begin</string>
-    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="title_activity_settings">Settings</string>
 
     <!-- Preference Titles -->
     <string name="messages_header">Messages</string>
@@ -42,4 +42,22 @@
     <string name="login_failed">"Login failed"</string>
     <string name="zoom">Zoom Level</string>
     <string name="ae_compensation">Auto Exposure Compensation</string>
+    <string name="enable_location_tagging">Enable Location Tagging</string>
+    <string name="identification_in_progress">Identification in progress..</string>
+    <string name="show_details_popup">Show ID details popup</string>
+    <string name="crop_factor">Crop Factor</string>
+    <string name="action_about">About</string>
+    <string name="about">About</string>
+    <string name="confirm_delete">Are you sure you want to delete item?</string>
+    <string name="yes">Yes</string>
+    <string name="cancel">Cancel</string>
+    <string name="title_activity_splash">SplashActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="continue_button">Continue</string>
+    <string name="skip">Skip</string>
+    <string name="report_mislabeled">Report Mislabeled</string>
+    <string name="export_csv">Export CSV</string>
+    <string name="confirm_delete_all">This will delete all records, are you sure?</string>
+    <string name="confirm_csv_export">Continue CSV export?</string>
 </resources>

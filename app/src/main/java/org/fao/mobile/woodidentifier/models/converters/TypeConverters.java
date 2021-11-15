@@ -20,7 +20,11 @@ public class TypeConverters {
 
     @TypeConverter
     public static String stringArrayToString(String[] strs) {
-        return StringUtils.joinAsJson(Arrays.asList(strs.clone()));
+        if (strs!=null) {
+            return StringUtils.joinAsJson(Arrays.asList(strs.clone()));
+        } else {
+            return "[]";
+        }
     }
 
     @TypeConverter
@@ -45,12 +49,20 @@ public class TypeConverters {
 
     @TypeConverter
     public static String arrayToInt(Integer[] f) {
-        return StringUtils.joinAsJson(Arrays.asList(f.clone()));
+        if (f!=null) {
+            return StringUtils.joinAsJson(Arrays.asList(f.clone()));
+        } else {
+            return "[]";
+        }
     }
 
     @TypeConverter
     public static String arrayToString(Double[] f) {
-        return StringUtils.joinAsJson(Arrays.asList(f.clone()));
+        if (f!=null) {
+            return StringUtils.joinAsJson(Arrays.asList(f.clone()));
+        } else {
+            return "[]";
+        }
     }
 
 }

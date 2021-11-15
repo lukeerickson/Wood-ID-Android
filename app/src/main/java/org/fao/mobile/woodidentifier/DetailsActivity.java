@@ -6,8 +6,11 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,6 +20,7 @@ import com.bumptech.glide.Glide;
 import com.codepoetics.protonpack.StreamUtils;
 
 import org.fao.mobile.woodidentifier.models.InferencesLog;
+import org.fao.mobile.woodidentifier.utils.ModelHelper;
 import org.fao.mobile.woodidentifier.utils.Species;
 
 import java.util.Arrays;
@@ -33,6 +37,8 @@ public class DetailsActivity extends AppCompatActivity {
     private TextView description;
     private ViewGroup topKcontainer;
     private ViewGroup referenceImageContainer;
+    private Spinner labelSpinner;
+    private ArrayAdapter<String> classes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,12 +52,33 @@ public class DetailsActivity extends AppCompatActivity {
         this.closeButton = findViewById(R.id.close_button);
         this.description = findViewById(R.id.description);
         this.topKcontainer = findViewById(R.id.topKcontainer);
+        this.labelSpinner = findViewById(R.id.mislabled_picker);
         this.referenceImageContainer = findViewById(R.id.reference_images_container);
         this.application = (WoodIdentifierApplication) getApplication();
         closeButton.setOnClickListener((v) -> {
             finish();
         });
 
+        ModelHelper model = ModelHelper.getHelperInstance(this);
+        classes = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, model.getClassLabels().toArray(new String[0]));
+        labelSpinner.setAdapter(classes);
+        labelSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                executor.execute(()-> {
+                    AppDatabase db = Room.databaseBuilder(getApplicationContext(),
+                            AppDatabase.class, "wood-id").build();
+                    InferencesLog inferenceLog = db.inferencesLogDAO().findByUid(uid);
+                    inferenceLog.expectedLabel = model.getClassLabels().get(position);
+                    db.inferencesLogDAO().update(inferenceLog);
+                });
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
         executor.execute(() -> {
             AppDatabase db = Room.databaseBuilder(getApplicationContext(),
                     AppDatabase.class, "wood-id").build();
@@ -61,6 +88,7 @@ public class DetailsActivity extends AppCompatActivity {
                 classLabel.setText(species.getScientificName() + "(" + inferenceLog.classLabel + ")");
                 filename.setText(inferenceLog.originalFilename);
                 description.setText(species.getDescription());
+                labelSpinner.setSelection(model.getClassLabels().indexOf(inferenceLog.expectedLabel));
                 referenceImageContainer.removeAllViews();
                 Arrays.stream(species.getReferenceImages()).forEachOrdered(imageRef -> {
                     View view = LayoutInflater.from(referenceImageContainer.getContext())

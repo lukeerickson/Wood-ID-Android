@@ -16,11 +16,12 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout="@layout/surface_view" />
+
         <View
             android:id="@+id/cropIndicator"
-            android:layout_centerInParent="true"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true" />
     </RelativeLayout>
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_take_picture"
@@ -34,6 +35,10 @@
         android:layout_marginEnd="@dimen/fab_margin"
         android:layout_marginBottom="@dimen/fab_margin"
         app:srcCompat="@drawable/ic_camera_black_48dp" />
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_cancel"
+        app:srcCompat="@drawable/ic_close_thick_white_48dp"
+        style="@style/CancelButton" />
     <ImageView
         android:id="@+id/zoom_icon"
         android:layout_width="wrap_content"

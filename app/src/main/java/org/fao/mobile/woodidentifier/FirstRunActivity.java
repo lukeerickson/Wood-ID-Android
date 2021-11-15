@@ -27,6 +27,11 @@ public class FirstRunActivity extends AppCompatActivity {
         } else {
             Intent intent = new Intent(this, RecalibrateCameraActivity.class);
             startActivity(intent);
+            finish();
         }
+    }
+
+    public void skipCalibration(View view) {
+        finish();
     }
 }

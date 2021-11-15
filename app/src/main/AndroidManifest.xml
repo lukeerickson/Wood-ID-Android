@@ -23,13 +23,26 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WoodIdentifier">
         <activity
+            android:name=".SplashActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:exported="false"
+            android:label="@string/title_activity_splash"
+            android:theme="@style/Theme.WoodIdentifier.Fullscreen" />
+        <activity
+            android:name=".AboutActivity"
+            android:exported="true"
+            android:label="@string/about"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".ui.login.LoginActivity"
             android:exported="true"
-            android:label="@string/title_activity_login" />
+            android:label="@string/title_activity_login"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".SettingsActivity"
             android:exported="true"
-            android:label="@string/title_activity_settings" />
+            android:label="@string/title_activity_settings"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ImageCaptureActivity2"
             android:screenOrientation="portrait" />

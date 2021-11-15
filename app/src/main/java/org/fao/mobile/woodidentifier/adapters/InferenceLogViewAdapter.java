@@ -1,6 +1,8 @@
 package org.fao.mobile.woodidentifier.adapters;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.view.LayoutInflater;
@@ -62,8 +64,14 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
         holder.getView().setTag(inferenceLog);
         holder.getDeleteButton().setTag(inferenceLog);
         holder.deleteButton.setOnClickListener(this);
-        holder.getTextView().setText(inferenceLog.classLabel + " (" + inferenceLog.classIndex + ")");
-        holder.getScoreView().setText(Float.toString(inferenceLog.score));
+        if (inferenceLog.classLabel == null) {
+            holder.getTextView().setText(context.getResources().getText(R.string.identification_in_progress));
+            holder.getScoreView().setText("NA");
+        } else {
+            holder.getTextView().setText(inferenceLog.classLabel + " (" + inferenceLog.classIndex + ")");
+            holder.getScoreView().setText(Float.toString(inferenceLog.score));
+        }
+
         holder.getFilename().setText(inferenceLog.originalFilename);
         holder.getTimestamp().setText(Utils.timestampToString(inferenceLog.timestamp));
         Glide.with(context).load(Uri.decode(inferenceLog.imagePath)).into(holder.getWoodImage());
@@ -78,8 +86,16 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
     public void onClick(View v) {
         if (v.getId() == R.id.deleteLogItem) {
             InferencesLog log = (InferencesLog) v.getTag();
-            itemListener.onDeleteItem(this, logs.indexOf(log), log);
-            logs.remove(log);
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+            alertDialog.setMessage(R.string.confirm_delete);
+            alertDialog.setPositiveButton(R.string.yes, (dialog, which) -> {
+                itemListener.onDeleteItem(this, logs.indexOf(log), log);
+                logs.remove(log);
+            });
+            alertDialog.setNegativeButton(R.string.cancel, (dialog, which) -> {
+                dialog.dismiss();
+            });
+            alertDialog.show();
         }
     }
 

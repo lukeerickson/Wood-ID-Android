@@ -4,6 +4,7 @@ import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import org.fao.mobile.woodidentifier.models.InferencesLog;
 
@@ -22,6 +23,9 @@ public interface InferencesLogDAO {
 
     @Insert
     long insert(InferencesLog log);
+
+    @Update
+    void update(InferencesLog log);
 
     @Insert
     long[] insertAll(InferencesLog... logs);

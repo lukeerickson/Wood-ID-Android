@@ -30,6 +30,11 @@ public class ImageCaptureActivity2 extends BaseCamera2Activity {
         return findViewById(R.id.fab_take_picture);
     }
 
+    @Override
+    protected View getCancelButton() {
+        return findViewById(R.id.fab_cancel);
+    }
+
     protected SurfaceView getCameraPreviewTextureView() {
         return (SurfaceView) ((ViewStub) findViewById(R.id.image_classification_texture_view_stub))
                 .inflate()

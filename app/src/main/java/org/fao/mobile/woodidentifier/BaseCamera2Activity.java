@@ -44,6 +44,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 
 import org.fao.mobile.woodidentifier.utils.ImageUtils;
 import org.fao.mobile.woodidentifier.utils.SharedPrefsUtil;
@@ -79,12 +80,14 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
     private View capureButton;
     private View cameraFrame;
     private ImageReader imageReader;
+    private View cancelButton;
 
     @SuppressLint("MissingPermission")
     @Override
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         this.capureButton = getCaptureButton();
+        this.cancelButton = getCancelButton();
         this.viewFinder = getCameraPreviewTextureView();
         this.cameraFrame = findViewById(R.id.cameraFrame);
         this.cameraManager = (CameraManager) getSystemService(Service.CAMERA_SERVICE);
@@ -108,9 +111,16 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
 
             }
         });
+
+        cancelButton.setOnClickListener((view) -> {
+            setResult(Activity.RESULT_CANCELED);
+            finish();
+        });
     }
 
     protected abstract View getCaptureButton();
+
+    protected abstract View getCancelButton();
 
     abstract SurfaceView getCameraPreviewTextureView();
 
@@ -308,11 +318,10 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                         @RequiresApi(api = Build.VERSION_CODES.R)
                         private void capture(@NonNull CameraCaptureSession session) throws CameraAccessException {
                             try {
-                                SharedPreferences prefs2 = getSharedPreferences(
-                                        "camera_settings", Context.MODE_PRIVATE);
-                                float currentZoomRatio = Integer.parseInt(prefs2.getString(ZOOM, "0"));
-                                int currentWhiteBalance = Integer.parseInt(prefs2.getString("white_balance", "5700"));
-                                int currentAeCompensation = Integer.parseInt(prefs2.getString("ae_compensation", "0"));
+                                SharedPreferences prefs2 = PreferenceManager.getDefaultSharedPreferences(BaseCamera2Activity.this);
+                                float currentZoomRatio = Float.parseFloat(prefs2.getString(ZOOM, "0"));
+                                int currentWhiteBalance = Integer.parseInt(prefs2.getString(WHITE_BALANCE, "5700"));
+                                int currentAeCompensation = Integer.parseInt(prefs2.getString(AE_COMPENSATION, "0"));
 
                                 CaptureRequest.Builder captureRequest = prepareCameraSettings(CameraDevice.TEMPLATE_STILL_CAPTURE, currentAeCompensation, currentWhiteBalance, currentZoomRatio);
                                 captureRequest.set(CaptureRequest.JPEG_ORIENTATION, currentCameraCharacteristics.sensorOrientation);
@@ -389,7 +398,7 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
         captureRequest.set(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, aeCompensation);
         captureRequest.set(CaptureRequest.COLOR_CORRECTION_GAINS, ImageUtils.colorTemperature(colorTemp));
         captureRequest.set(CaptureRequest.CONTROL_ZOOM_RATIO, zoomRatio);
-        captureRequest.set(CaptureRequest.JPEG_QUALITY, (byte)100);
+        captureRequest.set(CaptureRequest.JPEG_QUALITY, (byte) 100);
         Log.i(TAG, "prepare camera zoom set to " + zoomRatio);
         return captureRequest;
     }
@@ -416,8 +425,7 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.R)
     protected void updateCameraState() throws CameraAccessException {
-        SharedPreferences prefs = this.getSharedPreferences(
-                "camera_settings", Context.MODE_PRIVATE);
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         int colorTemp = Integer.parseInt(prefs.getString(WHITE_BALANCE, "5700"));
         int aeCompenstaion = Integer.parseInt(prefs.getString(AE_COMPENSATION, "0"));
         float zoomRatio = Float.parseFloat(prefs.getString(ZOOM, "0"));

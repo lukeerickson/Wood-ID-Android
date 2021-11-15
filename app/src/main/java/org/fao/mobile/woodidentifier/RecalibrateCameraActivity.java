@@ -21,6 +21,7 @@ import android.widget.Spinner;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.preference.PreferenceManager;
 
 import com.google.android.material.slider.Slider;
 
@@ -56,8 +57,8 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
     protected void onSetupCameraComplete(ArrayList<CameraProperties> backFacingCameras, CameraProperties camera) throws CameraAccessException {
         super.onSetupCameraComplete(backFacingCameras, camera);
         ArrayAdapter<CameraProperties> adapter =
-                new ArrayAdapter<CameraProperties>(getApplicationContext(),  android.R.layout.simple_spinner_dropdown_item, backFacingCameras);
-        adapter.setDropDownViewResource( android.R.layout.simple_spinner_dropdown_item);
+                new ArrayAdapter<CameraProperties>(getApplicationContext(), android.R.layout.simple_spinner_dropdown_item, backFacingCameras);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         lensSelector.setAdapter(adapter);
         lensSelector.setOnItemSelectedListener(this);
     }
@@ -88,23 +89,19 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
             } catch (CameraAccessException e) {
                 e.printStackTrace();
             }
-
         }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.R)
     private void setCameraWhiteBalance(float sliderValue) throws CameraAccessException {
         if (currentCameraCharacteristics != null) {
-            int colorTemp = (int)sliderValue;
+            int colorTemp = (int) sliderValue;
             Log.d(TAG, "changing white balance to " + colorTemp);
-            SharedPreferences prefs = this.getSharedPreferences(
-                    "camera_settings", Context.MODE_PRIVATE);
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
             prefs.edit().putString(WHITE_BALANCE, Integer.toString(colorTemp)).commit();
-
             updateCameraState();
         }
     }
-
 
 
     @RequiresApi(api = Build.VERSION_CODES.R)
@@ -113,11 +110,8 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
             Range<Float> zoomRange = currentCameraCharacteristics.zoomRatioRange;
             float zoomRatio = (zoomRange.getUpper() - zoomRange.getLower()) * sliderValue + zoomRange.getLower();
             Log.d(TAG, "changing zoom to " + zoomRatio);
-            SharedPreferences prefs = this.getSharedPreferences(
-
-                    "camera_settings", Context.MODE_PRIVATE);
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
             prefs.edit().putString(ZOOM, Float.toString(zoomRatio)).commit();
-
             updateCameraState();
         }
     }
@@ -125,6 +119,11 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
     @Override
     protected View getCaptureButton() {
         return findViewById(R.id.fab_take_picture);
+    }
+
+    @Override
+    protected View getCancelButton() {
+        return findViewById(R.id.fab_cancel);
     }
 
     protected SurfaceView getCameraPreviewTextureView() {
@@ -141,9 +140,9 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
     @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        CameraProperties properties = (CameraProperties)parent.getAdapter().getItem(position);
+        CameraProperties properties = (CameraProperties) parent.getAdapter().getItem(position);
         try {
-            if (currentCameraCharacteristics!=null && !properties.equals(currentCameraCharacteristics)) {
+            if (currentCameraCharacteristics != null && !properties.equals(currentCameraCharacteristics)) {
                 setupCamera(holder, properties);
             }
             SharedPrefsUtil.saveCurrentCamera(this, position);

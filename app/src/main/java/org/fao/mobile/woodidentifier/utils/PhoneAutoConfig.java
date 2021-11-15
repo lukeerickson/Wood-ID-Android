@@ -1,6 +1,7 @@
 package org.fao.mobile.woodidentifier.utils;
 
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.AE_COMPENSATION;
+import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.CROP_FACTOR;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.WHITE_BALANCE;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.ZOOM;
 
@@ -34,11 +35,13 @@ public class PhoneAutoConfig {
                 double zoomRatio = autoPhoneSettings.getDouble(ZOOM);
                 int whiteBalance = autoPhoneSettings.getInt(WHITE_BALANCE);
                 int aeCompensation = autoPhoneSettings.getInt(AE_COMPENSATION);
+                int cropFactor = autoPhoneSettings.getInt(CROP_FACTOR);
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putString(ZOOM, Double.toString(zoomRatio));
                 editor.putString(WHITE_BALANCE, Integer.toString(whiteBalance));
                 editor.putString(AE_COMPENSATION, Integer.toString(aeCompensation));
+                editor.putString(CROP_FACTOR, Integer.toString(cropFactor));
                 editor.commit();
                 return true;
             } else {

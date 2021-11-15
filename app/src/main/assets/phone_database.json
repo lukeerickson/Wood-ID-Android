@@ -2,11 +2,13 @@
   "samsung-SM-A525F" : {
     "zoom": 5.0,
     "white_balance": 5700,
+    "crop_factor": 2048,
     "ae_compensation": 0,
     "sensor_orientation": "portrait"
   },
   "Google-sdk_gphone_x86_arm": {
     "zoom": 5.0,
+    "crop_factor": 2048,
     "white_balance": 5700,
     "ae_compensation": 0,
     "sensor_orientation": "landscape"
