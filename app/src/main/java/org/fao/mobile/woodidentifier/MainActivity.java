@@ -1,28 +1,16 @@
 package org.fao.mobile.woodidentifier;
 
+import static android.os.Environment.DIRECTORY_DOCUMENTS;
+
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 
-import com.github.dhaval2404.imagepicker.ImagePicker;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.material.snackbar.Snackbar;
-
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.os.SystemClock;
-import android.util.Log;
-import android.view.View;
+import android.os.Environment;
 
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.ViewModelProvider;
@@ -35,29 +23,23 @@ import androidx.room.Room;
 import org.fao.mobile.woodidentifier.databinding.ActivityMainBinding;
 import org.fao.mobile.woodidentifier.models.InferenceLogViewModel;
 import org.fao.mobile.woodidentifier.models.InferencesLog;
-import org.fao.mobile.woodidentifier.ui.login.LoginActivity;
-import org.fao.mobile.woodidentifier.utils.ModelHelper;
-import org.fao.mobile.woodidentifier.utils.PhoneAutoConfig;
-import org.fao.mobile.woodidentifier.utils.SharedPrefsUtil;
 import org.fao.mobile.woodidentifier.utils.Utils;
-import org.pytorch.IValue;
-import org.pytorch.Module;
-import org.pytorch.Tensor;
-import org.pytorch.torchvision.TensorImageUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.FloatBuffer;
-import java.util.concurrent.CompletableFuture;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.logging.Logger;
 
 public class MainActivity extends AppCompatActivity {
     Executor executor = Executors.newSingleThreadExecutor();
@@ -105,22 +87,18 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_about) {
             Intent intent = new Intent(this, AboutActivity.class);
             startActivity(intent);
-        }
-        else
-        if (id == R.id.action_settings) {
+        } else if (id == R.id.action_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
-        }
-        else
-        if (id== R.id.action_clear) {
+        } else if (id == R.id.action_clear) {
             AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
             alertDialog.setMessage(R.string.confirm_delete_all);
             alertDialog.setPositiveButton(R.string.yes, (dialog, which) -> {
-                executor.execute(()-> {
+                executor.execute(() -> {
                     AppDatabase db = Room.databaseBuilder(this.getApplicationContext(),
                             AppDatabase.class, "wood-id").build();
                     db.inferencesLogDAO().deleteAll();
-                    runOnUiThread(()-> {
+                    runOnUiThread(() -> {
                         viewModel.updateCount(0);
                     });
                 });
@@ -130,9 +108,7 @@ public class MainActivity extends AppCompatActivity {
                 dialog.dismiss();
             });
             alertDialog.show();
-        }
-        else
-        if (id == R.id.action_recalibrate) {
+        } else if (id == R.id.action_recalibrate) {
             int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
 
             if (PackageManager.PERMISSION_GRANTED != permission) {
@@ -141,23 +117,60 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(this, RecalibrateCameraActivity.class);
                 startActivity(intent);
             }
-        }
-        else
-            if (id == R.id.export_csv) {
-                AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
-                alertDialog.setMessage(R.string.confirm_csv_export);
-                alertDialog.setPositiveButton(R.string.yes, (dialog, which) -> {
-                    executor.execute(()-> {
-                        AppDatabase db = Room.databaseBuilder(this.getApplicationContext(),
-                                AppDatabase.class, "wood-id").build();
+        } else if (id == R.id.export_csv) {
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+            alertDialog.setMessage(R.string.confirm_json_export);
+            alertDialog.setPositiveButton(R.string.yes, (dialog, which) -> {
+                executor.execute(() -> {
+                    AppDatabase db = Room.databaseBuilder(this.getApplicationContext(),
+                            AppDatabase.class, "wood-id").build();
+                    JSONArray jsonArray = new JSONArray();
+                    for (InferencesLog log : db.inferencesLogDAO().getAll()) {
+                        JSONObject jsonObject = new JSONObject();
+                        try {
+                            jsonObject.put("uid", log.uid);
+                            jsonObject.put("timestamp", log.timestamp);
+                            jsonObject.put("class", log.classLabel);
+                            jsonObject.put("expectedClass", log.expectedLabel);
+                            jsonObject.put("img", log.imagePath);
+                            jsonObject.put("topk", log.top);
+                            jsonObject.put("topRaw", log.topKRaw);
+                            jsonObject.put("score", log.score);
+                            jsonObject.put("originalFilename", log.originalFilename);
+                            jsonObject.put("lat", log.latitude);
+                            jsonObject.put("long", log.longitude);
+                            jsonObject.put("location_accuracy", log.locationAccuracy);
+                            jsonObject.put("scores", log.scores);
+                            jsonObject.put("version", log.modelVersion);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        jsonArray.put(jsonObject);
+                    }
+                    File documentsDir = Environment.getExternalStoragePublicDirectory(DIRECTORY_DOCUMENTS);
+                    DateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddhhmmss");
+                    String fname = "wood_id_export_" + simpleDateFormat.format(new Date()) + ".json";
+                    File exportFileTarget = new File(documentsDir, fname);
+                    try (FileWriter fileWriter = new FileWriter(exportFileTarget)) {
+                        fileWriter.write(jsonArray.toString());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    runOnUiThread(() -> {
+                        try {
+                            Toast.makeText(this, getString(R.string.export_successful, exportFileTarget.getCanonicalPath()), Toast.LENGTH_LONG).show();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     });
+                });
 
-                });
-                alertDialog.setNegativeButton(R.string.cancel, (dialog, which) -> {
-                    dialog.dismiss();
-                });
-                alertDialog.show();
-            }
+            });
+            alertDialog.setNegativeButton(R.string.cancel, (dialog, which) -> {
+                dialog.dismiss();
+            });
+            alertDialog.show();
+        }
 
         return super.onOptionsItemSelected(item);
     }

@@ -335,6 +335,7 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                                         super.onCaptureCompleted(session, request, result);
                                         imageReader.setOnImageAvailableListener(reader -> {
                                             DateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddhhmmss");
+
                                             Uri fileUri = getPhotoFileUri("capture_" + simpleDateFormat.format(new Date()) + ".jpg");
                                             try (OutputStream outputStream = getContentResolver().openOutputStream(fileUri);
                                                  Image image = imageReader.acquireLatestImage();) {

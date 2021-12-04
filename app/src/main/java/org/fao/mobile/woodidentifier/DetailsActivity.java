@@ -61,6 +61,7 @@ public class DetailsActivity extends AppCompatActivity {
 
         ModelHelper model = ModelHelper.getHelperInstance(this);
         classes = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, model.getClassLabels().toArray(new String[0]));
+
         labelSpinner.setAdapter(classes);
         labelSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override

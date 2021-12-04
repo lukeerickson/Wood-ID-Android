@@ -57,7 +57,8 @@
     <string name="continue_button">Continue</string>
     <string name="skip">Skip</string>
     <string name="report_mislabeled">Report Mislabeled</string>
-    <string name="export_csv">Export CSV</string>
+    <string name="export_json">Export JSON</string>
     <string name="confirm_delete_all">This will delete all records, are you sure?</string>
-    <string name="confirm_csv_export">Continue CSV export?</string>
+    <string name="confirm_json_export">Continue JSON export?</string>
+    <string name="export_successful">Export is successful. File placed in %1$s</string>
 </resources>

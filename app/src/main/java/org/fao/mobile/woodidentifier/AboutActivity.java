@@ -7,6 +7,8 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.widget.TextView;
 
+import org.fao.mobile.woodidentifier.utils.ModelHelper;
+
 public class AboutActivity extends AppCompatActivity {
     private TextView versionTextView;
     private TextView modeVersionTextView;
@@ -27,6 +29,7 @@ public class AboutActivity extends AppCompatActivity {
         String version = pInfo.versionName;
 
         versionTextView.setText("Application Version: " + version);
+        modeVersionTextView.setText("Model Version: " + ModelHelper.getHelperInstance(this).getVersion());
     }
 
 

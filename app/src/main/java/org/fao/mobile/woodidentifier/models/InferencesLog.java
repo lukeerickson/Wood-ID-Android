@@ -68,6 +68,9 @@ public class InferencesLog {
     @ColumnInfo(name = "expectedLabel")
     public String expectedLabel;
 
+    @ColumnInfo(name = "modelVersion")
+    public long modelVersion;
+
     public static InferencesLog fromResult(ModelHelper.Result result, ModelHelper helper) {
         InferencesLog inferencesLog = new InferencesLog();
         inferencesLog.timestamp = System.currentTimeMillis();
@@ -117,9 +120,11 @@ public class InferencesLog {
         this.timestamp = System.currentTimeMillis();
         this.classIndex = result.getClassIndex();
         this.classLabel = result.getClassLabel();
+        this.expectedLabel = result.getClassLabel();
         this.score = result.getScore();
         this.scores = result.getScores();
         this.topKRaw = result.getTop();
+        this.modelVersion = helper.getVersion();
 
         List<String> classLabels;
         if (helper !=null) {

@@ -30,7 +30,7 @@
                 android:padding="10dp"
                 android:layout_width="match_parent"
                 android:scaleType="fitCenter"
-                android:src="@drawable/fmb_logo_banner"
+                android:src="@drawable/denr_logo"
                 android:layout_height="match_parent"/>
             <ImageView
                 android:layout_weight="1.0"
