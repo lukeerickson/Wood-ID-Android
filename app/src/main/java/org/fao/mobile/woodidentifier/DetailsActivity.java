@@ -21,6 +21,7 @@ import com.codepoetics.protonpack.StreamUtils;
 
 import org.fao.mobile.woodidentifier.models.InferencesLog;
 import org.fao.mobile.woodidentifier.utils.ModelHelper;
+import org.fao.mobile.woodidentifier.utils.SharedPrefsUtil;
 import org.fao.mobile.woodidentifier.utils.Species;
 
 import java.util.Arrays;
@@ -39,6 +40,7 @@ public class DetailsActivity extends AppCompatActivity {
     private ViewGroup referenceImageContainer;
     private Spinner labelSpinner;
     private ArrayAdapter<String> classes;
+    private View topKLabel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,11 +56,16 @@ public class DetailsActivity extends AppCompatActivity {
         this.topKcontainer = findViewById(R.id.topKcontainer);
         this.labelSpinner = findViewById(R.id.mislabled_picker);
         this.referenceImageContainer = findViewById(R.id.reference_images_container);
+        this.topKLabel = findViewById(R.id.topk_label);
         this.application = (WoodIdentifierApplication) getApplication();
         closeButton.setOnClickListener((v) -> {
             finish();
         });
-
+        if (!SharedPrefsUtil.isDeveloperMode(this)) {
+            topKcontainer.setVisibility(View.GONE);
+            labelSpinner.setVisibility(View.GONE);
+            topKLabel.setVisibility(View.GONE);
+        }
         ModelHelper model = ModelHelper.getHelperInstance(this);
         classes = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, model.getClassLabels().toArray(new String[0]));
 
@@ -66,7 +73,7 @@ public class DetailsActivity extends AppCompatActivity {
         labelSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                executor.execute(()-> {
+                executor.execute(() -> {
                     AppDatabase db = Room.databaseBuilder(getApplicationContext(),
                             AppDatabase.class, "wood-id").build();
                     InferencesLog inferenceLog = db.inferencesLogDAO().findByUid(uid);
@@ -86,7 +93,7 @@ public class DetailsActivity extends AppCompatActivity {
             InferencesLog inferenceLog = db.inferencesLogDAO().findByUid(uid);
             runOnUiThread(() -> {
                 Species species = application.getSpeciesLookupService().lookupSpeciesInfo(inferenceLog.classLabel);
-                classLabel.setText(species.getScientificName() + "(" + inferenceLog.classLabel + ")");
+                classLabel.setText(species.name() + " ( " + species.getScientificName() + ") ");
                 filename.setText(inferenceLog.originalFilename);
                 description.setText(species.getDescription());
                 labelSpinner.setSelection(model.getClassLabels().indexOf(inferenceLog.expectedLabel));

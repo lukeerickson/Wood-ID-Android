@@ -281,12 +281,11 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
     }
 
     private void onClick(View view) {
-        int location_permission = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION);
         switch (view.getId()) {
             case R.id.fab:
                 int permission = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE);
 
-                if (PackageManager.PERMISSION_GRANTED != permission && PackageManager.PERMISSION_GRANTED != location_permission) {
+                if (PackageManager.PERMISSION_GRANTED != permission) {
                     Utils.verifyStoragePermissions(getActivity());
                 } else {
                     ImagePicker.with(FirstFragment.this).galleryOnly().start();
@@ -296,7 +295,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
             case R.id.fab_camera:
                 permission = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA);
 
-                if (PackageManager.PERMISSION_GRANTED != permission && PackageManager.PERMISSION_GRANTED != location_permission) {
+                if (PackageManager.PERMISSION_GRANTED != permission) {
                     Utils.verifyCameraPermissions(getActivity());
                 } else {
                     Intent intent = new Intent(getActivity(), ImageCaptureActivity2.class);

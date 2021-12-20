@@ -3,6 +3,8 @@ package org.fao.mobile.woodidentifier.utils;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import androidx.preference.PreferenceManager;
+
 public class SharedPrefsUtil {
 
     public static final String APP_SETTINGS = "app_settings";
@@ -13,7 +15,12 @@ public class SharedPrefsUtil {
     public static final String AE_COMPENSATION = "ae_compensation";
     public static final String LOCATION_TAGGING = "location_tagging";
     public static final String CROP_FACTOR = "crop_factor";
+    private static final String DEVELOPMENT_MODE = "developer_mode";
 
+    public static boolean isDeveloperMode(Context context) {
+        SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return defaultPrefs.getBoolean(DEVELOPMENT_MODE, false);
+    }
     public static boolean isFirstRun(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(
                 APP_SETTINGS, Context.MODE_PRIVATE);

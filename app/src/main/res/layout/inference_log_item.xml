@@ -19,14 +19,17 @@
                 android:id="@+id/wood_specimen_image"
                 android:layout_width="80dp"
                 android:layout_height="80dp"></ImageView>
+
             <TextView
                 android:id="@+id/class_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Specimen"
-                android:layout_marginLeft="10dp"
                 android:layout_centerVertical="true"
-                android:layout_toRightOf="@id/wood_specimen_image"/>
+                android:layout_marginLeft="10dp"
+                android:layout_toRightOf="@id/wood_specimen_image"
+                android:text="Specimen"
+                android:textSize="16sp"
+                android:textStyle="bold" />
             <TextView
                 android:id="@+id/filename"
                 android:text="image.png"
@@ -44,7 +47,7 @@
                 android:layout_marginLeft="10dp"
                 android:layout_toRightOf="@id/wood_specimen_image"
                 android:text="100.0"
-                android:textSize="10sp"
+
                 android:layout_width="wrap_content"></TextView>
             <ImageButton
                 android:id="@+id/deleteLogItem"

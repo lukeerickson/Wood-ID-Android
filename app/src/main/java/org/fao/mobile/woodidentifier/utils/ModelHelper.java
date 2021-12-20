@@ -43,9 +43,10 @@ public class ModelHelper {
     public static final String TAG = ModelHelper.class.toString();
     public static final String MODEL_MOBILE_PT = "asset://model.zip";
     private static final String CLASS_LABELS = "labels.txt";
-    private static final String MODEL_PATH = "model_path";
+    public static final String MODEL_PATH = "model_path";
     private static final String MODEL_VERSION = "model_version";
     private static final long STOCK_VERSION = 202210270535L;
+    private static final String SPECIES_DATABASE = "species_database.json";
 
     private final Module mModule;
     private static ModelHelper instance = null;
@@ -153,6 +154,13 @@ public class ModelHelper {
             e.printStackTrace();
         }
         return classLabels;
+    }
+
+    @Nullable
+    static JSONObject getSpeciesDatabase(Context context, String assetPath) throws IOException, JSONException {
+        if (assetPath == null) return null;
+        Log.d(TAG, "Reading class labels");
+        return new JSONObject(Utils.readFileToStringSimple(new File(assetPath, SPECIES_DATABASE)));
     }
 
     public List<String> getClassLabels() {

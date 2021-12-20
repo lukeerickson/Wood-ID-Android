@@ -23,14 +23,18 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         app:srcCompat="@drawable/ic_layers_search_black_48dp" />
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/fab_camera"
-        android:visibility="gone"
-        android:layout_width="wrap_content"
+        android:visibility="visible"
+        android:textColor="@color/white"
+        android:background="@color/teal_200"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
+        android:layout_marginBottom="20dp"
         android:layout_alignParentBottom="true"
         android:layout_toLeftOf="@id/fab"
+        android:text="@string/capture_sample"
         app:srcCompat="@drawable/ic_camera_black_48dp" />
 </RelativeLayout>

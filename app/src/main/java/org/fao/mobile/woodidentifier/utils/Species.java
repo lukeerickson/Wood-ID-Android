@@ -1,6 +1,7 @@
 package org.fao.mobile.woodidentifier.utils;
 
 public class Species {
+    public String[] otherNames;
     String className;
 
     public String getClassName() {
@@ -24,7 +25,14 @@ public class Species {
     private String[] referenceImages;
 
     public Species() {
+    }
 
+    public String name() {
+        if (otherNames != null && otherNames.length > 0) {
+            return otherNames[0];
+        }
+
+        return scientificName;
     }
 
     public Species(String className, String scientificName) {

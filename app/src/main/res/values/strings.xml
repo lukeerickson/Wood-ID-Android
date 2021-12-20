@@ -61,4 +61,6 @@
     <string name="confirm_delete_all">This will delete all records, are you sure?</string>
     <string name="confirm_json_export">Continue JSON export?</string>
     <string name="export_successful">Export is successful. File placed in %1$s</string>
+    <string name="developer_mode">Developer Mode</string>
+    <string name="capture_sample">Identify Wood</string>
 </resources>

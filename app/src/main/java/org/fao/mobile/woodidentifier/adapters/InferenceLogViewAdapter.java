@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,7 +19,11 @@ import com.bumptech.glide.Glide;
 
 import org.fao.mobile.woodidentifier.DetailsActivity;
 import org.fao.mobile.woodidentifier.R;
+import org.fao.mobile.woodidentifier.WoodIdentifierApplication;
 import org.fao.mobile.woodidentifier.models.InferencesLog;
+import org.fao.mobile.woodidentifier.utils.SharedPrefsUtil;
+import org.fao.mobile.woodidentifier.utils.Species;
+import org.fao.mobile.woodidentifier.utils.SpeciesLookupService;
 import org.fao.mobile.woodidentifier.utils.Utils;
 
 import java.io.File;
@@ -27,6 +32,8 @@ import java.util.List;
 public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogViewAdapter.ViewHolder> implements View.OnClickListener {
 
     private final ItemListener itemListener;
+    private final SpeciesLookupService speciesLookup;
+
 
     public interface ItemListener {
         void onDeleteItem(InferenceLogViewAdapter inferenceLogViewAdapter, int position, InferencesLog loginfo);
@@ -40,6 +47,7 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
         this.context = context;
         this.logs = logs;
         this.itemListener = listener;
+        this.speciesLookup = ((WoodIdentifierApplication) context.getApplicationContext()).getSpeciesLookupService();
     }
 
     @Override
@@ -61,6 +69,11 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
     @Override
     public void onBindViewHolder(InferenceLogViewAdapter.ViewHolder holder, int position) {
         InferencesLog inferenceLog = logs.get(position);
+        if (position == 0) {
+            holder.getView().setBackgroundColor(context.getResources().getColor(R.color.red, context.getTheme()));
+        } else {
+            holder.getView().setBackgroundColor(context.getResources().getColor(R.color.teal_700, context.getTheme()));
+        }
         holder.getView().setTag(inferenceLog);
         holder.getDeleteButton().setTag(inferenceLog);
         holder.deleteButton.setOnClickListener(this);
@@ -68,8 +81,16 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
             holder.getTextView().setText(context.getResources().getText(R.string.identification_in_progress));
             holder.getScoreView().setText("NA");
         } else {
-            holder.getTextView().setText(inferenceLog.classLabel + " (" + inferenceLog.classIndex + ")");
-            holder.getScoreView().setText(Float.toString(inferenceLog.score));
+            if (SharedPrefsUtil.isDeveloperMode(context)) {
+                holder.getTextView().setText(inferenceLog.classLabel + " (" + inferenceLog.classIndex + ")");
+                holder.getScoreView().setText(Float.toString(inferenceLog.score));
+                holder.getScoreView().setVisibility(View.VISIBLE);
+            } else {
+                Species species = speciesLookup.lookupSpeciesInfo(inferenceLog.classLabel);
+                holder.getTextView().setText(species.name());
+                holder.getScoreView().setVisibility(View.INVISIBLE);
+            }
+
         }
 
         holder.getFilename().setText(inferenceLog.originalFilename);

@@ -22,10 +22,10 @@ public class WoodIdentifierApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        this.speciesLookupService = new SpeciesLookupService(this);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         executor.execute(() -> {
             ModelHelper.setupDefaultModel(this, prefs);
+            this.speciesLookupService = new SpeciesLookupService(this);
         });
     }
 }

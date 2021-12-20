@@ -98,7 +98,11 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
             @Override
             public void surfaceCreated(@NonNull SurfaceHolder holder) {
                 BaseCamera2Activity.this.holder = holder;
-                setupCamera(holder);
+                try {
+                    setupCamera(holder);
+                } catch (CameraAccessException e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override
@@ -131,8 +135,7 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.R)
-    private void setupCamera(SurfaceHolder holder) {
-        try {
+    private void setupCamera(SurfaceHolder holder) throws CameraAccessException {
             ArrayList<CameraProperties> backFacingCameras = enumerateBackCameras();
             int currentCamera = SharedPrefsUtil.getCurrentCamera(this);
             CameraProperties camera = backFacingCameras.get(currentCamera);
@@ -153,9 +156,6 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             });
-        } catch (CameraAccessException e) {
-            e.printStackTrace();
-        }
     }
 
     protected void onSetupCameraComplete(ArrayList<CameraProperties> backFacingCameras, CameraProperties camera) throws CameraAccessException {

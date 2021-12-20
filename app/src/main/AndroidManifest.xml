@@ -27,6 +27,7 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:exported="false"
             android:label="@string/title_activity_splash"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.WoodIdentifier.Fullscreen" />
         <activity
             android:name=".AboutActivity"

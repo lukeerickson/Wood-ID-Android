@@ -28,6 +28,10 @@
             app:key="show_details_after_capture"
             app:title="@string/show_details_popup"
             app:useSimpleSummaryProvider="false"/>
+        <SwitchPreference
+            app:key="developer_mode"
+            app:title="@string/developer_mode"
+            app:useSimpleSummaryProvider="false"/>
     </PreferenceCategory>
 
 </PreferenceScreen>
