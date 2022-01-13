@@ -23,8 +23,11 @@ import org.fao.mobile.woodidentifier.models.InferencesLog;
 import org.fao.mobile.woodidentifier.utils.ModelHelper;
 import org.fao.mobile.woodidentifier.utils.SharedPrefsUtil;
 import org.fao.mobile.woodidentifier.utils.Species;
+import org.fao.mobile.woodidentifier.utils.Utils;
 
+import java.text.DateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -41,6 +44,7 @@ public class DetailsActivity extends AppCompatActivity {
     private Spinner labelSpinner;
     private ArrayAdapter<String> classes;
     private View topKLabel;
+    private TextView captureDateTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +54,7 @@ public class DetailsActivity extends AppCompatActivity {
         long uid = intent.getLongExtra("uid", -1);
         this.sampleImageView = findViewById(R.id.imageSample);
         this.filename = findViewById(R.id.label);
+        this.captureDateTime = findViewById(R.id.capture_datetime);
         this.classLabel = findViewById(R.id.class_label);
         this.closeButton = findViewById(R.id.close_button);
         this.description = findViewById(R.id.description);
@@ -97,6 +102,7 @@ public class DetailsActivity extends AppCompatActivity {
                 filename.setText(inferenceLog.originalFilename);
                 description.setText(species.getDescription());
                 labelSpinner.setSelection(model.getClassLabels().indexOf(inferenceLog.expectedLabel));
+                captureDateTime.setText(Utils.timestampToString(inferenceLog.timestamp));
                 referenceImageContainer.removeAllViews();
                 Arrays.stream(species.getReferenceImages()).forEachOrdered(imageRef -> {
                     View view = LayoutInflater.from(referenceImageContainer.getContext())

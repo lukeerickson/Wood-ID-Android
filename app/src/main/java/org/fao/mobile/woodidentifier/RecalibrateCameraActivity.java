@@ -1,9 +1,9 @@
 package org.fao.mobile.woodidentifier;
 
+import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.CUSTOM_AWB;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.WHITE_BALANCE;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.ZOOM;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraDevice;
@@ -29,14 +29,17 @@ import org.fao.mobile.woodidentifier.utils.SharedPrefsUtil;
 
 import java.util.ArrayList;
 
-public class RecalibrateCameraActivity extends BaseCamera2Activity implements Slider.OnChangeListener, AdapterView.OnItemSelectedListener {
+public class RecalibrateCameraActivity extends BaseCamera2Activity implements Slider.OnChangeListener, AdapterView.OnItemSelectedListener, View.OnClickListener {
     private static final String TAG = RecalibrateCameraActivity.class.getCanonicalName();
     private View capureButton;
     private Slider zoomControl;
-    private SharedPreferences prefs;
     private Spinner lensSelector;
     private EditText whiteBalanceField;
     private Slider whiteBalanceControl;
+    private View startAutoWhiteBalance;
+    private SharedPreferences prefs;
+    private View preciseZoomAdd;
+    private View preciseZoomMinus;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -46,11 +49,20 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
         this.lensSelector = (Spinner) findViewById(R.id.lens_selector);
         this.whiteBalanceControl = (Slider) findViewById(R.id.white_balance_control);
         this.whiteBalanceField = (EditText) findViewById(R.id.white_balance_value);
+        this.startAutoWhiteBalance = findViewById(R.id.fab_awb_lock);
+        this.preciseZoomAdd = findViewById(R.id.zoom_precise_plus);
+        this.preciseZoomMinus = findViewById(R.id.zoom_precise_minus);
 
         zoomControl.addOnChangeListener(this);
         whiteBalanceControl.addOnChangeListener(this);
-        this.prefs = this.getSharedPreferences(
-                "camera_settings", Context.MODE_PRIVATE);
+        startAutoWhiteBalance.setOnClickListener(this);
+        preciseZoomAdd.setOnClickListener(this);
+        preciseZoomMinus.setOnClickListener(this);
+
+
+        this.prefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+
     }
 
     @Override
@@ -61,16 +73,26 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         lensSelector.setAdapter(adapter);
         lensSelector.setOnItemSelectedListener(this);
+        Log.d(TAG, "Set default controls");
+        if (currentCameraCharacteristics != null) {
+            setDefaultZoomRatio();
+
+        }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.R)
+    private void setDefaultZoomRatio() {
+        float currentZoomRatio = Float.parseFloat(prefs.getString(ZOOM, "1.0"));
+        Range<Float> zoomRange = currentCameraCharacteristics.zoomRatioRange;
+        float sliderValue = (currentZoomRatio - zoomRange.getLower()) / (zoomRange.getUpper() - zoomRange.getLower());
+        zoomControl.setValue(sliderValue);
+    }
+
     @Override
     protected void onCameraConfigured(CameraProperties cameraProperties, CameraDevice camera) throws CameraAccessException {
         updateCameraState();
     }
 
 
-    @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
     public void onValueChange(Slider slider, float value, boolean fromUser) {
         float sliderValue = slider.getValue();
@@ -92,26 +114,24 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.R)
     private void setCameraWhiteBalance(float sliderValue) throws CameraAccessException {
         if (currentCameraCharacteristics != null) {
             int colorTemp = (int) sliderValue;
             Log.d(TAG, "changing white balance to " + colorTemp);
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-            prefs.edit().putString(WHITE_BALANCE, Integer.toString(colorTemp)).commit();
+            prefs.edit().putString(WHITE_BALANCE, Integer.toString(colorTemp)).putBoolean(CUSTOM_AWB, false).apply();
             updateCameraState();
         }
     }
 
 
-    @RequiresApi(api = Build.VERSION_CODES.R)
     protected void setCameraZoom(float sliderValue) throws CameraAccessException {
         if (currentCameraCharacteristics != null) {
             Range<Float> zoomRange = currentCameraCharacteristics.zoomRatioRange;
             float zoomRatio = (zoomRange.getUpper() - zoomRange.getLower()) * sliderValue + zoomRange.getLower();
             Log.d(TAG, "changing zoom to " + zoomRatio);
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-            prefs.edit().putString(ZOOM, Float.toString(zoomRatio)).commit();
+            prefs.edit().putString(ZOOM, Float.toString(zoomRatio)).apply();
             updateCameraState();
         }
     }
@@ -137,7 +157,6 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
         super.onStart();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         CameraProperties properties = (CameraProperties) parent.getAdapter().getItem(position);
@@ -155,4 +174,34 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
     public void onNothingSelected(AdapterView<?> parent) {
 
     }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.fab_awb_lock) {
+
+            try {
+                acquireAWBLock();
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
+
+        } else if (v.getId() == R.id.zoom_precise_minus) {
+            float sliderValue = (float) Math.max(0f, zoomControl.getValue() - 0.01);
+            zoomControl.setValue(sliderValue);
+            try {
+                setCameraZoom(sliderValue);
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
+        } else if (v.getId() == R.id.zoom_precise_plus) {
+            float sliderValue = (float) Math.min(1f, zoomControl.getValue() + 0.01);
+            zoomControl.setValue(sliderValue);
+            try {
+                setCameraZoom(sliderValue);
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }

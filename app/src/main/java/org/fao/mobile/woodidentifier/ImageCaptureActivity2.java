@@ -19,7 +19,6 @@ public class ImageCaptureActivity2 extends BaseCamera2Activity {
         setContentView(R.layout.activity_image_capture2);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
     protected void onCameraConfigured(CameraProperties cameraProperties, CameraDevice camera) throws CameraAccessException {
         updateCameraState();
@@ -41,7 +40,6 @@ public class ImageCaptureActivity2 extends BaseCamera2Activity {
                 .findViewById(R.id.image_capture_surface_view);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
     protected void onSetupCameraComplete(ArrayList<CameraProperties> backFacingCameras, CameraProperties camera) throws CameraAccessException {
         super.onSetupCameraComplete(backFacingCameras, camera);

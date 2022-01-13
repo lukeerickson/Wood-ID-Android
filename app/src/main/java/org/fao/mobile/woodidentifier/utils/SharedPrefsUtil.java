@@ -15,6 +15,10 @@ public class SharedPrefsUtil {
     public static final String AE_COMPENSATION = "ae_compensation";
     public static final String LOCATION_TAGGING = "location_tagging";
     public static final String CROP_FACTOR = "crop_factor";
+    public static final String CUSTOM_AWB = "enable_custom_awb";
+    public static final String CUSTOM_AWB_VALUES = "custom_awb_gains";
+    public static final String CROP_X = "crop_x";
+    public static final String CROP_Y = "crop_y";
     private static final String DEVELOPMENT_MODE = "developer_mode";
 
     public static boolean isDeveloperMode(Context context) {
@@ -25,6 +29,11 @@ public class SharedPrefsUtil {
         SharedPreferences prefs = context.getSharedPreferences(
                 APP_SETTINGS, Context.MODE_PRIVATE);
         return prefs.getBoolean(FIRST_RUN, true);
+    }
+
+    public static boolean isCustomAWB(Context context) {
+        SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return defaultPrefs.getBoolean(CUSTOM_AWB, false);
     }
 
     public static void setFirstRun(Context context) {

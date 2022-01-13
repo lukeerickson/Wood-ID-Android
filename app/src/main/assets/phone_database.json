@@ -1,7 +1,8 @@
 {
   "samsung-SM-A525F" : {
-    "zoom": 5.0,
-    "white_balance": 5700,
+    "zoom": 4.52,
+    "white_balance": 8601,
+    "custom_awb_gains": "250.94,255.0,251.83",
     "crop_factor": 2048,
     "ae_compensation": 0,
     "sensor_orientation": "portrait"

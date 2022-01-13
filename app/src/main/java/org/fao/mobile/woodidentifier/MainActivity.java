@@ -121,50 +121,7 @@ public class MainActivity extends AppCompatActivity {
             AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
             alertDialog.setMessage(R.string.confirm_json_export);
             alertDialog.setPositiveButton(R.string.yes, (dialog, which) -> {
-                executor.execute(() -> {
-                    AppDatabase db = Room.databaseBuilder(this.getApplicationContext(),
-                            AppDatabase.class, "wood-id").build();
-                    JSONArray jsonArray = new JSONArray();
-                    for (InferencesLog log : db.inferencesLogDAO().getAll()) {
-                        JSONObject jsonObject = new JSONObject();
-                        try {
-                            jsonObject.put("uid", log.uid);
-                            jsonObject.put("timestamp", log.timestamp);
-                            jsonObject.put("class", log.classLabel);
-                            jsonObject.put("expectedClass", log.expectedLabel);
-                            jsonObject.put("img", log.imagePath);
-                            jsonObject.put("topk", log.top);
-                            jsonObject.put("topRaw", log.topKRaw);
-                            jsonObject.put("score", log.score);
-                            jsonObject.put("originalFilename", log.originalFilename);
-                            jsonObject.put("lat", log.latitude);
-                            jsonObject.put("long", log.longitude);
-                            jsonObject.put("location_accuracy", log.locationAccuracy);
-                            jsonObject.put("scores", log.scores);
-                            jsonObject.put("version", log.modelVersion);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        jsonArray.put(jsonObject);
-                    }
-                    File documentsDir = Environment.getExternalStoragePublicDirectory(DIRECTORY_DOCUMENTS);
-                    DateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddhhmmss");
-                    String fname = "wood_id_export_" + simpleDateFormat.format(new Date()) + ".json";
-                    File exportFileTarget = new File(documentsDir, fname);
-                    try (FileWriter fileWriter = new FileWriter(exportFileTarget)) {
-                        fileWriter.write(jsonArray.toString());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    runOnUiThread(() -> {
-                        try {
-                            Toast.makeText(this, getString(R.string.export_successful, exportFileTarget.getCanonicalPath()), Toast.LENGTH_LONG).show();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    });
-                });
-
+                extractCSV();
             });
             alertDialog.setNegativeButton(R.string.cancel, (dialog, which) -> {
                 dialog.dismiss();
@@ -173,6 +130,78 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void extractCSV() {
+        executor.execute(() -> {
+            AppDatabase db = Room.databaseBuilder(this.getApplicationContext(),
+                    AppDatabase.class, "wood-id").build();
+            File documentsDir = Environment.getExternalStoragePublicDirectory(DIRECTORY_DOCUMENTS);
+            DateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddhhmmss");
+            String fname = "wood_id_export_" + simpleDateFormat.format(new Date()) + ".csv";
+            File exportFileTarget = new File(documentsDir, fname);
+            try (FileWriter fileWriter = new FileWriter(exportFileTarget)) {
+                fileWriter.write("uid,timestamp,class,img,lat,long\n");
+                for (InferencesLog log : db.inferencesLogDAO().getAll()) {
+                    fileWriter.write(log.uid + "," + log.timestamp + "," + log.classLabel + "," + log.imagePath + "," + log.latitude + "," + log.longitude + "\n");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            runOnUiThread(() -> {
+                try {
+                    Toast.makeText(this, getString(R.string.export_successful, exportFileTarget.getCanonicalPath()), Toast.LENGTH_LONG).show();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        });
+    }
+
+    private void extractJson() {
+        executor.execute(() -> {
+            AppDatabase db = Room.databaseBuilder(this.getApplicationContext(),
+                    AppDatabase.class, "wood-id").build();
+            JSONArray jsonArray = new JSONArray();
+            for (InferencesLog log : db.inferencesLogDAO().getAll()) {
+                JSONObject jsonObject = new JSONObject();
+                try {
+                    jsonObject.put("uid", log.uid);
+                    jsonObject.put("timestamp", log.timestamp);
+                    jsonObject.put("class", log.classLabel);
+                    jsonObject.put("expectedClass", log.expectedLabel);
+                    jsonObject.put("img", log.imagePath);
+                    jsonObject.put("topk", log.top);
+                    jsonObject.put("topRaw", log.topKRaw);
+                    jsonObject.put("score", log.score);
+                    jsonObject.put("originalFilename", log.originalFilename);
+                    jsonObject.put("lat", log.latitude);
+                    jsonObject.put("long", log.longitude);
+                    jsonObject.put("location_accuracy", log.locationAccuracy);
+                    jsonObject.put("scores", log.scores);
+                    jsonObject.put("version", log.modelVersion);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                jsonArray.put(jsonObject);
+            }
+            File documentsDir = Environment.getExternalStoragePublicDirectory(DIRECTORY_DOCUMENTS);
+            DateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddhhmmss");
+            String fname = "wood_id_export_" + simpleDateFormat.format(new Date()) + ".json";
+            File exportFileTarget = new File(documentsDir, fname);
+            try (FileWriter fileWriter = new FileWriter(exportFileTarget)) {
+                fileWriter.write(jsonArray.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            runOnUiThread(() -> {
+                try {
+                    Toast.makeText(this, getString(R.string.export_successful, exportFileTarget.getCanonicalPath()), Toast.LENGTH_LONG).show();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+        });
     }
 
     @Override

@@ -1,5 +1,4 @@
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
-
     <PreferenceCategory app:title="@string/camera_calibration">
         <EditTextPreference
             app:key="white_balance"
@@ -17,6 +16,19 @@
             app:key="crop_factor"
             app:title="@string/crop_factor"
             app:useSimpleSummaryProvider="true" />
+        <SwitchPreference
+            app:key="enable_custom_awb"
+            app:title="@string/enable_custom_awb"
+            app:useSimpleSummaryProvider="true" />
+        <SwitchPreference
+            app:key="force_digital_zoom"
+            app:title="@string/force_digital_zoom"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:key="custom_awb_gains"
+            app:title="@string/custom_white_balance_gains"
+            app:useSimpleSummaryProvider="true"
+            />
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/other_settings">

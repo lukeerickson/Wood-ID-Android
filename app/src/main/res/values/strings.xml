@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">Wood Identifier</string>
+    <string name="app_name">PhilWood ID</string>
     <string name="action_settings">Settings</string>
-    <string name="first_fragment_label">Wood ID</string>
+    <string name="first_fragment_label">PhilWood ID</string>
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="action_clear">Clear</string>
     <string name="title_activity_inference_details">InferenceDetailsActivity</string>
@@ -59,8 +59,12 @@
     <string name="report_mislabeled">Report Mislabeled</string>
     <string name="export_json">Export JSON</string>
     <string name="confirm_delete_all">This will delete all records, are you sure?</string>
-    <string name="confirm_json_export">Continue JSON export?</string>
+    <string name="confirm_json_export">Continue CSV export?</string>
     <string name="export_successful">Export is successful. File placed in %1$s</string>
     <string name="developer_mode">Developer Mode</string>
     <string name="capture_sample">Identify Wood</string>
+    <string name="splash_title">PhilWoodID</string>
+    <string name="enable_custom_awb">Enable Custom White Balance</string>
+    <string name="custom_white_balance_gains">Custom white balance gain values (R,G,B)</string>
+    <string name="force_digital_zoom">Force digital zoom</string>
 </resources>

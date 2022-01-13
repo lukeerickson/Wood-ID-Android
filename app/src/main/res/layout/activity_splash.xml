@@ -13,12 +13,14 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <ImageView android:layout_width="match_parent" android:layout_height="match_parent"
-            android:layout_centerInParent="true"
+
+        <ImageView
             android:id="@+id/fullscreen_content"
-            android:src="@drawable/wood_id_splash"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
             android:scaleType="centerCrop"
-            />
+            android:src="@drawable/wood_id_splash" />
         <LinearLayout
             android:gravity="center_vertical"
             android:background="@color/white"
@@ -39,14 +41,19 @@
                 android:scaleType="fitCenter"
                 android:layout_height="80dp" android:src="@drawable/fao_eu_program"/>
         </LinearLayout>
+
         <TextView
-            android:textSize="48sp"
-            android:textStyle="bold"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_centerInParent="true"
+            android:alpha="0.8"
+            android:background="@color/brown"
+            android:gravity="center"
+            android:text="@string/splash_title"
             android:textColor="@color/white"
-            android:text="WOOD ID"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_margin="10dp"
+            android:textSize="48sp"
+            android:textStyle="bold" />
     </RelativeLayout>
 
 

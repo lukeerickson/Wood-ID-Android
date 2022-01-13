@@ -4,25 +4,26 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/black"
-    android:keepScreenOn="true"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:keepScreenOn="true">
+
     <RelativeLayout
         android:id="@+id/cameraFrame"
-        android:layout_centerInParent="true"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true">
         <ViewStub
             android:id="@+id/image_classification_texture_view_stub"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout="@layout/surface_view" />
-
         <View
             android:id="@+id/cropIndicator"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_centerInParent="true" />
     </RelativeLayout>
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_take_picture"
         android:layout_width="wrap_content"
@@ -35,10 +36,21 @@
         android:layout_marginEnd="@dimen/fab_margin"
         android:layout_marginBottom="@dimen/fab_margin"
         app:srcCompat="@drawable/ic_camera_black_48dp" />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_cancel"
-        app:srcCompat="@drawable/ic_close_thick_white_48dp"
-        style="@style/CancelButton" />
+        style="@style/CancelButton"
+        app:srcCompat="@drawable/ic_close_thick_white_48dp" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_awb_lock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="16dp"
+        app:srcCompat="@drawable/ic_white_balance_auto_black_36dp" />
+
     <ImageView
         android:id="@+id/zoom_icon"
         android:layout_width="wrap_content"
@@ -51,9 +63,10 @@
         android:id="@+id/exposure_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
         android:layout_alignTop="@id/exposure_control"
+        android:layout_margin="10dp"
         android:src="@drawable/ic_camera_metering_center_grey600_36dp" />
+
     <ImageView
         android:id="@+id/white_balance_icon"
         android:layout_width="wrap_content"
@@ -72,13 +85,15 @@
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="10dp"
         android:background="@color/teal_200" />
+
     <EditText
         android:id="@+id/white_balance_value"
-        android:inputType="number"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
         android:layout_alignTop="@id/white_balance_control"
         android:layout_toRightOf="@id/exposure_icon"
-        android:layout_width="50dp"
-        android:layout_height="wrap_content"/>
+        android:inputType="number" />
+
     <com.google.android.material.slider.Slider
         android:id="@+id/white_balance_control"
         android:layout_width="match_parent"
@@ -88,39 +103,61 @@
         android:layout_marginLeft="0dp"
         android:layout_marginTop="10dp"
         android:layout_marginRight="10dp"
+        android:layout_toRightOf="@id/white_balance_value"
         android:valueFrom="1000"
-        android:valueTo="10000"
-        android:layout_toRightOf="@id/white_balance_value" />
-    <com.google.android.material.slider.Slider
-        android:id="@+id/zoom_control"
+        android:valueTo="10000" />
+
+    <LinearLayout
+        android:id="@+id/zoom_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_above="@id/fab_take_picture"
         android:layout_alignParentRight="true"
         android:layout_marginLeft="0dp"
         android:layout_marginTop="10dp"
         android:layout_marginRight="10dp"
         android:layout_marginBottom="10dp"
-        android:layout_toRightOf="@id/exposure_value" />
+        android:layout_toRightOf="@id/exposure_value"
+        android:orientation="horizontal">
+        <ImageButton
+            android:id="@+id/zoom_precise_minus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/minus_circle_outline" />
+        <com.google.android.material.slider.Slider
+            android:id="@+id/zoom_control"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            />
+        <ImageButton
+            android:id="@+id/zoom_precise_plus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/plus_circle_outline" />
+    </LinearLayout>
+
     <EditText
         android:id="@+id/zoom_value"
-        android:inputType="number"
-        android:layout_alignTop="@id/zoom_control"
-        android:layout_toRightOf="@id/zoom_icon"
         android:layout_width="50dp"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/zoom_container"
+        android:layout_toRightOf="@id/zoom_icon"
+        android:inputType="number" />
+
     <EditText
         android:id="@+id/exposure_value"
-        android:inputType="number"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
         android:layout_alignTop="@id/exposure_control"
         android:layout_toRightOf="@id/exposure_icon"
-        android:layout_width="50dp"
-        android:layout_height="wrap_content"/>
+        android:inputType="number" />
+
     <com.google.android.material.slider.Slider
         android:id="@+id/exposure_control"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_above="@id/zoom_control"
+        android:layout_above="@id/zoom_container"
         android:layout_alignParentRight="true"
         android:layout_marginLeft="0dp"
         android:layout_marginTop="10dp"

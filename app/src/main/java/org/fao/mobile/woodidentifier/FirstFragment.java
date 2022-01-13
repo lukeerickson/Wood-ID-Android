@@ -151,8 +151,9 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
             AppDatabase db = Room.databaseBuilder(getActivity().getApplicationContext(),
                     AppDatabase.class, "wood-id").build();
             File localCopyPath = null;
+            String identificationId = UUID.randomUUID().toString();
             try (InputStream inputStream = getActivity().getContentResolver().openInputStream(uri);) {
-                localCopyPath = new File(getActivity().getFilesDir(), UUID.randomUUID().toString() + ".jpg");
+                localCopyPath = new File(getActivity().getFilesDir(), identificationId + ".jpg");
                 FileUtils.copyToFile(inputStream, localCopyPath);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -169,7 +170,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
 
                             if (!locationTagging || (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
                                 Log.w(TAG, "No location permission");
-                                identifySpecies(uri, finalLocalCopyPath, log, modelHelper, null);
+                                identifySpecies(identificationId, finalLocalCopyPath, log, modelHelper, null);
                             } else {
                                 Log.d(TAG, "Getting last known location");
                                 FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
@@ -179,10 +180,10 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
                                 fusedLocationClient.getCurrentLocation(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY, null).addOnSuccessListener((location) -> {
                                     if (location != null) {
                                         Log.d(TAG, "location = " + location.getLatitude() + "," + location.getLongitude());
-                                        identifySpecies(uri, finalLocalCopyPath, log, modelHelper, location);
+                                        identifySpecies(identificationId, finalLocalCopyPath, log, modelHelper, location);
                                     } else {
                                         Log.w(TAG, "Requested but failed to obtain a location");
-                                        identifySpecies(uri, finalLocalCopyPath, log, modelHelper, null);
+                                        identifySpecies(identificationId, finalLocalCopyPath, log, modelHelper, null);
                                     }
                                 });
                             }
@@ -200,13 +201,13 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
         }
     }
 
-    private void identifySpecies(Uri uri, File localCopyPath, InferencesLog log, ModelHelper modelHelper, Location location) {
+    private void identifySpecies(String name, File localCopyPath, InferencesLog log, ModelHelper modelHelper, Location location) {
         executor.execute(() -> {
             AppDatabase db = Room.databaseBuilder(getActivity().getApplicationContext(),
                     AppDatabase.class, "wood-id").build();
             ModelHelper.Result result = null;
             try (InputStream is = new FileInputStream(localCopyPath)) {
-                result = modelHelper == null ? ModelHelper.Result.emptyResult() : modelHelper.runInference(is);
+                result = modelHelper == null ? ModelHelper.Result.emptyResult() : modelHelper.runInference(name, is);
             } catch (IOException e) {
                 e.printStackTrace();
             }

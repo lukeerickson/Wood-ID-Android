@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.TextView;
 
@@ -12,6 +13,7 @@ import org.fao.mobile.woodidentifier.utils.ModelHelper;
 public class AboutActivity extends AppCompatActivity {
     private TextView versionTextView;
     private TextView modeVersionTextView;
+    private TextView phoneModelTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,6 +21,7 @@ public class AboutActivity extends AppCompatActivity {
         setContentView(R.layout.activity_about);
         versionTextView = (TextView)findViewById(R.id.textViewVersion);
         modeVersionTextView = (TextView)findViewById(R.id.textModelVersion);
+        phoneModelTextView = (TextView) findViewById(R.id.textPhoneModel);
 
         PackageInfo pInfo = null;
         try {
@@ -30,6 +33,7 @@ public class AboutActivity extends AppCompatActivity {
 
         versionTextView.setText("Application Version: " + version);
         modeVersionTextView.setText("Model Version: " + ModelHelper.getHelperInstance(this).getVersion());
+        phoneModelTextView.setText("Phone Model: " + Build.MANUFACTURER + "-" + Build.MODEL);
     }
 
 
