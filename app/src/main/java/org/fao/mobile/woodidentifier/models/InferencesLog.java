@@ -71,6 +71,23 @@ public class InferencesLog {
     @ColumnInfo(name = "modelVersion")
     public long modelVersion;
 
+    @ColumnInfo(name = "first_name")
+    public String firstName;
+
+    @ColumnInfo(name = "last_name")
+    public String lastName;
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    @ColumnInfo(name = "comment")
+    public String comment;
+
     public static InferencesLog fromResult(ModelHelper.Result result, ModelHelper helper) {
         InferencesLog inferencesLog = new InferencesLog();
         inferencesLog.timestamp = System.currentTimeMillis();

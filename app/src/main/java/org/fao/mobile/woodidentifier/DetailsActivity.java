@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -45,6 +46,7 @@ public class DetailsActivity extends AppCompatActivity {
     private ArrayAdapter<String> classes;
     private View topKLabel;
     private TextView captureDateTime;
+    private EditText commentField;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,9 +64,19 @@ public class DetailsActivity extends AppCompatActivity {
         this.labelSpinner = findViewById(R.id.mislabled_picker);
         this.referenceImageContainer = findViewById(R.id.reference_images_container);
         this.topKLabel = findViewById(R.id.topk_label);
+        this.commentField = (EditText)findViewById(R.id.commentField);
         this.application = (WoodIdentifierApplication) getApplication();
+        AppDatabase db = Room.databaseBuilder(getApplicationContext(),
+                AppDatabase.class, "wood-id").build();
         closeButton.setOnClickListener((v) -> {
-            finish();
+            executor.execute(()-> {
+                InferencesLog inferenceLog = db.inferencesLogDAO().findByUid(uid);
+                inferenceLog.setComment(commentField.getText().toString());
+                db.inferencesLogDAO().update(inferenceLog);
+                runOnUiThread(()-> {
+                    finish();
+                });
+            });
         });
         if (!SharedPrefsUtil.isDeveloperMode(this)) {
             topKcontainer.setVisibility(View.GONE);
@@ -93,8 +105,7 @@ public class DetailsActivity extends AppCompatActivity {
             }
         });
         executor.execute(() -> {
-            AppDatabase db = Room.databaseBuilder(getApplicationContext(),
-                    AppDatabase.class, "wood-id").build();
+
             InferencesLog inferenceLog = db.inferencesLogDAO().findByUid(uid);
             runOnUiThread(() -> {
                 Species species = application.getSpeciesLookupService().lookupSpeciesInfo(inferenceLog.classLabel);
@@ -103,6 +114,7 @@ public class DetailsActivity extends AppCompatActivity {
                 description.setText(species.getDescription());
                 labelSpinner.setSelection(model.getClassLabels().indexOf(inferenceLog.expectedLabel));
                 captureDateTime.setText(Utils.timestampToString(inferenceLog.timestamp));
+                commentField.setText(inferenceLog.getComment());
                 referenceImageContainer.removeAllViews();
                 Arrays.stream(species.getReferenceImages()).forEachOrdered(imageRef -> {
                     View view = LayoutInflater.from(referenceImageContainer.getContext())

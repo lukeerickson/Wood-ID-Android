@@ -67,4 +67,15 @@
     <string name="enable_custom_awb">Enable Custom White Balance</string>
     <string name="custom_white_balance_gains">Custom white balance gain values (R,G,B)</string>
     <string name="force_digital_zoom">Force digital zoom</string>
+    <string name="user_information">User Information</string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="pin_code">4 digit PIN code</string>
+    <string name="save">Save</string>
+    <string name="pin_code_confirm">Confirm PIN code</string>
+    <string name="enter_pin_code">Enter 4 digit PIN</string>
+    <string name="export_csv">Export CSV</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
+    <string name="search">Search</string>
 </resources>

@@ -1,5 +1,6 @@
 package org.fao.mobile.woodidentifier.adapters;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -31,6 +32,7 @@ import java.util.List;
 
 public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogViewAdapter.ViewHolder> implements View.OnClickListener {
 
+    private static final int OPEN_DETAIL = 5;
     private final ItemListener itemListener;
     private final SpeciesLookupService speciesLookup;
 
@@ -40,10 +42,10 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
     }
 
     private final List<InferencesLog> logs;
-    private final Context context;
+    private final Activity context;
     private ImageView woodImage;
 
-    public InferenceLogViewAdapter(Context context, List<InferencesLog> logs, ItemListener listener) {
+    public InferenceLogViewAdapter(Activity context, List<InferencesLog> logs, ItemListener listener) {
         this.context = context;
         this.logs = logs;
         this.itemListener = listener;
@@ -63,7 +65,7 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
         Intent intent = new Intent(context, DetailsActivity.class);
         InferencesLog inferencesLog = (InferencesLog) view.getTag();
         intent.putExtra("uid", inferencesLog.uid);
-        context.startActivity(intent);
+        context.startActivityForResult(intent, OPEN_DETAIL);
     }
 
     @Override

@@ -32,7 +32,7 @@ public class SplashActivity extends AppCompatActivity {
      * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after
      * user interaction before hiding the system UI.
      */
-    private static final int AUTO_HIDE_DELAY_MILLIS = 3000;
+    private static final int AUTO_HIDE_DELAY_MILLIS = 2000;
 
     /**
      * Some older devices needs a small delay between UI widget updates
@@ -119,22 +119,15 @@ public class SplashActivity extends AppCompatActivity {
                 toggle();
             }
         });
-        boolean autoConfigureStatus;
-        if (SharedPrefsUtil.isFirstRun(this)) {
-            SharedPrefsUtil.setFirstRun(this);
-            String phoneId = Build.MANUFACTURER + "-" + Build.MODEL;
-            autoConfigureStatus = PhoneAutoConfig.setPhoneSettingsFor(this, phoneId);
-        } else {
-            autoConfigureStatus = true;
-        }
+
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
         binding.continueButton.setOnClickListener(
                 (v) -> {
-                    if (!autoConfigureStatus) {
-                        Intent calibrateIntent = new Intent(SplashActivity.this, FirstRunActivity.class);
-                        startActivity(calibrateIntent);
+                    if (SharedPrefsUtil.getUserInfo(this) == null) {
+                        Intent registrationIntent = new Intent(SplashActivity.this, RegistrationActivity.class);
+                        startActivity(registrationIntent);
                     }
                     finish();
                 });

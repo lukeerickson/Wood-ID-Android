@@ -31,6 +31,7 @@ import com.github.dhaval2404.imagepicker.ImagePicker;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.datepicker.MaterialDatePicker;
 
 import org.apache.commons.io.FileUtils;
 import org.fao.mobile.woodidentifier.adapters.InferenceLogViewAdapter;
@@ -52,7 +53,7 @@ import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public class FirstFragment extends Fragment implements InferenceLogViewAdapter.ItemListener {
+public class FirstFragment extends Fragment implements InferenceLogViewAdapter.ItemListener, View.OnClickListener {
 
     private static final int CAPTURE_IMAGE = 101;
     private static final String TAG = FirstFragment.class.getCanonicalName();
@@ -69,6 +70,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
             Bundle savedInstanceState
     ) {
         binding = FragmentFirstBinding.inflate(inflater, container, false);
+        binding.datePickFrom.setOnClickListener(this);
         this.logList = binding.inferenceLogList;
         this.viewModel = new ViewModelProvider(getActivity()).get(InferenceLogViewModel.class);
         viewModel.getCount().observe(getViewLifecycleOwner(), (count) -> {
@@ -281,7 +283,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
         });
     }
 
-    private void onClick(View view) {
+    public void onClick(View view) {
         switch (view.getId()) {
             case R.id.fab:
                 int permission = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -302,6 +304,12 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
                     Intent intent = new Intent(getActivity(), ImageCaptureActivity2.class);
                     startActivityForResult(intent, CAPTURE_IMAGE);
                 }
+                break;
+            case R.id.date_pick_from:
+                MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
+                        .setTitleText("Select date")
+                        .build();
+                datePicker.show(getParentFragmentManager(), "date_picker_from");
                 break;
         }
 

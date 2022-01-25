@@ -23,6 +23,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WoodIdentifier">
         <activity
+            android:name=".EnterPinActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.WoodIdentifier.Fullscreen"
+            android:exported="false" />
+        <activity
+            android:name=".RegistrationActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
             android:name=".SplashActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:exported="false"
@@ -64,6 +73,7 @@
             android:theme="@style/Theme.WoodIdentifier.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

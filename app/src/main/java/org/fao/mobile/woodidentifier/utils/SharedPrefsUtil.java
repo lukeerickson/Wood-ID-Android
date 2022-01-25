@@ -2,8 +2,14 @@ package org.fao.mobile.woodidentifier.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.JsonWriter;
 
 import androidx.preference.PreferenceManager;
+
+import com.google.gson.Gson;
+
+import org.fao.mobile.woodidentifier.models.User;
+import org.json.JSONObject;
 
 public class SharedPrefsUtil {
 
@@ -20,6 +26,7 @@ public class SharedPrefsUtil {
     public static final String CROP_X = "crop_x";
     public static final String CROP_Y = "crop_y";
     private static final String DEVELOPMENT_MODE = "developer_mode";
+    private static final String APP_USER = "user";
 
     public static boolean isDeveloperMode(Context context) {
         SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -47,6 +54,23 @@ public class SharedPrefsUtil {
                 APP_SETTINGS, Context.MODE_PRIVATE);
 
         return prefs.getInt(CURRENT_CAMERA, 0);
+    }
+
+    public static User getUserInfo(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(
+                APP_SETTINGS, Context.MODE_PRIVATE);
+        String userInfoJson =  prefs.getString(APP_USER, null);
+        if (userInfoJson!=null) {
+            return new Gson().fromJson(userInfoJson, User.class);
+        } else {
+            return null;
+        }
+    }
+
+    public static void saveUserInfo(Context context, User user) {
+        SharedPreferences prefs = context.getSharedPreferences(
+                APP_SETTINGS, Context.MODE_PRIVATE);
+        prefs.edit().putString(APP_USER,  new Gson().toJson(user)).commit();
     }
 
     public static void saveCurrentCamera(Context context, int cameraId) {
