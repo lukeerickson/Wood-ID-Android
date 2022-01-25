@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.FileProvider;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -116,6 +117,11 @@ public class MainActivity extends AppCompatActivity {
             alertDialog.setMessage(R.string.confirm_delete_all);
             alertDialog.setPositiveButton(R.string.yes, (dialog, which) -> {
                 executor.execute(() -> {
+                    WoodIdentifierApplication application = (WoodIdentifierApplication)getApplication();
+
+                    application.setFromDateContext(0L);
+                    application.setToDateContext(Long.MAX_VALUE);
+
                     AppDatabase db = Room.databaseBuilder(this.getApplicationContext(),
                             AppDatabase.class, "wood-id").build();
                     db.inferencesLogDAO().deleteAll();
@@ -170,16 +176,18 @@ public class MainActivity extends AppCompatActivity {
                 String fname = "wood_id_export_" + simpleDateFormat.format(new Date()) + ".csv";
                 File exportFileTarget = new File(archiveDir.toString(), fname);
                 inputFiles.add(new Pair<>(fname, exportFileTarget.getCanonicalPath()));
+                WoodIdentifierApplication application = (WoodIdentifierApplication)getApplication();
                 try (FileWriter fileWriter = new FileWriter(exportFileTarget)) {
-                    fileWriter.write("uid,timestamp,class,img,lat,long,version,comment\n");
-                    for (InferencesLog log : db.inferencesLogDAO().getAll()) {
+                    fileWriter.write("uid,timestamp,class,img,lat,long,version,correction,comment\n");
+                    for (InferencesLog log : db.inferencesLogDAO().getByDate(application.getFromDateContext(), application.getToDateContext())) {
                         Log.i(TAG, "adding " + log.imagePath);
                         Date date = new Date(log.timestamp);
                         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
                         DateFormat dfname = new SimpleDateFormat("yyyyMMddHHmm'Z'");
                         String archiveFileName = log.classLabel + "/" + dfname.format(date) + "_capture.jpg";
                         inputFiles.add(new Pair<>(archiveFileName, log.imagePath.replace("file://", "")));
-                        fileWriter.write(log.uid + "," + df.format(date) + "," + log.classLabel + "," + archiveFileName + "," + log.latitude + "," + log.longitude + "," + log.modelVersion + "," + log.comment + "\n");
+                        fileWriter.write(log.uid + "," + df.format(date) + "," + log.classLabel + "," + archiveFileName + "," +
+                                log.latitude + "," + log.longitude + "," + log.modelVersion + "," + log.expectedLabel + "," + log.comment + "\n");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -201,12 +209,22 @@ public class MainActivity extends AppCompatActivity {
 
                 msConn.connect();
                 runOnUiThread(() -> {
+
+                    Uri zipFileUri = FileProvider.getUriForFile(
+                            MainActivity.this,
+                            "org.fao.mobile.woodidentifier.provider", //(use your app signature + ".provider" )
+                            new File(targetOutputFileName));
                     Toast.makeText(this, getString(R.string.export_successful, targetOutputFileName), Toast.LENGTH_LONG).show();
+                    Intent share = new Intent(Intent.ACTION_SEND);
+                    share.setType("application/zip");
+
+                    share.putExtra(Intent.EXTRA_STREAM, zipFileUri);
+
+                    startActivity(Intent.createChooser(share, "Share ZIP file"));
                 });
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         });
     }
 
@@ -245,7 +263,9 @@ public class MainActivity extends AppCompatActivity {
             AppDatabase db = Room.databaseBuilder(this.getApplicationContext(),
                     AppDatabase.class, "wood-id").build();
             JSONArray jsonArray = new JSONArray();
-            for (InferencesLog log : db.inferencesLogDAO().getAll()) {
+            WoodIdentifierApplication application = (WoodIdentifierApplication)getApplication();
+
+            for (InferencesLog log : db.inferencesLogDAO().getByDate(application.getFromDateContext(), application.getToDateContext())) {
                 JSONObject jsonObject = new JSONObject();
                 try {
                     jsonObject.put("uid", log.uid);

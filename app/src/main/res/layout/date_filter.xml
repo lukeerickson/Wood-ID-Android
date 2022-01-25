@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/dateFilter"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="10dp"
+    tools:context=".FirstFragment"
+    tools:showIn="@layout/fragment_first">
+
+    <EditText
+        android:id="@+id/dateFromField"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"></EditText>
+
+    <ImageButton
+        android:id="@+id/date_pick_from"
+        android:background="@android:color/transparent"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:src="@drawable/calendar_month_outline"></ImageButton>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:gravity="center"
+        android:text="@string/to"></TextView>
+
+    <EditText
+        android:id="@+id/dateToField"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"></EditText>
+
+    <ImageButton
+        android:background="@android:color/transparent"
+        android:id="@+id/date_pick_to"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:src="@drawable/calendar_month_outline"></ImageButton>
+
+    <ImageButton
+        android:id="@+id/performFilterButton"
+        android:layout_width="50dp"
+        android:background="@android:color/transparent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="10dp"
+        android:src='@drawable/filter'></ImageButton>
+</LinearLayout>

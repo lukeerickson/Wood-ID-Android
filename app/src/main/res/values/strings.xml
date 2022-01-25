@@ -13,6 +13,10 @@
     <string name="action_recalibrate">Recalibrate Camera</string>
     <string name="camera_calibration">Camera Calibration</string>
     <string name="calibration_instructions">Please attach the XyloPhone to your mobile device, remove the cover, place on top of the sanded portion of a wood sample and tap on \"Start Calibration\" to begin</string>
+    <string name="calibration_instructions_1">1. Turn on the light of the Xylophone</string>
+    <string name="calibration_instructions_2">2. Adjust zoom to fill 6.35mmx 6.35mm of the sample area</string>
+    <string name="calibration_instructions_3">3. Use a white balance card and click on AWB button to adjust the white balance</string>
+    <string name="calibration_instructions_4">4. Exit and perform a test capture on a wood sample</string>
     <string name="title_activity_settings">Settings</string>
 
     <!-- Preference Titles -->
@@ -59,7 +63,7 @@
     <string name="report_mislabeled">Report Mislabeled</string>
     <string name="export_json">Export JSON</string>
     <string name="confirm_delete_all">This will delete all records, are you sure?</string>
-    <string name="confirm_json_export">Continue CSV export?</string>
+    <string name="confirm_json_export">Extract Log to CSV? </string>
     <string name="export_successful">Export is successful. File placed in %1$s</string>
     <string name="developer_mode">Developer Mode</string>
     <string name="capture_sample">Identify Wood</string>
@@ -78,4 +82,5 @@
     <string name="from">From</string>
     <string name="to">To</string>
     <string name="search">Search</string>
+    <string name="applying_filter">Applying date filter</string>
 </resources>

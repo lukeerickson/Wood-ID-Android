@@ -12,6 +12,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class WoodIdentifierApplication extends Application {
+    private long fromDateContext = 0L;
+    private long toDateContext = Long.MAX_VALUE;
+
     public SpeciesLookupService getSpeciesLookupService() {
         return speciesLookupService;
     }
@@ -27,5 +30,21 @@ public class WoodIdentifierApplication extends Application {
             ModelHelper.setupDefaultModel(this, prefs);
             this.speciesLookupService = new SpeciesLookupService(this);
         });
+    }
+
+    public void setFromDateContext(long fromDateContext) {
+        this.fromDateContext = fromDateContext;
+    }
+
+    public long getFromDateContext() {
+        return fromDateContext;
+    }
+
+    public void setToDateContext(long toDateContext) {
+        this.toDateContext = toDateContext;
+    }
+
+    public long getToDateContext() {
+        return toDateContext;
     }
 }

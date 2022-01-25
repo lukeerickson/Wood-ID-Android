@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -48,6 +49,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -64,13 +69,38 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
     private RecyclerView logList;
     private InferenceLogViewModel viewModel;
 
+    private View datePickFrom;
+    private View datePickTo;
+    private View performFilterButton;
+    private EditText dateFromField;
+    private EditText dateToField;
+
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState
     ) {
         binding = FragmentFirstBinding.inflate(inflater, container, false);
-        binding.datePickFrom.setOnClickListener(this);
+        this.datePickFrom = binding.getRoot().findViewById(R.id.date_pick_from);
+        this.datePickTo = binding.getRoot().findViewById(R.id.date_pick_to);
+        this.performFilterButton = binding.getRoot().findViewById(R.id.performFilterButton);
+        this.dateFromField = binding.getRoot().findViewById(R.id.dateFromField);
+        this.dateToField = binding.getRoot().findViewById(R.id.dateToField);
+        DateFormat dfname = new SimpleDateFormat("MM/dd/yyyy");
+        WoodIdentifierApplication app = (WoodIdentifierApplication)getActivity().getApplication();
+
+        if (app.getFromDateContext() != 0L) {
+            dateFromField.setText(dfname.format(new Date(app.getFromDateContext())));
+        }
+
+        if (app.getToDateContext() != Long.MAX_VALUE) {
+            dateToField.setText(dfname.format(new Date(app.getToDateContext())));
+        }
+
+        this.datePickFrom.setOnClickListener(this::onClick);
+        this.datePickTo.setOnClickListener(this::onClick);
+        this.performFilterButton.setOnClickListener(this::onClick);
+
         this.logList = binding.inferenceLogList;
         this.viewModel = new ViewModelProvider(getActivity()).get(InferenceLogViewModel.class);
         viewModel.getCount().observe(getViewLifecycleOwner(), (count) -> {
@@ -106,7 +136,8 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
         executor.execute(() -> {
             AppDatabase db = Room.databaseBuilder(getActivity().getApplicationContext(),
                     AppDatabase.class, "wood-id").build();
-            List<InferencesLog> logs = db.inferencesLogDAO().getAll();
+            WoodIdentifierApplication app = (WoodIdentifierApplication)getActivity().getApplication();
+            List<InferencesLog> logs = db.inferencesLogDAO().getByDate(app.getFromDateContext(), app.getToDateContext());
             getActivity().runOnUiThread(() -> {
                 logList.setAdapter(new InferenceLogViewAdapter(getActivity(), logs, this));
             });
@@ -261,7 +292,8 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
         executor.execute(() -> {
             db.inferencesLogDAO().update(log);
             Log.i(TAG, " uid updated " + log.uid);
-            List<InferencesLog> logs = db.inferencesLogDAO().getAll();
+            WoodIdentifierApplication app = (WoodIdentifierApplication)getActivity().getApplication();
+            List<InferencesLog> logs = db.inferencesLogDAO().getByDate(app.getFromDateContext(), app.getToDateContext());
             getActivity().runOnUiThread(() -> {
                 logList.setAdapter(new InferenceLogViewAdapter(getActivity(), logs, this));
                 if (callback != null) {
@@ -284,6 +316,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
     }
 
     public void onClick(View view) {
+        DateFormat dfname = new SimpleDateFormat("MM/dd/yyyy");
         switch (view.getId()) {
             case R.id.fab:
                 int permission = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -306,10 +339,61 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
                 }
                 break;
             case R.id.date_pick_from:
-                MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
-                        .setTitleText("Select date")
+                MaterialDatePicker<Long> datePickerFrom = MaterialDatePicker.Builder.datePicker()
+                        .setTitleText("Select From Date")
                         .build();
-                datePicker.show(getParentFragmentManager(), "date_picker_from");
+                datePickerFrom.show(getParentFragmentManager(), "date_picker_from");
+                datePickerFrom.addOnPositiveButtonClickListener(selection -> {
+                    this.dateFromField.setText(dfname.format(selection));
+                });
+                break;
+            case R.id.date_pick_to:
+                MaterialDatePicker<Long> datePickerTo = MaterialDatePicker.Builder.datePicker()
+                        .setTitleText("Select To Date")
+                        .build();
+                datePickerTo.show(getParentFragmentManager(), "date_picker_to");
+                datePickerTo.addOnPositiveButtonClickListener(selection -> {
+                  this.dateToField.setText(dfname.format(selection));
+                });
+                break;
+            case R.id.performFilterButton:
+                DateFormat filterFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+                WoodIdentifierApplication app = (WoodIdentifierApplication)getActivity().getApplication();
+
+                long fromDate = app.getFromDateContext();
+                long toDate = app.getToDateContext();
+
+                if (!this.dateFromField.getText().toString().trim().isEmpty()) {
+                    try {
+                        fromDate = filterFormat.parse(this.dateFromField.getText().toString().trim() + " 00:00:00").getTime();
+                    } catch (ParseException e) {
+                        this.dateFromField.requestFocus();
+                        this.dateFromField.setError("Invalid date format should be MM/DD/YYYY");
+                        e.printStackTrace();
+                        return;
+                    }
+                } else {
+                    fromDate = 0L;
+                }
+
+                if (!this.dateToField.getText().toString().trim().isEmpty()) {
+                    try {
+                        toDate = filterFormat.parse(this.dateToField.getText().toString().trim() + " 23:59:59").getTime();
+                    } catch (ParseException e) {
+                        this.dateToField.requestFocus();
+                        this.dateToField.setError("Invalid date format should be MM/DD/YYYY");
+                        e.printStackTrace();
+                        return;
+                    }
+                } else {
+                    toDate = Long.MAX_VALUE;
+                }
+
+                app.setFromDateContext(fromDate);
+                app.setToDateContext(toDate);
+
+                Toast.makeText(getActivity(),R.string.applying_filter, Toast.LENGTH_LONG).show();
+                refresh();
                 break;
         }
 
