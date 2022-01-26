@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
             AppDatabase db = Room.databaseBuilder(this.getApplicationContext(),
                     AppDatabase.class, "wood-id").build();
             File cacheDirectory = getCacheDir();
-            DateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddhhmmss");
+            DateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
             String archiveName = "wood_id_export_" + simpleDateFormat.format(new Date());
 
             try {
@@ -182,9 +182,13 @@ public class MainActivity extends AppCompatActivity {
                     for (InferencesLog log : db.inferencesLogDAO().getByDate(application.getFromDateContext(), application.getToDateContext())) {
                         Log.i(TAG, "adding " + log.imagePath);
                         Date date = new Date(log.timestamp);
-                        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
-                        DateFormat dfname = new SimpleDateFormat("yyyyMMddHHmm'Z'");
-                        String archiveFileName = log.classLabel + "/" + dfname.format(date) + "_capture.jpg";
+                        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+                        DateFormat dfname = new SimpleDateFormat("yyyyMMddHHmmss'Z'");
+                        String suffix = "_capture.jpg";
+                        if (!log.expectedLabel.equals(log.classLabel)) {
+                            suffix = "corrected.jpg";
+                        }
+                        String archiveFileName = log.expectedLabel + "/" + dfname.format(date) + "_" + suffix;
                         inputFiles.add(new Pair<>(archiveFileName, log.imagePath.replace("file://", "")));
                         fileWriter.write(log.uid + "," + df.format(date) + "," + log.classLabel + "," + archiveFileName + "," +
                                 log.latitude + "," + log.longitude + "," + log.modelVersion + "," + log.expectedLabel + "," + log.comment + "\n");
@@ -238,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
 
             for (int i = 0; i < _files.size(); i++) {
                 Pair<String, String> zipEntry = _files.get(i);
-                Log.v("Compress", "Adding: " + zipEntry.second + " as " + zipEntry.first);
+                Log.i("Compress", "Adding: " + zipEntry.second + " as " + zipEntry.first);
                 FileInputStream fi = new FileInputStream(zipEntry.second);
                 origin = new BufferedInputStream(fi, BUFFER);
 

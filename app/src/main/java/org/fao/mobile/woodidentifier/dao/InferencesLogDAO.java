@@ -15,7 +15,7 @@ public interface InferencesLogDAO {
     @Query("SELECT * FROM inferences_log ORDER BY timestamp DESC")
     List<InferencesLog> getAll();
 
-    @Query("SELECT * FROM inferences_log WHERE timestamp > :fromDate AND timestamp < :toDate")
+    @Query("SELECT * FROM inferences_log WHERE timestamp > :fromDate AND timestamp < :toDate ORDER BY timestamp DESC")
     List<InferencesLog> getByDate(long fromDate, long toDate);
 
     @Query("SELECT * FROM inferences_log WHERE uid IN (:userIds)")
