@@ -17,6 +17,7 @@ import android.view.ViewStub;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 
 import androidx.annotation.Nullable;
@@ -137,8 +138,8 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
     }
 
     @Override
-    protected View getCaptureButton() {
-        return findViewById(R.id.fab_take_picture);
+    protected View[] getCaptureButton() {
+        return new View[] { findViewById(R.id.fab_take_picture) };
     }
 
     @Override
@@ -150,6 +151,11 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
         return (SurfaceView) ((ViewStub) findViewById(R.id.image_classification_texture_view_stub))
                 .inflate()
                 .findViewById(R.id.image_capture_surface_view);
+    }
+
+    @Override
+    protected void onCameraFrameSet(View cameraFrame, int autoCrop) {
+        cameraFrame.setLayoutParams(new RelativeLayout.LayoutParams(autoCrop, autoCrop));
     }
 
     @Override

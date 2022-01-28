@@ -55,6 +55,7 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".ImageCaptureActivity2"
+            android:theme="@style/Theme.WoodIdentifier.Fullscreen"
             android:screenOrientation="portrait" />
         <activity
             android:name=".FirstRunActivity"

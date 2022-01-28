@@ -75,7 +75,7 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
     protected CameraManager cameraManager;
     protected CameraDevice currentCamera;
     protected CameraCaptureSession session;
-    private View capureButton;
+    private View[] capureButton;
     private View cameraFrame;
     private ImageReader imageReader;
     private ImageReader autoAWBReader;
@@ -119,7 +119,7 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
         });
     }
 
-    protected abstract View getCaptureButton();
+    protected abstract View[] getCaptureButton();
 
     protected abstract View getCancelButton();
 
@@ -145,7 +145,8 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
             Size size = camera.getSize();
 
             int autoCrop = Math.min(cameraFrame.getWidth(), cameraFrame.getHeight());
-            cameraFrame.setLayoutParams(new RelativeLayout.LayoutParams(autoCrop, autoCrop));
+            onCameraFrameSet(cameraFrame, autoCrop);
+
 
             try {
                 setupCamera(holder, camera);
@@ -155,6 +156,8 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
             }
         });
     }
+
+    protected abstract void onCameraFrameSet(View cameraFrame, int autoCrop);
 
     protected void onSetupCameraComplete(ArrayList<CameraProperties> backFacingCameras, CameraProperties camera) throws CameraAccessException {
 
@@ -276,7 +279,9 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
         if (currentCamera != null) {
             currentCamera.close();
         }
-        capureButton.setEnabled(false);
+        for(View button: capureButton) {
+            button.setEnabled(false);
+        }
 
         cameraManager.openCamera(cameraProperties.cameraId, new CameraDevice.StateCallback() {
             @Override
@@ -315,19 +320,22 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                                 previewRequest.addTarget(holder.getSurface());
 
                                 session.setRepeatingRequest(previewRequest.build(), null, null);
-
-                                capureButton.setOnClickListener(v -> {
-                                    try {
-                                        capture(session);
-                                    } catch (CameraAccessException cameraAccessException) {
-                                        cameraAccessException.printStackTrace();
+                                for(View button: capureButton) {
+                                    button.setOnClickListener(v -> {
+                                        try {
+                                            capture(session);
+                                        } catch (CameraAccessException cameraAccessException) {
+                                            cameraAccessException.printStackTrace();
+                                        }
+                                    });
+                                }
+                                onCameraConfigured(cameraProperties, camera);
+                                runOnUiThread(() -> {
+                                    for(View button: capureButton) {
+                                        button.setEnabled(true);
                                     }
                                 });
 
-                                onCameraConfigured(cameraProperties, camera);
-                                runOnUiThread(() -> {
-                                    capureButton.setEnabled(true);
-                                });
                             } catch (CameraAccessException e) {
                                 e.printStackTrace();
                             }

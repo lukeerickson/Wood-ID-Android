@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewStub;
+import android.widget.RelativeLayout;
 
 import java.util.ArrayList;
 
@@ -25,8 +26,8 @@ public class ImageCaptureActivity2 extends BaseCamera2Activity {
     }
 
     @Override
-    protected View getCaptureButton() {
-        return findViewById(R.id.fab_take_picture);
+    protected View[] getCaptureButton() {
+        return new View[] { findViewById(R.id.fab_take_picture), findViewById(R.id.fab_take_picture2)};
     }
 
     @Override
@@ -38,6 +39,13 @@ public class ImageCaptureActivity2 extends BaseCamera2Activity {
         return (SurfaceView) ((ViewStub) findViewById(R.id.image_classification_texture_view_stub))
                 .inflate()
                 .findViewById(R.id.image_capture_surface_view);
+    }
+
+    @Override
+    protected void onCameraFrameSet(View cameraFrame, int autoCrop) {
+        RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(autoCrop, autoCrop);
+        relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+        cameraFrame.setLayoutParams(relativeParams);
     }
 
     @Override
