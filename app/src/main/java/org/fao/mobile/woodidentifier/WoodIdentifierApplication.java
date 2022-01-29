@@ -8,6 +8,7 @@ import androidx.preference.PreferenceManager;
 import org.fao.mobile.woodidentifier.utils.ModelHelper;
 import org.fao.mobile.woodidentifier.utils.SpeciesLookupService;
 
+import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -27,7 +28,11 @@ public class WoodIdentifierApplication extends Application {
         super.onCreate();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         executor.execute(() -> {
-            ModelHelper.setupDefaultModel(this, prefs);
+            try {
+                ModelHelper.setupDefaultModel(this, prefs);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             this.speciesLookupService = new SpeciesLookupService(this);
         });
     }

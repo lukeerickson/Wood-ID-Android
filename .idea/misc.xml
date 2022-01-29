@@ -24,11 +24,15 @@
         <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.34479166666666666" />
         <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.34479166666666666" />
         <entry key="..\:/Users/josep/AndroidStudioProjects/WoodIdentifier/app/src/main/res/xml/root_preferences.xml" value="0.328125" />
-        <entry key="app/src/main/res/layout/activity_image_capture2.xml" value="0.69375" />
+        <entry key="app/src/main/res/layout/activity_model_manager.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/fragment_first.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/model_version_view.xml" value="0.1" />
+        <entry key="app/src/main/res/menu/menu_main.xml" value="0.196875" />
+        <entry key="app/src/main/res/xml/root_preferences.xml" value="0.196875" />
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_8" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">

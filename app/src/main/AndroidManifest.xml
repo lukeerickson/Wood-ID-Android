@@ -23,10 +23,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WoodIdentifier">
         <activity
-            android:name=".EnterPinActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.WoodIdentifier.Fullscreen"
+            android:name=".ModelManagerActivity"
             android:exported="false" />
+        <activity
+            android:name=".EnterPinActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.WoodIdentifier.Fullscreen" />
         <activity
             android:name=".RegistrationActivity"
             android:exported="false"
@@ -55,8 +58,8 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".ImageCaptureActivity2"
-            android:theme="@style/Theme.WoodIdentifier.Fullscreen"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.WoodIdentifier.Fullscreen" />
         <activity
             android:name=".FirstRunActivity"
             android:screenOrientation="portrait" />
@@ -69,8 +72,8 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name"
             android:exported="true"
+            android:label="@string/app_name"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.WoodIdentifier.NoActionBar">
             <intent-filter>
@@ -80,16 +83,17 @@
             </intent-filter>
         </activity>
         <activity android:name=".ImageCaptureActivity" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="org.fao.mobile.woodidentifier.provider"
             android:exported="false"
             android:grantUriPermissions="true">
+
             <!-- ressource file to create -->
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths">
-            </meta-data>
+                android:resource="@xml/file_paths"></meta-data>
         </provider>
     </application>
 

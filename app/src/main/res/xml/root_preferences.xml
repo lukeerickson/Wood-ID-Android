@@ -45,5 +45,4 @@
             app:title="@string/developer_mode"
             app:useSimpleSummaryProvider="false"/>
     </PreferenceCategory>
-
 </PreferenceScreen>

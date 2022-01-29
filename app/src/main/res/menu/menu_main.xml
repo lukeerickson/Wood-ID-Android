@@ -28,4 +28,9 @@
         android:title="@string/export_csv"
         app:showAsAction="never"
         />
+    <item
+        android:id="@+id/manage_model"
+        android:title="@string/manage_model"
+        app:showAsAction="never"
+        />
 </menu>

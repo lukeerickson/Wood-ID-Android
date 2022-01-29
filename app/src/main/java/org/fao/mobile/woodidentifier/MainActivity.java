@@ -154,6 +154,9 @@ public class MainActivity extends AppCompatActivity {
                 dialog.dismiss();
             });
             alertDialog.show();
+        } else if (id == R.id.manage_model) {
+            Intent intent = new Intent(this, ModelManagerActivity.class);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);

@@ -458,11 +458,12 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
         // disable OIS
         captureRequest.set(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE, CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_OFF);
         // adjust color correction using seekbar's params
+
         captureRequest.set(CaptureRequest.COLOR_CORRECTION_MODE, CaptureRequest.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX);
         captureRequest.set(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, aeCompensation);
 
         if (isCustomAWB(this)) {
-            RggbChannelVector channelVector = new RggbChannelVector((awbDelta[0] / 255f) * 2f, (awbDelta[1] / 255f), (awbDelta[1] / 255f), (awbDelta[2] / 255f) * 2f);
+            RggbChannelVector channelVector = new RggbChannelVector((awbDelta[0] / 255f) * 3f, (awbDelta[1] / 255f), (awbDelta[1] / 255f), (awbDelta[2] / 255f) * 3f);
             Log.i(TAG, awbDelta[0] + "," + awbDelta[1] + "," + awbDelta[2]);
             captureRequest.set(CaptureRequest.COLOR_CORRECTION_GAINS, channelVector);
         } else {

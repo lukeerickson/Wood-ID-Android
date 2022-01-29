@@ -10,8 +10,11 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
+import androidx.room.Room;
 
+import org.fao.mobile.woodidentifier.AppDatabase;
 import org.fao.mobile.woodidentifier.BaseCamera2Activity;
+import org.fao.mobile.woodidentifier.models.ModelVersion;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.pytorch.IValue;
@@ -48,7 +51,7 @@ public class ModelHelper {
     public static final String MODEL_MOBILE_PT = "asset://model.zip";
     private static final String CLASS_LABELS = "labels.txt";
     public static final String MODEL_PATH = "model_path";
-    private static final String MODEL_VERSION = "model_version";
+    public static final String MODEL_VERSION = "model_version";
     private static final long STOCK_VERSION = 202210270535L;
     private static final String SPECIES_DATABASE = "species_database.json";
 
@@ -78,7 +81,7 @@ public class ModelHelper {
     }
 
     @Nullable
-    public static String setupDefaultModel(Context context, SharedPreferences prefs) {
+    public static String setupDefaultModel(Context context, SharedPreferences prefs) throws IOException {
         String modelPath = prefs.getString(MODEL_PATH, null);
         long modelVersion = prefs.getLong(MODEL_VERSION, 0L);
         if (modelPath == null) {
@@ -97,20 +100,59 @@ public class ModelHelper {
         return modelPath;
     }
 
-    private static String setupModel(Context context, SharedPreferences prefs) {
+    private static String setupModel(Context context, SharedPreferences prefs) throws IOException {
         Log.i(TAG, "setting up stock model");
+        ModelVersion modelVersion = registerModel(context, MODEL_MOBILE_PT, true);
+        prefs.edit().putString(MODEL_PATH, modelVersion.path).putLong(MODEL_VERSION, modelVersion.version).commit();
+        return modelVersion.path;
+
+    }
+
+    public static ModelVersion registerModel(Context context, String archivePath, boolean activate) throws IOException {
+        String modelPath = ModelHelper.prepareModel(context, archivePath);
+        //read model version
+        File modelInfo = new File(modelPath, "model.json");
+        JSONObject jsonObject = null;
         try {
-            String modelPath = ModelHelper.prepareModel(context, MODEL_MOBILE_PT);
+            AppDatabase db = Room.databaseBuilder(context.getApplicationContext(),
+                    AppDatabase.class, "wood-id").build();
+            String name;
+            jsonObject = new JSONObject(new String(Files.readAllBytes(Paths.get(modelInfo.getCanonicalPath()))));
+            if (jsonObject.has("name")) {
+                name = jsonObject.getString("name");
+            } else {
+                name = "model";
+            }
+            long version = jsonObject.getLong("version");
+            ModelVersion modelVersion = db.modelVersionsDAO().find(name, version);
+            if (modelVersion == null) {
 
-            //read model version
-            File modelInfo = new File(modelPath, "model.json");
-            JSONObject jsonObject = new JSONObject(new String(Files.readAllBytes(Paths.get(modelInfo.getCanonicalPath()))));
+                modelVersion = new ModelVersion();
+                modelVersion.active = false;
+                modelVersion.version = jsonObject.getLong("version");
+                if (jsonObject.has("description")) {
+                    modelVersion.description = jsonObject.getString("description");
+                }
+                modelVersion.timestamp = new Date().getTime();
+                if (jsonObject.has("name")) {
+                    modelVersion.name = jsonObject.getString("name");
+                } else {
+                    modelVersion.name = "Wood ID model";
+                }
+                modelVersion.path = modelPath;
+                modelVersion.active = activate;
+                db.modelVersionsDAO().insert(modelVersion);
+            } else {
+                //Cleanup extracted model
+                File archiveFile = new File(archivePath);
+                archiveFile.delete();
+            }
 
-            prefs.edit().putString(MODEL_PATH, modelPath).putLong(MODEL_VERSION, jsonObject.getLong("version")).commit();
-            return modelPath;
-        } catch (IOException | JSONException e) {
+            return modelVersion;
+        } catch (JSONException e) {
             e.printStackTrace();
         }
+
         return null;
     }
 
