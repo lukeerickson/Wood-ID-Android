@@ -5,13 +5,73 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".FirstFragment">
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/header_group"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:layout_gravity="center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/map_marker"
+                ></ImageView>
+            <TextView
+                android:id="@+id/location_marker"
+                android:text="@string/not_set"
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+            <EditText
+                android:id="@+id/location_marker_field"
+                android:visibility="gone"
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+            </EditText>
+            <Button
+                android:id="@+id/set_location_button"
+                android:background="@android:color/transparent"
+                android:textColor="@color/black"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                ></Button>
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/edit_buttons_group"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent">
+                <Button
+                    android:id="@+id/set_location_apply_button"
+                    android:background="@android:color/transparent"
+                    android:textColor="@color/un_blue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/apply"
+                    ></Button>
+                <Button
 
-    <include layout="@layout/date_filter" />
-
+                    android:id="@+id/set_location_cancel_button"
+                    android:background="@android:color/transparent"
+                    android:textColor="@color/black"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cancel"
+                    ></Button>
+            </androidx.appcompat.widget.LinearLayoutCompat>
+        </androidx.appcompat.widget.LinearLayoutCompat>
+        <include layout="@layout/date_filter" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/dateFilter">
+        android:layout_below="@id/header_group">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/inference_log_list"

@@ -2,6 +2,7 @@ package org.fao.mobile.woodidentifier;
 
 import android.app.Application;
 import android.content.SharedPreferences;
+import android.text.Editable;
 
 import androidx.preference.PreferenceManager;
 

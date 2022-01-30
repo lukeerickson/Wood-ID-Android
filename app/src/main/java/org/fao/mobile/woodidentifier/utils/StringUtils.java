@@ -32,4 +32,10 @@ public class StringUtils {
         }
         return values;
     }
+
+    public static boolean isEmpty(String comment) {
+        if ((comment == null) || (comment == "")) return true;
+
+        return false;
+    }
 }

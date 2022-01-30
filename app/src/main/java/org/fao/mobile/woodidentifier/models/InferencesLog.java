@@ -62,11 +62,17 @@ public class InferencesLog {
     @ColumnInfo(name = "location_accuracy")
     public float locationAccuracy;
 
+    @ColumnInfo(name = "location_name")
+    public String locationName;
+
     @ColumnInfo(name = "mislabeled")
     public boolean mislabeled;
 
     @ColumnInfo(name = "expectedLabel")
     public String expectedLabel;
+
+    @ColumnInfo(name = "model_name")
+    public String modelName;
 
     @ColumnInfo(name = "modelVersion")
     public long modelVersion;
@@ -142,6 +148,7 @@ public class InferencesLog {
         this.scores = result.getScores();
         this.topKRaw = result.getTop();
         this.modelVersion = helper.getVersion();
+        this.modelName = helper.getName();
 
         List<String> classLabels;
         if (helper !=null) {

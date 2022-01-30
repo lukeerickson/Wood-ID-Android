@@ -14,6 +14,7 @@ import android.util.Log;
 import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,10 +27,13 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import androidx.room.Room;
 
+import com.google.android.material.progressindicator.LinearProgressIndicator;
+
 import org.fao.mobile.woodidentifier.databinding.ActivityMainBinding;
 import org.fao.mobile.woodidentifier.models.InferenceLogViewModel;
 import org.fao.mobile.woodidentifier.models.InferencesLog;
 import org.fao.mobile.woodidentifier.utils.SharedPrefsUtil;
+import org.fao.mobile.woodidentifier.utils.StringUtils;
 import org.fao.mobile.woodidentifier.utils.Utils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -66,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
     private NavController navController;
     private InferenceLogViewModel viewModel;
     private MediaScannerConnection msConn;
+    private LinearProgressIndicator exportProgressIndicator;
+    private View progressGroup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +85,8 @@ public class MainActivity extends AppCompatActivity {
         this.navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+        this.progressGroup = binding.getRoot().findViewById(R.id.progress_group);
+        this.exportProgressIndicator = (LinearProgressIndicator)binding.getRoot().findViewById(R.id.export_progress_indicator);
         if (SharedPrefsUtil.getUserInfo(this) != null) {
             Intent enterPinCode = new Intent(this, EnterPinActivity.class);
             startActivityForResult(enterPinCode, PIN_CODE);
@@ -117,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
             alertDialog.setMessage(R.string.confirm_delete_all);
             alertDialog.setPositiveButton(R.string.yes, (dialog, which) -> {
                 executor.execute(() -> {
-                    WoodIdentifierApplication application = (WoodIdentifierApplication)getApplication();
+                    WoodIdentifierApplication application = (WoodIdentifierApplication) getApplication();
 
                     application.setFromDateContext(0L);
                     application.setToDateContext(Long.MAX_VALUE);
@@ -179,22 +187,30 @@ public class MainActivity extends AppCompatActivity {
                 String fname = "wood_id_export_" + simpleDateFormat.format(new Date()) + ".csv";
                 File exportFileTarget = new File(archiveDir.toString(), fname);
                 inputFiles.add(new Pair<>(fname, exportFileTarget.getCanonicalPath()));
-                WoodIdentifierApplication application = (WoodIdentifierApplication)getApplication();
+                WoodIdentifierApplication application = (WoodIdentifierApplication) getApplication();
+                runOnUiThread(()-> {
+                    this.progressGroup.setVisibility(View.VISIBLE);
+                    this.exportProgressIndicator.setProgressCompat(0, true);
+                });
                 try (FileWriter fileWriter = new FileWriter(exportFileTarget)) {
-                    fileWriter.write("uid,timestamp,class,img,lat,long,version,correction,comment\n");
+                    fileWriter.write("uid,timestamp,class,img,lat,long,location,model_name,version,correction,comment\n");
                     for (InferencesLog log : db.inferencesLogDAO().getByDate(application.getFromDateContext(), application.getToDateContext())) {
                         Log.i(TAG, "adding " + log.imagePath);
                         Date date = new Date(log.timestamp);
                         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
                         DateFormat dfname = new SimpleDateFormat("yyyyMMddHHmmss'Z'");
+
+                        String currentLocation = SharedPrefsUtil.getCurrentLocation(this);
                         String suffix = "_capture.jpg";
                         if (!log.expectedLabel.equals(log.classLabel)) {
                             suffix = "corrected.jpg";
                         }
                         String archiveFileName = log.expectedLabel + "/" + dfname.format(date) + "_" + suffix;
                         inputFiles.add(new Pair<>(archiveFileName, log.imagePath.replace("file://", "")));
-                        fileWriter.write(log.uid + "," + df.format(date) + "," + log.classLabel + "," + archiveFileName + "," +
-                                log.latitude + "," + log.longitude + "," + log.modelVersion + "," + log.expectedLabel + "," + log.comment + "\n");
+
+                        fileWriter.write(log.uid + "," + df.format(date) + "," + csvEscape(log.classLabel) + "," + archiveFileName + "," +
+                                log.latitude + "," + log.longitude + "," + csvEscape(currentLocation) + "," + csvEscape(log.modelName) + "," +
+                                log.modelVersion + "," + log.expectedLabel + "," + csvEscape(log.comment) + "\n");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -202,6 +218,10 @@ public class MainActivity extends AppCompatActivity {
                 String targetOutputFileName = documentsDir.getCanonicalPath() + "/" + archiveName + ".zip";
                 zip(inputFiles, targetOutputFileName);
                 cacheDirectory.delete();
+                runOnUiThread(()-> {
+                    this.exportProgressIndicator.setProgressCompat(0, false);
+                    this.progressGroup.setVisibility(View.GONE);
+                });
                 msConn = new MediaScannerConnection(this.getApplicationContext(), new MediaScannerConnection.MediaScannerConnectionClient() {
                     @Override
                     public void onMediaScannerConnected() {
@@ -235,6 +255,15 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private String csvEscape(String comment) {
+        if (StringUtils.isEmpty(comment)) return "";
+        comment = comment.replace("\"", "\"\"");
+        if (comment.contains(",")) {
+            return "\"" + comment + "\"";
+        }
+        return comment;
+    }
+
     public void zip(List<Pair<String, String>> _files, String zipFileName) {
         try {
             BufferedInputStream origin = null;
@@ -243,7 +272,12 @@ public class MainActivity extends AppCompatActivity {
                     dest));
             byte data[] = new byte[BUFFER];
 
+
             for (int i = 0; i < _files.size(); i++) {
+                final int currentProgress = i;
+                runOnUiThread(()-> {
+                    this.exportProgressIndicator.setProgressCompat((currentProgress * 100 /_files.size()), true);
+                });
                 Pair<String, String> zipEntry = _files.get(i);
                 Log.i("Compress", "Adding: " + zipEntry.second + " as " + zipEntry.first);
                 FileInputStream fi = new FileInputStream(zipEntry.second);
@@ -260,6 +294,8 @@ public class MainActivity extends AppCompatActivity {
             }
 
             out.close();
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -270,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
             AppDatabase db = Room.databaseBuilder(this.getApplicationContext(),
                     AppDatabase.class, "wood-id").build();
             JSONArray jsonArray = new JSONArray();
-            WoodIdentifierApplication application = (WoodIdentifierApplication)getApplication();
+            WoodIdentifierApplication application = (WoodIdentifierApplication) getApplication();
 
             for (InferencesLog log : db.inferencesLogDAO().getByDate(application.getFromDateContext(), application.getToDateContext())) {
                 JSONObject jsonObject = new JSONObject();

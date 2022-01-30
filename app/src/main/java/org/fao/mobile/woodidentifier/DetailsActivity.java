@@ -47,6 +47,7 @@ public class DetailsActivity extends AppCompatActivity {
     private View topKLabel;
     private TextView captureDateTime;
     private EditText commentField;
+    private TextView modelVersion;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +63,7 @@ public class DetailsActivity extends AppCompatActivity {
         this.description = findViewById(R.id.description);
         this.topKcontainer = findViewById(R.id.topKcontainer);
         this.labelSpinner = findViewById(R.id.mislabled_picker);
+        this.modelVersion = findViewById(R.id.modelVersion);
         this.referenceImageContainer = findViewById(R.id.reference_images_container);
         this.topKLabel = findViewById(R.id.topk_label);
         this.commentField = (EditText)findViewById(R.id.commentField);
@@ -105,7 +107,6 @@ public class DetailsActivity extends AppCompatActivity {
             }
         });
         executor.execute(() -> {
-
             InferencesLog inferenceLog = db.inferencesLogDAO().findByUid(uid);
             runOnUiThread(() -> {
                 Species species = application.getSpeciesLookupService().lookupSpeciesInfo(inferenceLog.classLabel);
@@ -116,6 +117,7 @@ public class DetailsActivity extends AppCompatActivity {
                 captureDateTime.setText(Utils.timestampToString(inferenceLog.timestamp));
                 commentField.setText(inferenceLog.getComment());
                 referenceImageContainer.removeAllViews();
+                modelVersion.setText(inferenceLog.modelName + "-" + Long.toString(inferenceLog.modelVersion));
                 Arrays.stream(species.getReferenceImages()).forEachOrdered(imageRef -> {
                     View view = LayoutInflater.from(referenceImageContainer.getContext())
                             .inflate(R.layout.reference_image, referenceImageContainer, false);

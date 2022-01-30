@@ -2,12 +2,14 @@ package org.fao.mobile.woodidentifier.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.text.Editable;
 import android.util.JsonWriter;
 
 import androidx.preference.PreferenceManager;
 
 import com.google.gson.Gson;
 
+import org.fao.mobile.woodidentifier.MainActivity;
 import org.fao.mobile.woodidentifier.models.User;
 import org.json.JSONObject;
 
@@ -27,6 +29,7 @@ public class SharedPrefsUtil {
     public static final String CROP_Y = "crop_y";
     private static final String DEVELOPMENT_MODE = "developer_mode";
     private static final String APP_USER = "user";
+    private static final String CURRENT_LOCATION = "current_location";
 
     public static boolean isDeveloperMode(Context context) {
         SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -76,10 +79,22 @@ public class SharedPrefsUtil {
     public static void saveCurrentCamera(Context context, int cameraId) {
         SharedPreferences prefs = context.getSharedPreferences(
                 APP_SETTINGS, Context.MODE_PRIVATE);
-        prefs.edit().putInt(CURRENT_CAMERA, cameraId);
+        prefs.edit().putInt(CURRENT_CAMERA, cameraId).commit();
     }
 
     public static boolean isLoggedIn() {
         return false;
+    }
+
+    public static void setCurrentLocation(Context context, String location) {
+        SharedPreferences prefs = context.getSharedPreferences(
+                APP_SETTINGS, Context.MODE_PRIVATE);
+        prefs.edit().putString(CURRENT_LOCATION, location).commit();
+    }
+
+    public static String getCurrentLocation(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(
+                APP_SETTINGS, Context.MODE_PRIVATE);
+        return prefs.getString(CURRENT_LOCATION, "");
     }
 }

@@ -52,6 +52,7 @@ public class ModelHelper {
     private static final String CLASS_LABELS = "labels.txt";
     public static final String MODEL_PATH = "model_path";
     public static final String MODEL_VERSION = "model_version";
+    public static final String MODEL_NAME = "model_name";
     private static final long STOCK_VERSION = 202210270535L;
     private static final String SPECIES_DATABASE = "species_database.json";
 
@@ -59,6 +60,7 @@ public class ModelHelper {
     private static ModelHelper instance = null;
     private final FloatBuffer mInputTensorBuffer;
     private final long version;
+    private final String name;
     private final Context context;
     private int cropFactor;
 
@@ -70,14 +72,27 @@ public class ModelHelper {
             int cropFactor = Integer.parseInt(prefs.getString(SharedPrefsUtil.CROP_FACTOR, "2048"));
             String modelPath = prefs.getString(MODEL_PATH, null);
             long modelVersion = prefs.getLong(MODEL_VERSION, 0L);
+            String modelName = prefs.getString(MODEL_NAME, "default");
             List<String> classLabels = getClasses(context, modelPath);
             if (classLabels == null) return null;
 
             Log.d(TAG, "Total classes " + classLabels.size());
             final String moduleFileAbsoluteFilePath = new File(modelPath, "model.pt").getAbsolutePath();
-            instance = new ModelHelper(context, moduleFileAbsoluteFilePath, classLabels, cropFactor, modelVersion);
+            instance = new ModelHelper(context, moduleFileAbsoluteFilePath, classLabels, cropFactor, modelVersion, modelName);
         }
         return instance;
+    }
+
+    public static void refreshInstance(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        int cropFactor = Integer.parseInt(prefs.getString(SharedPrefsUtil.CROP_FACTOR, "2048"));
+        String modelPath = prefs.getString(MODEL_PATH, null);
+        long modelVersion = prefs.getLong(MODEL_VERSION, 0L);
+        String modelName = prefs.getString(MODEL_NAME, "default");
+        List<String> classLabels = getClasses(context, modelPath);
+        Log.d(TAG, "Total classes " + classLabels.size());
+        final String moduleFileAbsoluteFilePath = new File(modelPath, "model.pt").getAbsolutePath();
+        instance = new ModelHelper(context, moduleFileAbsoluteFilePath, classLabels, cropFactor, modelVersion, modelName);
     }
 
     @Nullable
@@ -103,7 +118,7 @@ public class ModelHelper {
     private static String setupModel(Context context, SharedPreferences prefs) throws IOException {
         Log.i(TAG, "setting up stock model");
         ModelVersion modelVersion = registerModel(context, MODEL_MOBILE_PT, true);
-        prefs.edit().putString(MODEL_PATH, modelVersion.path).putLong(MODEL_VERSION, modelVersion.version).commit();
+        activateModel(context, modelVersion);
         return modelVersion.path;
 
     }
@@ -121,7 +136,7 @@ public class ModelHelper {
             if (jsonObject.has("name")) {
                 name = jsonObject.getString("name");
             } else {
-                name = "model";
+                name = "default";
             }
             long version = jsonObject.getLong("version");
             ModelVersion modelVersion = db.modelVersionsDAO().find(name, version);
@@ -252,6 +267,10 @@ public class ModelHelper {
         return version;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public static final class Result {
         private Integer[] top;
         Double[] scores;
@@ -325,13 +344,14 @@ public class ModelHelper {
         }
     }
 
-    public ModelHelper(Context context, String modelAbsolutePath, List<String> classLabels, int cropFactor, long version) {
+    public ModelHelper(Context context, String modelAbsolutePath, List<String> classLabels, int cropFactor, long version, String name) {
         Log.d(TAG, "Loading mobile model ..." + modelAbsolutePath + " crop factor " + cropFactor);
         this.mModule = Module.load(modelAbsolutePath);
         this.classLabels = classLabels;
         this.cropFactor = cropFactor;
         this.version = version;
         this.context = context;
+        this.name = name;
         this.mInputTensorBuffer = Tensor.allocateFloatBuffer(3 * INPUT_TENSOR_WIDTH * INPUT_TENSOR_HEIGHT);
     }
 
@@ -385,5 +405,11 @@ public class ModelHelper {
         resultBuffer.setHeight(bitmapA.getHeight());
         resultBuffer.setWidth(bitmapA.getWidth());
         return resultBuffer;
+    }
+
+    public static void activateModel(Context context, ModelVersion modelVersion) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putString(MODEL_PATH, modelVersion.path).putLong(MODEL_VERSION, modelVersion.version).putString(MODEL_NAME, modelVersion.name).commit();
+        ModelHelper.refreshInstance(context);
     }
 }

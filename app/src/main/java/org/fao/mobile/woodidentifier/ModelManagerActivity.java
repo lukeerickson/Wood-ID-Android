@@ -92,6 +92,7 @@ public class ModelManagerActivity extends AppCompatActivity implements  ModelVer
                     runOnUiThread(() -> {
                         installModelButton.setText(R.string.install_model);
                         installModelButton.setEnabled(true);
+                        refresh();
                     });
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();

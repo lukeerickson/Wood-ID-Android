@@ -33,6 +33,7 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.android.material.datepicker.MaterialTextInputPicker;
 
 import org.apache.commons.io.FileUtils;
 import org.fao.mobile.woodidentifier.adapters.InferenceLogViewAdapter;
@@ -86,6 +87,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
         this.performFilterButton = binding.getRoot().findViewById(R.id.performFilterButton);
         this.dateFromField = binding.getRoot().findViewById(R.id.dateFromField);
         this.dateToField = binding.getRoot().findViewById(R.id.dateToField);
+
         DateFormat dfname = new SimpleDateFormat("MM/dd/yyyy");
         WoodIdentifierApplication app = (WoodIdentifierApplication)getActivity().getApplication();
 
@@ -101,6 +103,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
         this.datePickTo.setOnClickListener(this::onClick);
         this.performFilterButton.setOnClickListener(this::onClick);
 
+
         this.logList = binding.inferenceLogList;
         this.viewModel = new ViewModelProvider(getActivity()).get(InferenceLogViewModel.class);
         viewModel.getCount().observe(getViewLifecycleOwner(), (count) -> {
@@ -109,6 +112,9 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
 
         logList.setLayoutManager(new LinearLayoutManager(getActivity()));
         binding.fab.setOnClickListener(this::onClick);
+        binding.setLocationButton.setOnClickListener(this::onClick);
+        binding.setLocationApplyButton.setOnClickListener(this::onClick);
+        binding.setLocationCancelButton.setOnClickListener(this::onClick);
         if (checkCameraHardware(getActivity())) {
             binding.fabCamera.setVisibility(View.VISIBLE);
             binding.fabCamera.setOnClickListener(this::onClick);
@@ -317,6 +323,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
 
     public void onClick(View view) {
         DateFormat dfname = new SimpleDateFormat("MM/dd/yyyy");
+        WoodIdentifierApplication app = (WoodIdentifierApplication)getActivity().getApplication();
         switch (view.getId()) {
             case R.id.fab:
                 int permission = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -347,6 +354,28 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
                     this.dateFromField.setText(dfname.format(selection));
                 });
                 break;
+            case R.id.set_location_button:
+                binding.locationMarkerField.setVisibility(View.VISIBLE);
+                binding.locationMarker.setVisibility(View.GONE);
+                binding.setLocationButton.setVisibility(View.GONE);
+                binding.editButtonsGroup.setVisibility(View.VISIBLE);
+                binding.locationMarkerField.requestFocus();
+                break;
+            case R.id.set_location_cancel_button:
+                binding.locationMarkerField.setVisibility(View.GONE);
+                binding.locationMarker.setVisibility(View.VISIBLE);
+                binding.setLocationButton.setVisibility(View.VISIBLE);
+                binding.editButtonsGroup.setVisibility(View.GONE);
+                break;
+            case R.id.set_location_apply_button:
+                String locationValue = binding.locationMarkerField.getText().toString();
+                SharedPrefsUtil.setCurrentLocation(getActivity(), locationValue);
+                binding.locationMarker.setText(locationValue);
+                binding.locationMarkerField.setVisibility(View.GONE);
+                binding.locationMarker.setVisibility(View.VISIBLE);
+                binding.setLocationButton.setVisibility(View.VISIBLE);
+                binding.editButtonsGroup.setVisibility(View.GONE);
+                break;
             case R.id.date_pick_to:
                 MaterialDatePicker<Long> datePickerTo = MaterialDatePicker.Builder.datePicker()
                         .setTitleText("Select To Date")
@@ -358,7 +387,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
                 break;
             case R.id.performFilterButton:
                 DateFormat filterFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-                WoodIdentifierApplication app = (WoodIdentifierApplication)getActivity().getApplication();
+
 
                 long fromDate = app.getFromDateContext();
                 long toDate = app.getToDateContext();

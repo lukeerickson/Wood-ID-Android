@@ -1,5 +1,6 @@
 package org.fao.mobile.woodidentifier.adapters;
 
+import static org.fao.mobile.woodidentifier.utils.ModelHelper.MODEL_NAME;
 import static org.fao.mobile.woodidentifier.utils.ModelHelper.MODEL_PATH;
 import static org.fao.mobile.woodidentifier.utils.ModelHelper.MODEL_VERSION;
 
@@ -19,6 +20,7 @@ import androidx.room.Room;
 import org.fao.mobile.woodidentifier.AppDatabase;
 import org.fao.mobile.woodidentifier.R;
 import org.fao.mobile.woodidentifier.models.ModelVersion;
+import org.fao.mobile.woodidentifier.utils.ModelHelper;
 
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -52,8 +54,7 @@ public class ModelVersionViewAdapter extends RecyclerView.Adapter<ModelVersionVi
                 modelVersion.active = true;
                 db.modelVersionsDAO().deactivateAll();
                 db.modelVersionsDAO().update(modelVersion);
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-                prefs.edit().putString(MODEL_PATH, modelVersion.path).putLong(MODEL_VERSION, modelVersion.version).commit();
+                ModelHelper.activateModel(context, modelVersion);
                 context.runOnUiThread(()->{
                     listener.refreshItems();
                 });
