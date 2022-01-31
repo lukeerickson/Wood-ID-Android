@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
                     this.exportProgressIndicator.setProgressCompat(0, true);
                 });
                 try (FileWriter fileWriter = new FileWriter(exportFileTarget)) {
-                    fileWriter.write("uid,timestamp,class,img,lat,long,location,model_name,version,correction,comment\n");
+                    fileWriter.write("uid,first_name,last_name,timestamp,class,img,lat,long,location,model_name,version,correction,comment\n");
                     for (InferencesLog log : db.inferencesLogDAO().getByDate(application.getFromDateContext(), application.getToDateContext())) {
                         Log.i(TAG, "adding " + log.imagePath);
                         Date date = new Date(log.timestamp);
@@ -201,6 +201,7 @@ public class MainActivity extends AppCompatActivity {
                         DateFormat dfname = new SimpleDateFormat("yyyyMMddHHmmss'Z'");
 
                         String currentLocation = SharedPrefsUtil.getCurrentLocation(this);
+                        String correction = log.classLabel.equals(log.expectedLabel) ? "" : log.expectedLabel;
                         String suffix = "_capture.jpg";
                         if (!log.expectedLabel.equals(log.classLabel)) {
                             suffix = "corrected.jpg";
@@ -210,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
 
                         fileWriter.write(log.uid + "," + df.format(date) + "," + csvEscape(log.classLabel) + "," + archiveFileName + "," +
                                 log.latitude + "," + log.longitude + "," + csvEscape(currentLocation) + "," + csvEscape(log.modelName) + "," +
-                                log.modelVersion + "," + log.expectedLabel + "," + csvEscape(log.comment) + "\n");
+                                log.modelVersion + "," + correction + "," + csvEscape(log.comment) + "\n");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();

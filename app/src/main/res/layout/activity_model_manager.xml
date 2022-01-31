@@ -7,6 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".ModelManagerActivity">
     <Button
+        android:layout_margin="10dp"
         android:id="@+id/install_model_button"
         android:text="@string/install_model"
         android:layout_weight="0"

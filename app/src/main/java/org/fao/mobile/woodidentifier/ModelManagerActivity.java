@@ -36,7 +36,7 @@ import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public class ModelManagerActivity extends AppCompatActivity implements  ModelVersionViewAdapter.ItemListener, View.OnClickListener {
+public class ModelManagerActivity extends AppCompatActivity implements ModelVersionViewAdapter.ItemListener, View.OnClickListener {
     private static final String TAG = ModelManagerActivity.class.getName();
     private static final int PICKFILE_REQUEST_CODE = 1;
     private Executor executor = Executors.newFixedThreadPool(2);
@@ -48,7 +48,7 @@ public class ModelManagerActivity extends AppCompatActivity implements  ModelVer
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_model_manager);
-        this.modelList = (RecyclerView)findViewById(R.id.model_manager_view);
+        this.modelList = (RecyclerView) findViewById(R.id.model_manager_view);
         modelList.setLayoutManager(new LinearLayoutManager(this));
         this.installModelButton = findViewById(R.id.install_model_button);
         installModelButton.setOnClickListener(this);
@@ -79,11 +79,13 @@ public class ModelManagerActivity extends AppCompatActivity implements  ModelVer
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode ==  PICKFILE_REQUEST_CODE) {
+        if (requestCode == PICKFILE_REQUEST_CODE && data != null) {
             installModelButton.setEnabled(false);
             installModelButton.setText(R.string.installing_model);
+
+            Uri uri = data.getData();
+
             executor.execute(() -> {
-                Uri uri = data.getData();
                 String filename = getFileName(uri);
                 try (InputStream inputStream = getContentResolver().openInputStream(uri);) {
                     File localCopyPath = new File(getFilesDir(), filename);
