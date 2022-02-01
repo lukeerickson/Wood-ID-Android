@@ -1,6 +1,8 @@
 package org.fao.mobile.woodidentifier;
 
+import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.AE_COMPENSATION;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.CUSTOM_AWB;
+import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.USE_CUSTOM_EXPOSURE;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.WHITE_BALANCE;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.ZOOM;
 
@@ -41,6 +43,7 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
     private SharedPreferences prefs;
     private View preciseZoomAdd;
     private View preciseZoomMinus;
+    private Slider exposureControl;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -53,9 +56,11 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
         this.startAutoWhiteBalance = findViewById(R.id.fab_awb_lock);
         this.preciseZoomAdd = findViewById(R.id.zoom_precise_plus);
         this.preciseZoomMinus = findViewById(R.id.zoom_precise_minus);
+        this.exposureControl = findViewById(R.id.exposure_control);
 
         zoomControl.addOnChangeListener(this);
         whiteBalanceControl.addOnChangeListener(this);
+        exposureControl.addOnChangeListener(this);
         startAutoWhiteBalance.setOnClickListener(this);
         preciseZoomAdd.setOnClickListener(this);
         preciseZoomMinus.setOnClickListener(this);
@@ -77,7 +82,7 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
         Log.d(TAG, "Set default controls");
         if (currentCameraCharacteristics != null) {
             setDefaultZoomRatio();
-
+            setDefaultAeCompensation();
         }
     }
 
@@ -86,6 +91,12 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
         Range<Float> zoomRange = currentCameraCharacteristics.zoomRatioRange;
         float sliderValue = (currentZoomRatio - zoomRange.getLower()) / (zoomRange.getUpper() - zoomRange.getLower());
         zoomControl.setValue(sliderValue);
+    }
+
+    private void setDefaultAeCompensation() {
+        float currentAeCompensation = (float)Integer.parseInt(prefs.getString(AE_COMPENSATION, "0")) - currentCameraCharacteristics.aeCompensationRange.getLower();
+        float sliderValue = currentAeCompensation / (float)(currentCameraCharacteristics.aeCompensationRange.getUpper() - currentCameraCharacteristics.aeCompensationRange.getLower());
+        exposureControl.setValue(sliderValue);
     }
 
     @Override
@@ -112,6 +123,23 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
             } catch (CameraAccessException e) {
                 e.printStackTrace();
             }
+        } else if (slider.getId() == R.id.exposure_control) {
+            try {
+                setCameraExposureControl(sliderValue);
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    private void setCameraExposureControl(float sliderValue) throws CameraAccessException {
+        if (currentCameraCharacteristics != null) {
+            int aeCompensation = (int) (sliderValue * (currentCameraCharacteristics.aeCompensationRange.getUpper() - currentCameraCharacteristics.aeCompensationRange.getLower()) + currentCameraCharacteristics.aeCompensationRange.getLower());
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+            Log.d(TAG, " change AE comnsation " + aeCompensation);
+            prefs.edit().putString(AE_COMPENSATION, Integer.toString(aeCompensation)).putBoolean(USE_CUSTOM_EXPOSURE, false).commit();
+            updateCameraState();
         }
     }
 

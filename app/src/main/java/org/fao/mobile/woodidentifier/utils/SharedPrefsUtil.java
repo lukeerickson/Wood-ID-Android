@@ -30,11 +30,16 @@ public class SharedPrefsUtil {
     private static final String DEVELOPMENT_MODE = "developer_mode";
     private static final String APP_USER = "user";
     private static final String CURRENT_LOCATION = "current_location";
+    public static final String SENSOR_SENSITIVITY = "sensor_sensitivity";
+    public static final String FRAME_DURATION_TIME = "frame_duration_time";
+    public static final String EXPOSURE_TIME = "exposure_time";
+    public static final String USE_CUSTOM_EXPOSURE = "use_custom_exposure";
 
     public static boolean isDeveloperMode(Context context) {
         SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(context);
         return defaultPrefs.getBoolean(DEVELOPMENT_MODE, false);
     }
+
     public static boolean isFirstRun(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(
                 APP_SETTINGS, Context.MODE_PRIVATE);
@@ -44,6 +49,11 @@ public class SharedPrefsUtil {
     public static boolean isCustomAWB(Context context) {
         SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(context);
         return defaultPrefs.getBoolean(CUSTOM_AWB, false);
+    }
+
+    public static boolean isCustomExposure(Context context) {
+        SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return defaultPrefs.getBoolean(USE_CUSTOM_EXPOSURE, false);
     }
 
     public static void setFirstRun(Context context) {
@@ -62,8 +72,8 @@ public class SharedPrefsUtil {
     public static User getUserInfo(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(
                 APP_SETTINGS, Context.MODE_PRIVATE);
-        String userInfoJson =  prefs.getString(APP_USER, null);
-        if (userInfoJson!=null) {
+        String userInfoJson = prefs.getString(APP_USER, null);
+        if (userInfoJson != null) {
             return new Gson().fromJson(userInfoJson, User.class);
         } else {
             return null;
@@ -73,7 +83,7 @@ public class SharedPrefsUtil {
     public static void saveUserInfo(Context context, User user) {
         SharedPreferences prefs = context.getSharedPreferences(
                 APP_SETTINGS, Context.MODE_PRIVATE);
-        prefs.edit().putString(APP_USER,  new Gson().toJson(user)).commit();
+        prefs.edit().putString(APP_USER, new Gson().toJson(user)).commit();
     }
 
     public static void saveCurrentCamera(Context context, int cameraId) {

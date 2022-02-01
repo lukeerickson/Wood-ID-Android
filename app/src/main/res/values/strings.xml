@@ -90,4 +90,8 @@
     <string name="edit">Edit</string>
     <string name="apply">Apply</string>
     <string name="exporting">Exporting...</string>
+    <string name="sensor_sensitivity">Sensor Sensitivity in ISO units</string>
+    <string name="exposure_time">Sensor Exposure time in nanoseconds</string>
+    <string name="frame_duration_time">Frame Duration Time in nanoseconds</string>
+    <string name="custom_exposure_settings">Custom Camera Exposure Settings</string>
 </resources>

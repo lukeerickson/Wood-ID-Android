@@ -5,9 +5,13 @@ import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.CROP_X;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.CROP_Y;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.CUSTOM_AWB;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.CUSTOM_AWB_VALUES;
+import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.EXPOSURE_TIME;
+import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.FRAME_DURATION_TIME;
+import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.SENSOR_SENSITIVITY;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.WHITE_BALANCE;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.ZOOM;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.isCustomAWB;
+import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.isCustomExposure;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -79,6 +83,7 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
     private View cameraFrame;
     private ImageReader imageReader;
     private ImageReader autoAWBReader;
+    private float[] currentAWBDelta = new float[]  { 255.0f,255.0f,255.0f };
 
     @SuppressLint("MissingPermission")
     @Override
@@ -225,6 +230,9 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                 CameraCharacteristics characteristics = cameraManager.getCameraCharacteristics(cameraId);
                 Integer cameraLensFacing = characteristics.get(CameraCharacteristics.LENS_FACING);
                 Integer sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+                Range<Long> exposureTimeRange = characteristics.get(CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE);
+                Range<Integer> sensitivityRange = characteristics.get(CameraCharacteristics.SENSOR_INFO_SENSITIVITY_RANGE);
+                Long maxFrameDuration = characteristics.get(CameraCharacteristics.SENSOR_INFO_MAX_FRAME_DURATION);
                 Size size = characteristics.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE);
                 Range<Float> zoomRatioRange = null;
 
@@ -236,6 +244,10 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                     Log.i(TAG, "camera " + cameraId + " is backfacing");
                     Log.i(TAG, "sensor orientation is " + sensorOrientation);
                     Log.i(TAG, "camera resolution " + size.getWidth() + "," + size.getHeight());
+                    Log.i(TAG, "exposure range " + exposureTimeRange.getLower() + " to " + exposureTimeRange.getUpper());
+                    Log.i(TAG, "sensitivity range " + sensitivityRange.getLower() + " to " + sensitivityRange.getUpper());
+                    Log.i(TAG, "max frame duration " + maxFrameDuration);
+
                     Size[] outputSizes = streamConfigurationMap.getOutputSizes(ImageReader.class);
 
                     int[] outputFormats = streamConfigurationMap.getOutputFormats();
@@ -279,7 +291,7 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
         if (currentCamera != null) {
             currentCamera.close();
         }
-        for(View button: capureButton) {
+        for (View button : capureButton) {
             button.setEnabled(false);
         }
 
@@ -302,6 +314,8 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
 
                 try {
                     camera.createCaptureSession(outputs, new CameraCaptureSession.StateCallback() {
+
+
                         @Override
                         public void onConfigured(@NonNull CameraCaptureSession session) {
                             Log.i(TAG, "camera configured.");
@@ -313,14 +327,31 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                                 int whiteBalance = Integer.parseInt(prefs.getString(WHITE_BALANCE, "5700"));
                                 int aeCompensation = Integer.parseInt(prefs.getString(AE_COMPENSATION, "0"));
                                 float[] customAwb = StringUtils.splitToFloatList(prefs.getString(CUSTOM_AWB_VALUES, "255,255,255"));
-
+                                int sensorSensitivity = Integer.parseInt(prefs.getString(SENSOR_SENSITIVITY, "200"));
+                                long frameDuration = Long.parseLong(prefs.getString(FRAME_DURATION_TIME, "1000000"));
+                                long exposureTime = Long.parseLong(prefs.getString(EXPOSURE_TIME, "40494"));
                                 Rect sensorCrop = getSensorRect(prefs, zoomRatio, cameraProperties);
-                                CaptureRequest.Builder previewRequest = prepareCameraSettings(CameraDevice.TEMPLATE_PREVIEW, aeCompensation, whiteBalance, zoomRatio, sensorCrop, customAwb);
+                                CaptureRequest.Builder previewRequest = prepareCameraSettings(CameraDevice.TEMPLATE_PREVIEW, aeCompensation, whiteBalance, zoomRatio, sensorCrop, customAwb, exposureTime, sensorSensitivity, frameDuration);
 
                                 previewRequest.addTarget(holder.getSurface());
+                                previewRequest.addTarget(autoAWBReader.getSurface());
+                                autoAWBReader.setOnImageAvailableListener(reader -> {
+                                    Image image = reader.acquireNextImage();
+
+                                    if (image == null) {
+                                        return;
+                                    }
+
+                                    currentAWBDelta = ImageUtils.computeAWBDelta(image);
+                                    try {
+                                        image.close();
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }, mAnalysisHandler);
 
                                 session.setRepeatingRequest(previewRequest.build(), null, null);
-                                for(View button: capureButton) {
+                                for (View button : capureButton) {
                                     button.setOnClickListener(v -> {
                                         try {
                                             capture(session);
@@ -331,7 +362,7 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                                 }
                                 onCameraConfigured(cameraProperties, camera);
                                 runOnUiThread(() -> {
-                                    for(View button: capureButton) {
+                                    for (View button : capureButton) {
                                         button.setEnabled(true);
                                     }
                                 });
@@ -348,28 +379,19 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                                 int currentWhiteBalance = Integer.parseInt(prefs2.getString(WHITE_BALANCE, "5700"));
                                 float[] customAwb = StringUtils.splitToFloatList(prefs2.getString(CUSTOM_AWB_VALUES, "255,255,255"));
                                 int currentAeCompensation = Integer.parseInt(prefs2.getString(AE_COMPENSATION, "0"));
+                                int sensorSensitivity = Integer.parseInt(prefs2.getString(SENSOR_SENSITIVITY, "200"));
+                                long frameDuration = Long.parseLong(prefs2.getString(FRAME_DURATION_TIME, "1000000"));
+                                long exposureTime = Long.parseLong(prefs2.getString(EXPOSURE_TIME, "40494"));
                                 Rect sensorCrop = getSensorRect(prefs2, currentZoomRatio, cameraProperties);
-                                CaptureRequest.Builder captureRequest = prepareCameraSettings(CameraDevice.TEMPLATE_STILL_CAPTURE, currentAeCompensation, currentWhiteBalance, currentZoomRatio, sensorCrop, customAwb);
+                                CaptureRequest.Builder captureRequest = prepareCameraSettings(CameraDevice.TEMPLATE_STILL_CAPTURE, currentAeCompensation, currentWhiteBalance, currentZoomRatio, sensorCrop, customAwb, exposureTime, sensorSensitivity, frameDuration);
                                 captureRequest.set(CaptureRequest.JPEG_ORIENTATION, currentCameraCharacteristics.sensorOrientation);
                                 captureRequest.addTarget(imageReader.getSurface());
-//                                captureRequest.addTarget(autoAWBReader.getSurface());
-//                                autoAWBReader.setOnImageAvailableListener(reader -> {
-//                                    Image image = reader.acquireNextImage();
-//                                    float[] avgDelta = ImageUtils.computeAWBDelta(image);
-//                                    Log.i(TAG, "awbDelta " + avgDelta[0] + " , " + avgDelta[1] + ", " + avgDelta[2]);
-//                                    float min = Math.min(avgDelta[0], Math.min(avgDelta[1], avgDelta[2]));
-//                                    float[] awbval = new float[]{255f - (avgDelta[0] - min), 255f - (avgDelta[1] - min), 255f - (avgDelta[2] - min)};
-//                                    long colorTemp = ImageUtils.colorTempFromRgb(awbval[0], awbval[1], awbval[2]);
-//                                    Log.i(TAG, "awbDelta " + awbval[0] + " , " + awbval[1] + ", " + awbval[2]);
-//                                    Log.i(TAG, "estimated color temp " + colorTemp + "K");
-//                                    try {
-//                                        image.close();
-//                                        Log.i(TAG, "Setting AWB offsets");
-//                                        updateCameraState();
-//                                    } catch (Exception e) {
-//                                        e.printStackTrace();
-//                                    }
-//                                }, mAnalysisHandler);
+                                captureRequest.addTarget(autoAWBReader.getSurface());
+                                autoAWBReader.setOnImageAvailableListener(reader -> {
+                                    Image image = reader.acquireNextImage();
+                                    float[] avgDelta = ImageUtils.computeAWBDelta(image);
+                                    Log.i(TAG, "awbDelta " + (avgDelta[0]/255.0f) * 100f + "% , " + (avgDelta[1]/255.0f) * 100f + "%, " + (avgDelta[2]/255.0f) * 100f + "%");
+                                }, mAnalysisHandler);
                                 session.capture(captureRequest.build(), new CameraCaptureSession.CaptureCallback() {
                                     @Override
                                     public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
@@ -431,7 +453,7 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
         int wCrop;
         int hCrop;
         if (isForceDigitalZoom(prefs)) {
-            autoCropSize = (int) (((autoCropSize - 512.0f) * ( 1f- ((zoomRatio - 1f)/ 9.0f))) + 512.0f);
+            autoCropSize = (int) (((autoCropSize - 512.0f) * (1f - ((zoomRatio - 1f) / 9.0f))) + 512.0f);
             wCrop = autoCropSize;
             hCrop = autoCropSize;
         } else {
@@ -452,15 +474,25 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
 
     protected abstract void onCameraConfigured(CameraProperties cameraProperties, CameraDevice camera) throws CameraAccessException;
 
-    protected CaptureRequest.Builder prepareCameraSettings(int templateType, int aeCompensation, int colorTemp, float zoomRatio, Rect cropRegion, float[] awbDelta) throws CameraAccessException {
+    protected CaptureRequest.Builder prepareCameraSettings(int templateType, int aeCompensation, int colorTemp, float zoomRatio, Rect cropRegion, float[] awbDelta, long sensorExposureTime, int sensitivity, long frameDuration) throws CameraAccessException {
         CaptureRequest.Builder captureRequest = currentCamera.createCaptureRequest(templateType);
         captureRequest.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_OFF);
         // disable OIS
         captureRequest.set(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE, CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_OFF);
+        captureRequest.set(CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE, CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE_HIGH_QUALITY);
         // adjust color correction using seekbar's params
 
         captureRequest.set(CaptureRequest.COLOR_CORRECTION_MODE, CaptureRequest.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX);
-        captureRequest.set(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, aeCompensation);
+        if (isCustomExposure(this)) {
+            captureRequest.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_OFF);
+            captureRequest.set(CaptureRequest.SENSOR_EXPOSURE_TIME, sensorExposureTime);
+            captureRequest.set(CaptureRequest.SENSOR_SENSITIVITY, sensitivity);
+            captureRequest.set(CaptureRequest.SENSOR_FRAME_DURATION, frameDuration);
+        } else {
+            Log.i(TAG, "AE Compensation = " + aeCompensation);
+            captureRequest.set(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, aeCompensation);
+
+        }
 
         if (isCustomAWB(this)) {
             RggbChannelVector channelVector = new RggbChannelVector((awbDelta[0] / 255f) * 2f, (awbDelta[1] / 255f), (awbDelta[1] / 255f), (awbDelta[2] / 255f) * 2f);
@@ -489,8 +521,12 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
         int aeCompenstaion = Integer.parseInt(prefs.getString(AE_COMPENSATION, "0"));
         float[] customAwb = StringUtils.splitToFloatList(prefs.getString(CUSTOM_AWB_VALUES, "255,255,255"));
         float zoomRatio = Float.parseFloat(prefs.getString(ZOOM, "1.0"));
+        int sensorSensitivity = Integer.parseInt(prefs.getString(SENSOR_SENSITIVITY, "200"));
+        long frameDuration = Long.parseLong(prefs.getString(FRAME_DURATION_TIME, "1000000"));
+        long exposureTime = Long.parseLong(prefs.getString(EXPOSURE_TIME, "40494"));
+        Log.i(TAG, "current awb delta " + currentAWBDelta[0] + " " + currentAWBDelta[1] + " " + currentAWBDelta[2]);
         Rect sensorCrop = getSensorRect(prefs, zoomRatio, currentCameraCharacteristics);
-        CaptureRequest.Builder captureRequest = prepareCameraSettings(CameraDevice.TEMPLATE_PREVIEW, aeCompenstaion, colorTemp, zoomRatio, sensorCrop, customAwb);
+        CaptureRequest.Builder captureRequest = prepareCameraSettings(CameraDevice.TEMPLATE_PREVIEW, aeCompenstaion, colorTemp, zoomRatio, sensorCrop, customAwb, exposureTime, sensorSensitivity, frameDuration);
         captureRequest.addTarget(holder.getSurface());
         session.setRepeatingRequest(captureRequest.build(), null, null);
     }
@@ -506,7 +542,12 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
         prefs2.edit()
                 .putBoolean(CUSTOM_AWB, true)
                 .commit();
-        CaptureRequest.Builder captureRequest = prepareCameraSettings(CameraDevice.TEMPLATE_STILL_CAPTURE, currentAeCompensation, currentWhiteBalance, currentZoomRatio, sensorCrop, new float[]{255f, 255f, 255f});
+
+        int sensorSensitivity = Integer.parseInt(prefs2.getString(SENSOR_SENSITIVITY, "200"));
+        long frameDuration = Long.parseLong(prefs2.getString(FRAME_DURATION_TIME, "1000000"));
+        long exposureTime = Long.parseLong(prefs2.getString(EXPOSURE_TIME, "40494"));
+
+        CaptureRequest.Builder captureRequest = prepareCameraSettings(CameraDevice.TEMPLATE_STILL_CAPTURE, currentAeCompensation, currentWhiteBalance, currentZoomRatio, sensorCrop, new float[]{255f, 255f, 255f}, exposureTime, sensorSensitivity, frameDuration);
         captureRequest.set(CaptureRequest.JPEG_ORIENTATION, currentCameraCharacteristics.sensorOrientation);
         captureRequest.addTarget(autoAWBReader.getSurface());
 
@@ -517,6 +558,7 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                 autoAWBReader.setOnImageAvailableListener(reader -> {
                     Image image = reader.acquireNextImage();
                     float[] avgDelta = ImageUtils.computeAWBDelta(image);
+                    Log.i(TAG, "awbDelta " + (avgDelta[0]/255.0f) * 100f + "% , " + (avgDelta[1]/255.0f) * 100f + "%, " + (avgDelta[2]/255.0f) * 100f + "%");
                     Log.i(TAG, "awbDelta " + avgDelta[0] + " , " + avgDelta[1] + ", " + avgDelta[2]);
                     float min = Math.min(avgDelta[0], Math.min(avgDelta[1], avgDelta[2]));
                     float[] awbDelta = new float[]{255f - (avgDelta[0] - min), 255f - (avgDelta[1] - min), 255f - (avgDelta[2] - min)};

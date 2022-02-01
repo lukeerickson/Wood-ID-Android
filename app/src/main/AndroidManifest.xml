@@ -24,6 +24,7 @@
         android:theme="@style/Theme.WoodIdentifier">
         <activity
             android:name=".ModelManagerActivity"
+            android:screenOrientation="portrait"
             android:exported="false" />
         <activity
             android:name=".EnterPinActivity"

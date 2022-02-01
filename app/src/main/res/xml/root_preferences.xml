@@ -12,6 +12,7 @@
             app:key="ae_compensation"
             app:title="@string/ae_compensation"
             app:useSimpleSummaryProvider="true" />
+
         <EditTextPreference
             app:key="crop_factor"
             app:title="@string/crop_factor"
@@ -30,7 +31,28 @@
             app:useSimpleSummaryProvider="true"
             />
     </PreferenceCategory>
-
+    <PreferenceCategory app:title="@string/custom_exposure_settings">
+        <SwitchPreference
+            app:key="use_custom_exposure"
+            app:title="Enable Custom Exposure"
+            app:useSimpleSummaryProvider="true"
+            />
+        <EditTextPreference
+            app:key="sensor_sensitivity"
+            app:title="@string/sensor_sensitivity"
+            app:useSimpleSummaryProvider="true"
+            />
+        <EditTextPreference
+            app:key="exposure_time"
+            app:title="@string/exposure_time"
+            app:useSimpleSummaryProvider="true"
+            />
+        <EditTextPreference
+            app:key="frame_duration_time"
+            app:title="@string/frame_duration_time"
+            app:useSimpleSummaryProvider="true"
+            />
+    </PreferenceCategory>
     <PreferenceCategory app:title="@string/other_settings">
         <SwitchPreference
             app:key="location_tagging"
