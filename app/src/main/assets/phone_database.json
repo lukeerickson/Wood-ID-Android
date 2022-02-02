@@ -6,7 +6,7 @@
     "custom_exposure" : true,
     "sensor_sensitivity" : 100,
     "frame_duration_time" : 1000000,
-    "exposure_time": 52500,
+    "exposure_time": 103500,
     "crop_factor": 2048,
     "ae_compensation": 0,
     "sensor_orientation": "portrait"
