@@ -494,8 +494,10 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
 
         }
 
+
         if (isCustomAWB(this)) {
             RggbChannelVector channelVector = new RggbChannelVector((awbDelta[0] / 255f) * 2f, (awbDelta[1] / 255f), (awbDelta[1] / 255f), (awbDelta[2] / 255f) * 2f);
+//            RggbChannelVector channelVector = new RggbChannelVector(1.74f, 1.0f, 1.0f, 1.78f);
             Log.i(TAG, awbDelta[0] + "," + awbDelta[1] + "," + awbDelta[2]);
             captureRequest.set(CaptureRequest.COLOR_CORRECTION_GAINS, channelVector);
         } else {

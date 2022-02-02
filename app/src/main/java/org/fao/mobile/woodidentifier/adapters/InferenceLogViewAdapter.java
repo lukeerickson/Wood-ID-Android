@@ -22,6 +22,7 @@ import org.fao.mobile.woodidentifier.DetailsActivity;
 import org.fao.mobile.woodidentifier.R;
 import org.fao.mobile.woodidentifier.WoodIdentifierApplication;
 import org.fao.mobile.woodidentifier.models.InferencesLog;
+import org.fao.mobile.woodidentifier.utils.ModelHelper;
 import org.fao.mobile.woodidentifier.utils.SharedPrefsUtil;
 import org.fao.mobile.woodidentifier.utils.Species;
 import org.fao.mobile.woodidentifier.utils.SpeciesLookupService;
@@ -83,16 +84,28 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
             holder.getTextView().setText(context.getResources().getText(R.string.identification_in_progress));
             holder.getScoreView().setText("NA");
         } else {
+            String label = inferenceLog.classLabel;
+            int index = inferenceLog.classIndex;
+            if (inferenceLog.expectedLabel!=null && !inferenceLog.expectedLabel.equals(inferenceLog.classLabel)) {
+                label = inferenceLog.expectedLabel;
+                index = ModelHelper.getHelperInstance(context).getClassLabels().indexOf(label);
+            }
             if (SharedPrefsUtil.isDeveloperMode(context)) {
-                holder.getTextView().setText(inferenceLog.classLabel + " (" + inferenceLog.classIndex + ")");
+                holder.getTextView().setText(label + " (" + index + ")");
                 holder.getScoreView().setText(Float.toString(inferenceLog.score));
                 holder.getScoreView().setVisibility(View.VISIBLE);
             } else {
-                Species species = speciesLookup.lookupSpeciesInfo(inferenceLog.classLabel);
+                Species species = speciesLookup.lookupSpeciesInfo(label);
                 holder.getTextView().setText(species.name());
                 holder.getScoreView().setVisibility(View.INVISIBLE);
             }
 
+        }
+
+        if (inferenceLog.expectedLabel != null &&  !inferenceLog.expectedLabel.equals(inferenceLog.classLabel)) {
+            holder.getTextView().setTextColor(context.getColor(R.color.red));
+        } else {
+            holder.getTextView().setTextColor(context.getColor(R.color.black));
         }
 
         holder.getFilename().setText(inferenceLog.originalFilename);
