@@ -70,6 +70,7 @@ import java.util.stream.Collectors;
 
 public abstract class BaseCamera2Activity extends AppCompatActivity {
     private static final String PHONE_DATABASE = "phone_database.json";
+    public static final String CUSTOM_AWB_DEFAULT_VALUE = "2.0,1.0,2.0";
     private final String TAG = BaseCamera2Activity.class.getCanonicalName();
     protected CameraProperties currentCameraCharacteristics;
     protected SurfaceHolder holder;
@@ -496,8 +497,7 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
 
 
         if (isCustomAWB(this)) {
-            RggbChannelVector channelVector = new RggbChannelVector((awbDelta[0] / 255f) * 2f, (awbDelta[1] / 255f), (awbDelta[1] / 255f), (awbDelta[2] / 255f) * 2f);
-//            RggbChannelVector channelVector = new RggbChannelVector(1.74f, 1.0f, 1.0f, 1.78f);
+            RggbChannelVector channelVector = new RggbChannelVector(awbDelta[0], awbDelta[1], awbDelta[1], awbDelta[2]);
             Log.i(TAG, awbDelta[0] + "," + awbDelta[1] + "," + awbDelta[2]);
             captureRequest.set(CaptureRequest.COLOR_CORRECTION_GAINS, channelVector);
         } else {
@@ -521,7 +521,7 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         int colorTemp = Integer.parseInt(prefs.getString(WHITE_BALANCE, "5700"));
         int aeCompenstaion = Integer.parseInt(prefs.getString(AE_COMPENSATION, "0"));
-        float[] customAwb = StringUtils.splitToFloatList(prefs.getString(CUSTOM_AWB_VALUES, "255,255,255"));
+        float[] customAwb = StringUtils.splitToFloatList(prefs.getString(CUSTOM_AWB_VALUES, CUSTOM_AWB_DEFAULT_VALUE));
         float zoomRatio = Float.parseFloat(prefs.getString(ZOOM, "1.0"));
         int sensorSensitivity = Integer.parseInt(prefs.getString(SENSOR_SENSITIVITY, "200"));
         long frameDuration = Long.parseLong(prefs.getString(FRAME_DURATION_TIME, "1000000"));

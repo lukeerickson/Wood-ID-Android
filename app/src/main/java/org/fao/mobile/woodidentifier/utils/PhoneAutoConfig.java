@@ -1,6 +1,7 @@
 package org.fao.mobile.woodidentifier.utils;
 
 import static android.text.TextUtils.isEmpty;
+import static org.fao.mobile.woodidentifier.BaseCamera2Activity.CUSTOM_AWB_DEFAULT_VALUE;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.AE_COMPENSATION;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.CROP_FACTOR;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.CUSTOM_AWB;
@@ -47,7 +48,7 @@ public class PhoneAutoConfig {
                 long exposure_time = autoPhoneSettings.getLong(EXPOSURE_TIME);
                 long frame_duration = autoPhoneSettings.getLong(FRAME_DURATION_TIME);
                 boolean customExposureSettings = autoPhoneSettings.optBoolean("custom_exposure", false);
-                String awbSettings = autoPhoneSettings.optString(CUSTOM_AWB_VALUES, "255.0,255.0,255.0");
+                String awbSettings = autoPhoneSettings.optString(CUSTOM_AWB_VALUES, CUSTOM_AWB_DEFAULT_VALUE);
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putString(ZOOM, Double.toString(zoomRatio));
