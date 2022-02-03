@@ -44,10 +44,10 @@ public class PhoneAutoConfig {
                 int whiteBalance = autoPhoneSettings.getInt(WHITE_BALANCE);
                 int aeCompensation = autoPhoneSettings.getInt(AE_COMPENSATION);
                 int cropFactor = autoPhoneSettings.getInt(CROP_FACTOR);
-                long sensitivity = autoPhoneSettings.getLong(SENSOR_SENSITIVITY);
-                long exposure_time = autoPhoneSettings.getLong(EXPOSURE_TIME);
-                long frame_duration = autoPhoneSettings.getLong(FRAME_DURATION_TIME);
-                boolean customExposureSettings = autoPhoneSettings.optBoolean("custom_exposure", false);
+                long sensitivity = autoPhoneSettings.optLong(SENSOR_SENSITIVITY, 100L);
+                long exposure_time = autoPhoneSettings.optLong(EXPOSURE_TIME, 203500L);
+                long frame_duration = autoPhoneSettings.optLong(FRAME_DURATION_TIME, 1000000L);
+                boolean customExposureSettings = autoPhoneSettings.optBoolean("custom_exposure", true);
                 String awbSettings = autoPhoneSettings.optString(CUSTOM_AWB_VALUES, CUSTOM_AWB_DEFAULT_VALUE);
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
                 SharedPreferences.Editor editor = prefs.edit();
