@@ -6,6 +6,7 @@ import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.USE_CUSTOM_EXP
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.WHITE_BALANCE;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.ZOOM;
 
+import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraDevice;
@@ -28,9 +29,15 @@ import androidx.preference.PreferenceManager;
 
 import com.google.android.material.slider.Slider;
 
+import org.fao.mobile.woodidentifier.utils.ModelHelper;
+import org.fao.mobile.woodidentifier.utils.PhoneAutoConfig;
 import org.fao.mobile.woodidentifier.utils.SharedPrefsUtil;
+import org.fao.mobile.woodidentifier.utils.SpeciesLookupService;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class RecalibrateCameraActivity extends BaseCamera2Activity implements Slider.OnChangeListener, AdapterView.OnItemSelectedListener, View.OnClickListener {
     private static final String TAG = RecalibrateCameraActivity.class.getCanonicalName();
@@ -44,6 +51,9 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
     private View preciseZoomAdd;
     private View preciseZoomMinus;
     private Slider exposureControl;
+    private View resetSettings;
+
+    Executor executor = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -57,6 +67,7 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
         this.preciseZoomAdd = findViewById(R.id.zoom_precise_plus);
         this.preciseZoomMinus = findViewById(R.id.zoom_precise_minus);
         this.exposureControl = findViewById(R.id.exposure_control);
+        this.resetSettings = findViewById(R.id.reset_camera_settings);
 
         zoomControl.addOnChangeListener(this);
         whiteBalanceControl.addOnChangeListener(this);
@@ -64,7 +75,7 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
         startAutoWhiteBalance.setOnClickListener(this);
         preciseZoomAdd.setOnClickListener(this);
         preciseZoomMinus.setOnClickListener(this);
-
+        resetSettings.setOnClickListener(this);
 
         this.prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -235,6 +246,27 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
             } catch (CameraAccessException e) {
                 e.printStackTrace();
             }
+        } else if (v.getId() == R.id.reset_camera_settings) {
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+            alertDialog.setMessage(R.string.confirm_reset_camera);
+            alertDialog.setPositiveButton(R.string.yes, (dialog, which) -> {
+                executor.execute(() -> {
+                    String phoneId = Build.MANUFACTURER + "-" + Build.MODEL;
+                    PhoneAutoConfig.setPhoneSettingsFor(this, phoneId);
+                    setDefaultAeCompensation();
+                    setDefaultZoomRatio();
+                    try {
+                        updateCameraState();
+                    } catch (CameraAccessException e) {
+                        e.printStackTrace();
+                    }
+                });
+            });
+            alertDialog.setNegativeButton(R.string.cancel, (dialog, which) -> {
+                dialog.dismiss();
+            });
+            alertDialog.show();
+
         }
     }
 

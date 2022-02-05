@@ -85,7 +85,14 @@
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="10dp"
         android:background="@color/teal_200" />
-
+    <Button
+        android:layout_marginRight="10dp"
+        android:id="@+id/reset_camera_settings"
+        android:text="@string/reset_camera_settings"
+        android:layout_alignParentRight="true"
+        android:layout_above="@id/lens_selector"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"></Button>
     <EditText
         android:id="@+id/white_balance_value"
         android:layout_width="50dp"

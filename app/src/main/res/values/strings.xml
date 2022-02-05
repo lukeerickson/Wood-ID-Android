@@ -94,4 +94,6 @@
     <string name="exposure_time">Sensor Exposure time in nanoseconds</string>
     <string name="frame_duration_time">Frame Duration Time in nanoseconds</string>
     <string name="custom_exposure_settings">Custom Camera Exposure Settings</string>
+    <string name="reset_camera_settings">Reset Settings</string>
+    <string name="confirm_reset_camera">Are you sure you want to reset camera settings to defaults?</string>
 </resources>
