@@ -19,6 +19,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.FileProvider;
 import androidx.lifecycle.ViewModelProvider;
@@ -77,10 +78,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
         setSupportActionBar(binding.toolbar);
         this.viewModel = new ViewModelProvider(this).get(InferenceLogViewModel.class);
         this.navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
@@ -374,8 +373,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         if (requestCode == PIN_CODE) {
+            Log.i(TAG, "Check PIN");
             if (resultCode != 1) {
+                Log.i(TAG, "Pin canceled?");
                 finish();
             }
         }
