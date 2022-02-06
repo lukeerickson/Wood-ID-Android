@@ -59,6 +59,10 @@
             app:title="@string/enable_location_tagging"
             app:useSimpleSummaryProvider="true"/>
         <SwitchPreference
+            app:key="enable_pin_code"
+            app:title="@string/enable_pin_code"
+            app:useSimpleSummaryProvider="true"/>
+        <SwitchPreference
             app:key="show_details_after_capture"
             app:title="@string/show_details_popup"
             app:useSimpleSummaryProvider="false"/>

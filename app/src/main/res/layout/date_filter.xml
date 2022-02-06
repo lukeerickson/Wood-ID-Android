@@ -9,19 +9,13 @@
     tools:context=".FirstFragment"
     tools:showIn="@layout/fragment_first">
 
-    <EditText
+    <TextView
         android:id="@+id/dateFromField"
         android:layout_weight="1"
+        android:textSize="16sp"
+        android:textStyle="bold"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"></EditText>
-
-    <ImageButton
-        android:id="@+id/date_pick_from"
-        android:background="@android:color/transparent"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:src="@drawable/calendar_month_outline"></ImageButton>
-
+        android:layout_height="wrap_content"></TextView>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
@@ -30,22 +24,25 @@
         android:gravity="center"
         android:text="@string/to"></TextView>
 
-    <EditText
+    <TextView
         android:id="@+id/dateToField"
         android:layout_weight="1"
+        android:textSize="16sp"
+        android:textStyle="bold"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"></EditText>
-
+        android:layout_height="wrap_content"></TextView>
     <ImageButton
+        android:id="@+id/clearFilterButton"
+        android:layout_width="30dp"
         android:background="@android:color/transparent"
-        android:id="@+id/date_pick_to"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:src="@drawable/calendar_month_outline"></ImageButton>
-
+        android:layout_weight="0"
+        android:src="@drawable/close_thick"
+        android:layout_height="match_parent">
+    </ImageButton>
     <ImageButton
         android:id="@+id/performFilterButton"
-        android:layout_width="50dp"
+        android:layout_width="30dp"
+        android:layout_weight="0"
         android:background="@android:color/transparent"
         android:layout_height="match_parent"
         android:layout_marginLeft="10dp"

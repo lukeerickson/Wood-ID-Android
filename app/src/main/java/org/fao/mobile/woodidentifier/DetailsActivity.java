@@ -48,6 +48,7 @@ public class DetailsActivity extends AppCompatActivity {
     private TextView captureDateTime;
     private EditText commentField;
     private TextView modelVersion;
+    private TextView location;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +63,7 @@ public class DetailsActivity extends AppCompatActivity {
         this.closeButton = findViewById(R.id.close_button);
         this.description = findViewById(R.id.description);
         this.topKcontainer = findViewById(R.id.topKcontainer);
+        this.location = findViewById(R.id.location);
         this.labelSpinner = findViewById(R.id.mislabled_picker);
         this.modelVersion = findViewById(R.id.modelVersion);
         this.referenceImageContainer = findViewById(R.id.reference_images_container);
@@ -116,6 +118,7 @@ public class DetailsActivity extends AppCompatActivity {
                 labelSpinner.setSelection(model.getClassLabels().indexOf(inferenceLog.expectedLabel));
                 captureDateTime.setText(Utils.timestampToString(inferenceLog.timestamp));
                 commentField.setText(inferenceLog.getComment());
+                location.setText(inferenceLog.getLocationName());
                 referenceImageContainer.removeAllViews();
                 modelVersion.setText(inferenceLog.modelName + "-" + Long.toString(inferenceLog.modelVersion));
                 Arrays.stream(species.getReferenceImages()).forEachOrdered(imageRef -> {

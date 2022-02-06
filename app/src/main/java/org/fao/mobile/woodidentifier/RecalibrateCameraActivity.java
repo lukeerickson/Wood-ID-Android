@@ -223,13 +223,11 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.fab_awb_lock) {
-
             try {
                 acquireAWBLock();
             } catch (CameraAccessException e) {
                 e.printStackTrace();
             }
-
         } else if (v.getId() == R.id.zoom_precise_minus) {
             float sliderValue = (float) Math.max(0f, zoomControl.getValue() - 0.01);
             zoomControl.setValue(sliderValue);
@@ -266,7 +264,6 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
                 dialog.dismiss();
             });
             alertDialog.show();
-
         }
     }
 

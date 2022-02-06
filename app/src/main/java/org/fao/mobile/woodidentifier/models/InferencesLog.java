@@ -159,4 +159,8 @@ public class InferencesLog {
         List<String> topK = Arrays.stream(result.getTop()).flatMap(x -> Stream.of(classLabels.get(x.intValue()))).collect(Collectors.toList());
         this.top = topK.toArray(new String[0]);
     }
+
+    public String getLocationName() {
+        return locationName;
+    }
 }

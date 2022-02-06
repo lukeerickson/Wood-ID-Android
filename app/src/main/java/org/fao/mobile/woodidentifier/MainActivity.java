@@ -13,6 +13,7 @@ import android.os.Environment;
 import android.util.Log;
 import android.util.Pair;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -88,8 +89,13 @@ public class MainActivity extends AppCompatActivity {
         this.progressGroup = binding.getRoot().findViewById(R.id.progress_group);
         this.exportProgressIndicator = (LinearProgressIndicator)binding.getRoot().findViewById(R.id.export_progress_indicator);
         if (SharedPrefsUtil.getUserInfo(this) != null) {
-            Intent enterPinCode = new Intent(this, EnterPinActivity.class);
-            startActivityForResult(enterPinCode, PIN_CODE);
+            if (SharedPrefsUtil.enablePinSecurity(this)) {
+                Intent enterPinCode = new Intent(this, EnterPinActivity.class);
+                startActivityForResult(enterPinCode, PIN_CODE);
+            } else {
+                Intent splashIntent = new Intent(this, SplashActivity.class);
+                startActivity(splashIntent);
+            }
         } else {
             Intent splashIntent = new Intent(this, SplashActivity.class);
             startActivity(splashIntent);
@@ -98,13 +104,6 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean firstRun() {
         return false;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
     }
 
     @Override
@@ -168,6 +167,21 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        // inflate menu from xml
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        MenuItem item = menu.findItem(R.id.action_recalibrate);
+        if (!SharedPrefsUtil.isDeveloperMode(this)) {
+            item.setVisible(false);
+        } else {
+            item.setVisible(true);
+        }
+        return true;
     }
 
     private void extractCSV() {

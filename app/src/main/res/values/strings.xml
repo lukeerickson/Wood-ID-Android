@@ -83,7 +83,7 @@
     <string name="to">To</string>
     <string name="search">Search</string>
     <string name="applying_filter">Applying date filter</string>
-    <string name="manage_model">Manage Models</string>
+    <string name="manage_model">Updates..</string>
     <string name="set_active">Activate</string>
     <string name="install_model">Install a model</string>
     <string name="installing_model">Installing Model...</string>
@@ -96,4 +96,5 @@
     <string name="custom_exposure_settings">Custom Camera Exposure Settings</string>
     <string name="reset_camera_settings">Reset Settings</string>
     <string name="confirm_reset_camera">Are you sure you want to reset camera settings to defaults?</string>
+    <string name="enable_pin_code">Enable Pin Security</string>
 </resources>

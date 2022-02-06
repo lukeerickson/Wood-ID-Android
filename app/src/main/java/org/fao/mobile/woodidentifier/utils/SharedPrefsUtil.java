@@ -34,6 +34,7 @@ public class SharedPrefsUtil {
     public static final String FRAME_DURATION_TIME = "frame_duration_time";
     public static final String EXPOSURE_TIME = "exposure_time";
     public static final String USE_CUSTOM_EXPOSURE = "use_custom_exposure";
+    private static final String PIN_SECURITY = "enable_pin_code";
 
     public static boolean isDeveloperMode(Context context) {
         SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -44,6 +45,11 @@ public class SharedPrefsUtil {
         SharedPreferences prefs = context.getSharedPreferences(
                 APP_SETTINGS, Context.MODE_PRIVATE);
         return prefs.getBoolean(FIRST_RUN, true);
+    }
+    
+    public static boolean enablePinSecurity(Context context) {
+        SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return defaultPrefs.getBoolean(PIN_SECURITY, true);
     }
 
     public static boolean isCustomAWB(Context context) {

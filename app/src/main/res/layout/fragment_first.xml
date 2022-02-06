@@ -9,13 +9,13 @@
     <androidx.appcompat.widget.LinearLayoutCompat
         android:id="@+id/header_group"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical">
 
         <androidx.appcompat.widget.LinearLayoutCompat
-            android:layout_margin="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_margin="10dp"
             android:orientation="horizontal">
 
             <ImageView
@@ -25,10 +25,10 @@
                 android:src="@drawable/map_marker"></ImageView>
 
             <TextView
-                android:layout_marginLeft="10dp"
                 android:id="@+id/location_marker"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
                 android:layout_weight="1"
                 android:text="@string/not_set" />
 
@@ -74,21 +74,42 @@
         </androidx.appcompat.widget.LinearLayoutCompat>
 
         <include layout="@layout/date_filter" />
-    </androidx.appcompat.widget.LinearLayoutCompat>
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/header_group">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/inference_log_list"
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/header_group"
+            android:layout_weight="1">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/inference_log_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/design_default_color_secondary_variant"></androidx.recyclerview.widget.RecyclerView>
+        </ScrollView>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/fab_camera"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/design_default_color_secondary_variant"></androidx.recyclerview.widget.RecyclerView>
-    </ScrollView>
+            android:layout_alignParentBottom="true"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="@dimen/fab_margin"
+            android:layout_marginBottom="20dp"
+            android:background="@color/teal_200"
+            android:drawableLeft="@drawable/ic_camera_white_36dp"
+            android:paddingLeft="10dp"
+            android:text="@string/capture_sample"
+            android:textColor="@color/white"
+            android:visibility="visible"
+            app:srcCompat="@drawable/ic_camera_white_36dp" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
+        android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
@@ -97,18 +118,5 @@
         android:layout_margin="@dimen/fab_margin"
         app:srcCompat="@drawable/ic_layers_search_black_48dp" />
 
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/fab_camera"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        android:layout_marginBottom="20dp"
-        android:layout_toLeftOf="@id/fab"
-        android:background="@color/teal_200"
-        android:text="@string/capture_sample"
-        android:textColor="@color/white"
-        android:visibility="visible"
-        app:srcCompat="@drawable/ic_camera_black_48dp" />
+
 </RelativeLayout>

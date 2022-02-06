@@ -17,10 +17,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
@@ -33,7 +35,6 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.datepicker.MaterialDatePicker;
-import com.google.android.material.datepicker.MaterialTextInputPicker;
 
 import org.apache.commons.io.FileUtils;
 import org.fao.mobile.woodidentifier.adapters.InferenceLogViewAdapter;
@@ -70,11 +71,11 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
     private RecyclerView logList;
     private InferenceLogViewModel viewModel;
 
-    private View datePickFrom;
-    private View datePickTo;
+
     private View performFilterButton;
-    private EditText dateFromField;
-    private EditText dateToField;
+    private TextView dateFromField;
+    private TextView dateToField;
+    private View clearFilter;
 
     @Override
     public View onCreateView(
@@ -82,27 +83,30 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
             Bundle savedInstanceState
     ) {
         binding = FragmentFirstBinding.inflate(inflater, container, false);
-        this.datePickFrom = binding.getRoot().findViewById(R.id.date_pick_from);
-        this.datePickTo = binding.getRoot().findViewById(R.id.date_pick_to);
+
         this.performFilterButton = binding.getRoot().findViewById(R.id.performFilterButton);
         this.dateFromField = binding.getRoot().findViewById(R.id.dateFromField);
         this.dateToField = binding.getRoot().findViewById(R.id.dateToField);
+        this.clearFilter = binding.getRoot().findViewById(R.id.clearFilterButton);
 
         DateFormat dfname = new SimpleDateFormat("MM/dd/yyyy");
         WoodIdentifierApplication app = (WoodIdentifierApplication)getActivity().getApplication();
+        clearFilter.setVisibility(View.INVISIBLE);
 
         if (app.getFromDateContext() != 0L) {
             dateFromField.setText(dfname.format(new Date(app.getFromDateContext())));
+            clearFilter.setVisibility(View.VISIBLE);
         }
 
         if (app.getToDateContext() != Long.MAX_VALUE) {
             dateToField.setText(dfname.format(new Date(app.getToDateContext())));
+            clearFilter.setVisibility(View.VISIBLE);
         }
 
-        this.datePickFrom.setOnClickListener(this::onClick);
-        this.datePickTo.setOnClickListener(this::onClick);
+        this.dateFromField.setOnClickListener(this::onClick);
+        this.dateToField.setOnClickListener(this::onClick);
         this.performFilterButton.setOnClickListener(this::onClick);
-
+        this.clearFilter.setOnClickListener(this::onClick);
 
         this.logList = binding.inferenceLogList;
         this.viewModel = new ViewModelProvider(getActivity()).get(InferenceLogViewModel.class);
@@ -345,15 +349,6 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
                     startActivityForResult(intent, CAPTURE_IMAGE);
                 }
                 break;
-            case R.id.date_pick_from:
-                MaterialDatePicker<Long> datePickerFrom = MaterialDatePicker.Builder.datePicker()
-                        .setTitleText("Select From Date")
-                        .build();
-                datePickerFrom.show(getParentFragmentManager(), "date_picker_from");
-                datePickerFrom.addOnPositiveButtonClickListener(selection -> {
-                    this.dateFromField.setText(dfname.format(selection));
-                });
-                break;
             case R.id.set_location_button:
                 binding.locationMarkerField.setVisibility(View.VISIBLE);
                 binding.locationMarker.setVisibility(View.GONE);
@@ -376,55 +371,71 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
                 binding.setLocationButton.setVisibility(View.VISIBLE);
                 binding.editButtonsGroup.setVisibility(View.GONE);
                 break;
-            case R.id.date_pick_to:
-                MaterialDatePicker<Long> datePickerTo = MaterialDatePicker.Builder.datePicker()
-                        .setTitleText("Select To Date")
+            case R.id.dateToField:
+            case R.id.dateFromField:
+                MaterialDatePicker<Pair<Long,Long>> datePickerFrom = MaterialDatePicker.Builder.dateRangePicker()
+                        .setTitleText("Select From Date")
+                        .setSelection(new Pair<Long, Long>(MaterialDatePicker.thisMonthInUtcMilliseconds(), MaterialDatePicker.todayInUtcMilliseconds()))
                         .build();
-                datePickerTo.show(getParentFragmentManager(), "date_picker_to");
-                datePickerTo.addOnPositiveButtonClickListener(selection -> {
-                  this.dateToField.setText(dfname.format(selection));
+                datePickerFrom.show(getParentFragmentManager(), "date_picker_from");
+                datePickerFrom.addOnPositiveButtonClickListener(selection -> {
+                    this.dateToField.setText(dfname.format(selection.second));
+                    this.dateFromField.setText(dfname.format(selection.first));
+                    applyDateFilter(app);
                 });
                 break;
             case R.id.performFilterButton:
-                DateFormat filterFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-
-
-                long fromDate = app.getFromDateContext();
-                long toDate = app.getToDateContext();
-
-                if (!this.dateFromField.getText().toString().trim().isEmpty()) {
-                    try {
-                        fromDate = filterFormat.parse(this.dateFromField.getText().toString().trim() + " 00:00:00").getTime();
-                    } catch (ParseException e) {
-                        this.dateFromField.requestFocus();
-                        this.dateFromField.setError("Invalid date format should be MM/DD/YYYY");
-                        e.printStackTrace();
-                        return;
-                    }
-                } else {
-                    fromDate = 0L;
-                }
-
-                if (!this.dateToField.getText().toString().trim().isEmpty()) {
-                    try {
-                        toDate = filterFormat.parse(this.dateToField.getText().toString().trim() + " 23:59:59").getTime();
-                    } catch (ParseException e) {
-                        this.dateToField.requestFocus();
-                        this.dateToField.setError("Invalid date format should be MM/DD/YYYY");
-                        e.printStackTrace();
-                        return;
-                    }
-                } else {
-                    toDate = Long.MAX_VALUE;
-                }
-
-                app.setFromDateContext(fromDate);
-                app.setToDateContext(toDate);
-
-                Toast.makeText(getActivity(),R.string.applying_filter, Toast.LENGTH_LONG).show();
+                applyDateFilter(app);
+                break;
+            case R.id.clearFilterButton:
+                this.dateToField.setText("");
+                this.dateFromField.setText("");
+                app.setFromDateContext(0);
+                app.setToDateContext(Long.MAX_VALUE);
+                clearFilter.setVisibility(View.INVISIBLE);
                 refresh();
                 break;
         }
 
+    }
+
+    private void applyDateFilter(WoodIdentifierApplication app) {
+        DateFormat filterFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+
+
+        long fromDate = app.getFromDateContext();
+        long toDate = app.getToDateContext();
+
+        if (!this.dateFromField.getText().toString().trim().isEmpty()) {
+            try {
+                fromDate = filterFormat.parse(this.dateFromField.getText().toString().trim() + " 00:00:00").getTime();
+            } catch (ParseException e) {
+                this.dateFromField.requestFocus();
+                this.dateFromField.setError("Invalid date format should be MM/DD/YYYY");
+                e.printStackTrace();
+                return;
+            }
+        } else {
+            fromDate = 0L;
+        }
+
+        if (!this.dateToField.getText().toString().trim().isEmpty()) {
+            try {
+                toDate = filterFormat.parse(this.dateToField.getText().toString().trim() + " 23:59:59").getTime();
+            } catch (ParseException e) {
+                this.dateToField.requestFocus();
+                this.dateToField.setError("Invalid date format should be MM/DD/YYYY");
+                e.printStackTrace();
+                return;
+            }
+        } else {
+            toDate = Long.MAX_VALUE;
+        }
+
+        app.setFromDateContext(fromDate);
+        app.setToDateContext(toDate);
+        clearFilter.setVisibility(View.VISIBLE);
+        Toast.makeText(getActivity(),R.string.applying_filter, Toast.LENGTH_LONG).show();
+        refresh();
     }
 }
