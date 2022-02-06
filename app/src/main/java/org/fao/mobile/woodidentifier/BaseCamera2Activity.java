@@ -392,6 +392,7 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                                     Image image = reader.acquireNextImage();
                                     float[] avgDelta = ImageUtils.computeAWBDelta(image);
                                     Log.i(TAG, "awbDelta " + (avgDelta[0]/255.0f) * 100f + "% , " + (avgDelta[1]/255.0f) * 100f + "%, " + (avgDelta[2]/255.0f) * 100f + "%");
+                                    image.close();
                                 }, mAnalysisHandler);
                                 session.capture(captureRequest.build(), new CameraCaptureSession.CaptureCallback() {
                                     @Override
