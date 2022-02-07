@@ -217,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
                         String correction = log.classLabel.equals(log.expectedLabel) ? "" : log.expectedLabel;
                         String suffix = "_capture.jpg";
                         if (!log.expectedLabel.equals(log.classLabel)) {
-                            suffix = "corrected.jpg";
+                            suffix = "_corrected.jpg";
                         }
                         String archiveFileName = log.expectedLabel + "/" + dfname.format(date) + "_" + log.uid + suffix;
                         inputFiles.add(new Pair<>(archiveFileName, log.imagePath.replace("file://", "")));

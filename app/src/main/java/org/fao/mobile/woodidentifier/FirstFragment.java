@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -115,13 +114,18 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
         });
 
         logList.setLayoutManager(new LinearLayoutManager(getActivity()));
-        binding.fab.setOnClickListener(this::onClick);
+        binding.galleryPick.setOnClickListener(this::onClick);
         binding.setLocationButton.setOnClickListener(this::onClick);
         binding.setLocationApplyButton.setOnClickListener(this::onClick);
         binding.setLocationCancelButton.setOnClickListener(this::onClick);
         if (checkCameraHardware(getActivity())) {
             binding.fabCamera.setVisibility(View.VISIBLE);
             binding.fabCamera.setOnClickListener(this::onClick);
+        }
+        if (SharedPrefsUtil.isDeveloperMode(getActivity())) {
+            binding.galleryPick.setVisibility(View.VISIBLE);
+        } else {
+            binding.galleryPick.setVisibility(View.GONE);
         }
         final RelativeLayout root = binding.getRoot();
         return root;
@@ -259,6 +263,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
             Log.i(TAG, "scores " + Utils.showArray(result.getScores()));
 
             log.updateResult(result, modelHelper);
+            log.locationName = binding.locationMarkerField.getText().toString();
 
             if (location != null) {
                 log.setLongitude(location.getLongitude());
@@ -329,7 +334,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
         DateFormat dfname = new SimpleDateFormat("MM/dd/yyyy");
         WoodIdentifierApplication app = (WoodIdentifierApplication)getActivity().getApplication();
         switch (view.getId()) {
-            case R.id.fab:
+            case R.id.gallery_pick:
                 int permission = ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE);
 
                 if (PackageManager.PERMISSION_GRANTED != permission) {

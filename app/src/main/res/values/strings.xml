@@ -97,4 +97,5 @@
     <string name="reset_camera_settings">Reset Settings</string>
     <string name="confirm_reset_camera">Are you sure you want to reset camera settings to defaults?</string>
     <string name="enable_pin_code">Enable Pin Security</string>
+    <string name="pick_image_gallery">Select Image</string>
 </resources>

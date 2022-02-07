@@ -89,35 +89,39 @@
                 android:background="@color/design_default_color_secondary_variant"></androidx.recyclerview.widget.RecyclerView>
         </ScrollView>
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/fab_camera"
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_weight="0"
+            android:padding="5dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="@dimen/fab_margin"
+            android:layout_height="50dp"
             android:layout_marginBottom="20dp"
-            android:background="@color/teal_200"
-            android:drawableLeft="@drawable/ic_camera_white_36dp"
-            android:paddingLeft="10dp"
-            android:text="@string/capture_sample"
-            android:textColor="@color/white"
-            android:visibility="visible"
-            app:srcCompat="@drawable/ic_camera_white_36dp" />
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/fab_camera"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|end"
+                android:layout_weight="1"
+                android:background="@color/teal_200"
+                android:drawableLeft="@drawable/ic_camera_white_36dp"
+                android:paddingLeft="10dp"
+                android:text="@string/capture_sample"
+                android:textColor="@color/white"
+                android:visibility="visible"
+                app:srcCompat="@drawable/ic_camera_white_36dp" />
+
+            <ImageButton
+                android:id="@+id/gallery_pick"
+                android:layout_width="50dp"
+                android:background="@android:color/transparent"
+                android:layout_height="match_parent"
+                android:layout_weight="0"
+                android:contentDescription="@string/pick_image_gallery"
+                android:src="@drawable/ic_layers_search_black_36dp">
+
+            </ImageButton>
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
     </androidx.appcompat.widget.LinearLayoutCompat>
-
-
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
-        android:visibility="gone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@drawable/ic_layers_search_black_48dp" />
-
-
 </RelativeLayout>
