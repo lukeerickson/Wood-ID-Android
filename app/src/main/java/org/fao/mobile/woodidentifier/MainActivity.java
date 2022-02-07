@@ -219,10 +219,10 @@ public class MainActivity extends AppCompatActivity {
                         if (!log.expectedLabel.equals(log.classLabel)) {
                             suffix = "corrected.jpg";
                         }
-                        String archiveFileName = log.expectedLabel + "/" + dfname.format(date) + "_" + suffix;
+                        String archiveFileName = log.expectedLabel + "/" + dfname.format(date) + "_" + log.uid + suffix;
                         inputFiles.add(new Pair<>(archiveFileName, log.imagePath.replace("file://", "")));
 
-                        fileWriter.write(log.uid + "," + df.format(date) + "," + csvEscape(log.classLabel) + "," + archiveFileName + "," +
+                        fileWriter.write(log.uid + "," + log.firstName + "," + log.lastName + "," + df.format(date) + "," + csvEscape(log.classLabel) + "," + archiveFileName + "," +
                                 log.latitude + "," + log.longitude + "," + csvEscape(currentLocation) + "," + csvEscape(log.modelName) + "," +
                                 log.modelVersion + "," + correction + "," + csvEscape(log.comment) + "\n");
                     }
