@@ -26,9 +26,31 @@
         android:layout_height="wrap_content"/>
     <Button
         android:id="@+id/activateButton"
-        android:layout_centerInParent="true"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/set_active"></Button>
+    <TextView
+        android:id="@+id/activeText"
+        android:visibility="gone"
+        android:text="@string/active"
+        android:textSize="18sp"
+        android:textColor="@color/red"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+    </TextView>
+    <ImageButton
+        android:visibility="gone"
+        android:id="@+id/deleteModelButton"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/delete_model"
+        android:src="@drawable/ic_delete_white_24dp">
+    </ImageButton>
 </RelativeLayout>

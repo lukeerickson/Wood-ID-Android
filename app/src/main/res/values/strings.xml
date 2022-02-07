@@ -98,4 +98,6 @@
     <string name="confirm_reset_camera">Are you sure you want to reset camera settings to defaults?</string>
     <string name="enable_pin_code">Enable Pin Security</string>
     <string name="pick_image_gallery">Select Image</string>
+    <string name="delete_model">Delete this model</string>
+    <string name="active">Active</string>
 </resources>

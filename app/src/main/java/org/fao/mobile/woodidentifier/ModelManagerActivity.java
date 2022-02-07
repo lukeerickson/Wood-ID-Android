@@ -90,11 +90,12 @@ public class ModelManagerActivity extends AppCompatActivity implements ModelVers
                 try (InputStream inputStream = getContentResolver().openInputStream(uri);) {
                     File localCopyPath = new File(getFilesDir(), filename);
                     FileUtils.copyToFile(inputStream, localCopyPath);
-                    ModelHelper.registerModel(ModelManagerActivity.this, localCopyPath.getCanonicalPath(), false);
+                   ModelHelper.registerModel(ModelManagerActivity.this, localCopyPath.getCanonicalPath(), false);
+
                     runOnUiThread(() -> {
                         installModelButton.setText(R.string.install_model);
                         installModelButton.setEnabled(true);
-                        refresh();
+                        refreshItems();
                     });
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
