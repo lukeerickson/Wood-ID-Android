@@ -100,5 +100,5 @@
     <string name="pick_image_gallery">Select Image</string>
     <string name="delete_model">Delete this model</string>
     <string name="active">Active</string>
-    <string name="update_profile">Update Profile</string>
+    <string name="update_profile">Profile</string>
 </resources>
