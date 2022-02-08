@@ -12,6 +12,11 @@
         app:showAsAction="always"
         />
     <item
+        android:id="@+id/update_profile"
+        android:title="@string/update_profile"
+        app:showAsAction="always"
+        />
+    <item
         android:id="@+id/action_clear"
         android:title="@string/action_clear"
         app:showAsAction="never" />

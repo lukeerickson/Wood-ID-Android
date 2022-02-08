@@ -163,6 +163,9 @@ public class MainActivity extends AppCompatActivity {
         } else if (id == R.id.manage_model) {
             Intent intent = new Intent(this, ModelManagerActivity.class);
             startActivity(intent);
+        } else if (id == R.id.update_profile) {
+            Intent intent = new Intent(this, RegistrationActivity.class);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);

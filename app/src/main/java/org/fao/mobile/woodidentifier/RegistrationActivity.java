@@ -72,11 +72,6 @@ public class RegistrationActivity extends AppCompatActivity implements View.OnCl
             firstName.setError("First Name is missing");
             isError = true;
         }
-        if (isEmpty(lastName.getText())) {
-            lastName.requestFocus();
-            lastName.setError("Last Name is missing");
-            isError = true;
-        }
 
         if (isEmpty(pinCode.getText())) {
             pinCode.requestFocus();
