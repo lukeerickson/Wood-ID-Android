@@ -14,6 +14,9 @@ import org.fao.mobile.woodidentifier.models.User;
 import org.fao.mobile.woodidentifier.utils.PhoneAutoConfig;
 import org.fao.mobile.woodidentifier.utils.SharedPrefsUtil;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
 public class RegistrationActivity extends AppCompatActivity implements View.OnClickListener {
 
     private View saveButton;
@@ -21,6 +24,7 @@ public class RegistrationActivity extends AppCompatActivity implements View.OnCl
     private EditText lastName;
     private EditText pinCode;
     private EditText pinCodeConfirm;
+    Executor executor = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +36,17 @@ public class RegistrationActivity extends AppCompatActivity implements View.OnCl
         this.pinCode = (EditText) findViewById(R.id.editTextTextPinCode);
         this.pinCodeConfirm = (EditText) findViewById(R.id.editTextTextPinCodeConfirm);
         saveButton.setOnClickListener(this);
+        executor.execute(() -> {
+            User userinfo = SharedPrefsUtil.getUserInfo(this);
+            if (userinfo!=null) {
+                runOnUiThread(()-> {
+                    this.firstName.setText(userinfo.getFirstName());
+                    this.lastName.setText(userinfo.getLastName());
+                    this.pinCode.setText(userinfo.getPinCode());
+                    this.pinCodeConfirm.setText(userinfo.getPinCode());
+                });
+            }
+        });
     }
 
     @Override
