@@ -233,6 +233,7 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                 Integer sensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
                 Range<Long> exposureTimeRange = characteristics.get(CameraCharacteristics.SENSOR_INFO_EXPOSURE_TIME_RANGE);
                 Range<Integer> sensitivityRange = characteristics.get(CameraCharacteristics.SENSOR_INFO_SENSITIVITY_RANGE);
+                float[] focalLengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
                 Long maxFrameDuration = characteristics.get(CameraCharacteristics.SENSOR_INFO_MAX_FRAME_DURATION);
                 Size size = characteristics.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE);
                 Range<Float> zoomRatioRange = null;
@@ -248,7 +249,9 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                     Log.i(TAG, "exposure range " + exposureTimeRange.getLower() + " to " + exposureTimeRange.getUpper());
                     Log.i(TAG, "sensitivity range " + sensitivityRange.getLower() + " to " + sensitivityRange.getUpper());
                     Log.i(TAG, "max frame duration " + maxFrameDuration);
-
+                    for(float focalLength: focalLengths) {
+                        Log.i(TAG, "focal length: " + focalLength);
+                    }
                     Size[] outputSizes = streamConfigurationMap.getOutputSizes(ImageReader.class);
 
                     int[] outputFormats = streamConfigurationMap.getOutputFormats();
@@ -276,6 +279,7 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                     Log.i(TAG, "output formats " + StringUtils.joinAsJson(outputFormatStr));
                     Log.i(TAG, "zoom ratio " + zoomRatioRange.getLower() + " to " + zoomRatioRange.getUpper());
                     Log.i(TAG, "AE compensation range " + aeCompensationRange.getLower() + " to " + aeCompensationRange.getUpper());
+                    Log.i(TAG, "selected resolution " + maxSize);
                     RecalibrateCameraActivity.CameraProperties properties = new RecalibrateCameraActivity.CameraProperties(cameraId, maxSize, zoomRatioRange, aeCompensationRange, sensorOrientation);
                     backFacingCameras.add(properties);
                 }
@@ -481,7 +485,16 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
         captureRequest.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_OFF);
         // disable OIS
         captureRequest.set(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE, CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_OFF);
-        captureRequest.set(CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE, CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE_HIGH_QUALITY);
+
+        //Set all to max quality
+
+        captureRequest.set(CaptureRequest.EDGE_MODE, CameraMetadata.EDGE_MODE_HIGH_QUALITY);
+        captureRequest.set(CaptureRequest.SHADING_MODE, CameraMetadata.SHADING_MODE_HIGH_QUALITY);
+        captureRequest.set(CaptureRequest.TONEMAP_MODE, CameraMetadata.TONEMAP_MODE_HIGH_QUALITY);
+        captureRequest.set(CaptureRequest.COLOR_CORRECTION_ABERRATION_MODE, CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_HIGH_QUALITY);
+        captureRequest.set(CaptureRequest.COLOR_CORRECTION_MODE, CameraMetadata.COLOR_CORRECTION_ABERRATION_MODE_HIGH_QUALITY);
+        captureRequest.set(CaptureRequest.HOT_PIXEL_MODE, CameraMetadata.HOT_PIXEL_MODE_HIGH_QUALITY);
+        captureRequest.set(CaptureRequest.NOISE_REDUCTION_MODE, CameraMetadata.NOISE_REDUCTION_MODE_HIGH_QUALITY);
         // adjust color correction using seekbar's params
 
         captureRequest.set(CaptureRequest.COLOR_CORRECTION_MODE, CaptureRequest.COLOR_CORRECTION_MODE_TRANSFORM_MATRIX);
