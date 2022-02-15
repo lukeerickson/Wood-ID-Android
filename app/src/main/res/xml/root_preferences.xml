@@ -75,6 +75,6 @@
         <EditTextPreference
             app:key="accuracy_threshold"
             app:title="@string/model_accuracy_threshold"
-            app:useSimpleSummaryProvider="false"/>
+            app:useSimpleSummaryProvider="true"/>
     </PreferenceCategory>
 </PreferenceScreen>

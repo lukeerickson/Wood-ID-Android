@@ -7,6 +7,7 @@ import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.AE_COMPENSATIO
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.CROP_FACTOR;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.CUSTOM_AWB;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.CUSTOM_AWB_VALUES;
+import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.DEF_THRESHOLD;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.EXPOSURE_TIME;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.FRAME_DURATION_TIME;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.PIN_SECURITY;
@@ -58,7 +59,7 @@ public class PhoneAutoConfig {
                 editor.putString(AE_COMPENSATION, Integer.toString(aeCompensation));
                 editor.putString(CROP_FACTOR, Integer.toString(cropFactor));
                 editor.putString(CUSTOM_AWB_VALUES, awbSettings);
-                editor.putFloat(ACCURACY_THRESHOLD, 4.0f);
+                editor.putString(ACCURACY_THRESHOLD, DEF_THRESHOLD);
                 editor.putBoolean(PIN_SECURITY, true);
                 if (customExposureSettings) {
                     editor.putBoolean(USE_CUSTOM_EXPOSURE, true);

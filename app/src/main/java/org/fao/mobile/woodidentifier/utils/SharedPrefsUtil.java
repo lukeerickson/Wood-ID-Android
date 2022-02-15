@@ -37,6 +37,7 @@ public class SharedPrefsUtil {
     public static final String USE_CUSTOM_EXPOSURE = "use_custom_exposure";
     public static final String PIN_SECURITY = "enable_pin_code";
     public static final String ACCURACY_THRESHOLD = "accuracy_threshold";
+    public static final String DEF_THRESHOLD = "4.0";
 
     public static boolean isDeveloperMode(Context context) {
         SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -118,6 +119,6 @@ public class SharedPrefsUtil {
 
     public static float accuracyThreshold(Activity context) {
         SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return defaultPrefs.getFloat(ACCURACY_THRESHOLD, 4.0f);
+        return Float.parseFloat(defaultPrefs.getString(ACCURACY_THRESHOLD, DEF_THRESHOLD));
     }
 }

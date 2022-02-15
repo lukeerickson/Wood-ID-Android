@@ -112,7 +112,13 @@ public class DetailsActivity extends AppCompatActivity {
             InferencesLog inferenceLog = db.inferencesLogDAO().findByUid(uid);
             runOnUiThread(() -> {
                 Species species = application.getSpeciesLookupService().lookupSpeciesInfo(inferenceLog.classLabel);
-                classLabel.setText(species.name() + " ( " + species.getScientificName() + ") ");
+                if (inferenceLog.score < SharedPrefsUtil.accuracyThreshold(this)) {
+                    classLabel.setText(getString(R.string.unknown));
+                    classLabel.setTextColor(getColor(R.color.red));
+                } else {
+                    classLabel.setText(species.name() + " ( " + species.getScientificName() + ") ");
+                    classLabel.setTextColor(getColor(R.color.black));
+                }
                 filename.setText(inferenceLog.originalFilename);
                 description.setText(species.getDescription());
                 labelSpinner.setSelection(model.getClassLabels().indexOf(inferenceLog.expectedLabel));
