@@ -86,10 +86,16 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
         } else {
             String label = inferenceLog.classLabel;
             int index = inferenceLog.classIndex;
+
             if (inferenceLog.expectedLabel!=null && !inferenceLog.expectedLabel.equals(inferenceLog.classLabel)) {
                 label = inferenceLog.expectedLabel;
                 index = ModelHelper.getHelperInstance(context).getClassLabels().indexOf(label);
             }
+
+            if (inferenceLog.score < SharedPrefsUtil.accuracyThreshold(context)) {
+                label = "Unknown";
+            }
+
             if (SharedPrefsUtil.isDeveloperMode(context)) {
                 holder.getTextView().setText(label + " (" + index + ")");
                 holder.getScoreView().setText(Float.toString(inferenceLog.score));

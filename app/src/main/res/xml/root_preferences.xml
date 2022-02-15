@@ -71,4 +71,10 @@
             app:title="@string/developer_mode"
             app:useSimpleSummaryProvider="false"/>
     </PreferenceCategory>
+    <PreferenceCategory app:title="@string/model_settings">
+        <EditTextPreference
+            app:key="accuracy_threshold"
+            app:title="@string/model_accuracy_threshold"
+            app:useSimpleSummaryProvider="false"/>
+    </PreferenceCategory>
 </PreferenceScreen>

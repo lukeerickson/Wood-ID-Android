@@ -101,4 +101,6 @@
     <string name="delete_model">Delete this model</string>
     <string name="active">Active</string>
     <string name="update_profile">Profile</string>
+    <string name="model_settings">Model Settings</string>
+    <string name="model_accuracy_threshold">Model Accuracy Threshold</string>
 </resources>

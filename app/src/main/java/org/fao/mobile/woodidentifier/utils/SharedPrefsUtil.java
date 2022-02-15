@@ -1,5 +1,6 @@
 package org.fao.mobile.woodidentifier.utils;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.Editable;
@@ -34,7 +35,8 @@ public class SharedPrefsUtil {
     public static final String FRAME_DURATION_TIME = "frame_duration_time";
     public static final String EXPOSURE_TIME = "exposure_time";
     public static final String USE_CUSTOM_EXPOSURE = "use_custom_exposure";
-    private static final String PIN_SECURITY = "enable_pin_code";
+    public static final String PIN_SECURITY = "enable_pin_code";
+    public static final String ACCURACY_THRESHOLD = "accuracy_threshold";
 
     public static boolean isDeveloperMode(Context context) {
         SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -112,5 +114,10 @@ public class SharedPrefsUtil {
         SharedPreferences prefs = context.getSharedPreferences(
                 APP_SETTINGS, Context.MODE_PRIVATE);
         return prefs.getString(CURRENT_LOCATION, "");
+    }
+
+    public static float accuracyThreshold(Activity context) {
+        SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return defaultPrefs.getFloat(ACCURACY_THRESHOLD, 4.0f);
     }
 }
