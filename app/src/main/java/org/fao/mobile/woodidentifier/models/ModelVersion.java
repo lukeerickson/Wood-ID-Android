@@ -30,6 +30,8 @@ public class ModelVersion {
     public boolean active;
     @ColumnInfo(name = "timestamp")
     public long timestamp;
+    @ColumnInfo(name = "threshold")
+    public double threshold;
 
     public void performCleanup() {
         Log.i(TAG, "cleaning up model directory");

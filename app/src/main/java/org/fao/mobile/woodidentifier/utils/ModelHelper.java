@@ -1,5 +1,7 @@
 package org.fao.mobile.woodidentifier.utils;
 
+import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.ACCURACY_THRESHOLD;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -83,6 +85,10 @@ public class ModelHelper {
         return instance;
     }
 
+    /**
+     * Update current model helper instance
+     * @param context
+     */
     public static void refreshInstance(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         int cropFactor = Integer.parseInt(prefs.getString(SharedPrefsUtil.CROP_FACTOR, "2048"));
@@ -123,6 +129,14 @@ public class ModelHelper {
 
     }
 
+    /**
+     * Registers a model into the system
+     * @param context
+     * @param archivePath
+     * @param activate
+     * @return
+     * @throws IOException
+     */
     public static ModelVersion registerModel(Context context, String archivePath, boolean activate) throws IOException {
         String modelPath = ModelHelper.prepareModel(context, archivePath);
         //read model version
@@ -156,6 +170,7 @@ public class ModelHelper {
                 }
                 modelVersion.path = modelPath;
                 modelVersion.active = activate;
+                modelVersion.threshold = jsonObject.optDouble("threshold", 0.0f);
                 db.modelVersionsDAO().insert(modelVersion);
             } else {
                 //Cleanup extracted model
@@ -409,7 +424,11 @@ public class ModelHelper {
 
     public static void activateModel(Context context, ModelVersion modelVersion) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putString(MODEL_PATH, modelVersion.path).putLong(MODEL_VERSION, modelVersion.version).putString(MODEL_NAME, modelVersion.name).commit();
+        prefs.edit().putString(MODEL_PATH, modelVersion.path).
+                putLong(MODEL_VERSION, modelVersion.version).
+                putString(MODEL_NAME, modelVersion.name).
+                putFloat(ACCURACY_THRESHOLD, (float)modelVersion.threshold).
+                commit();
         ModelHelper.refreshInstance(context);
     }
 }
