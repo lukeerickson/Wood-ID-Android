@@ -128,6 +128,7 @@ public class DetailsActivity extends AppCompatActivity {
                 referenceImageContainer.removeAllViews();
                 modelVersion.setText(inferenceLog.modelName + "-" + Long.toString(inferenceLog.modelVersion));
                 Arrays.stream(species.getReferenceImages()).forEachOrdered(imageRef -> {
+
                     View view = LayoutInflater.from(referenceImageContainer.getContext())
                             .inflate(R.layout.reference_image, referenceImageContainer, false);
                     ImageView referenceImage = view.findViewById(R.id.reference_image);

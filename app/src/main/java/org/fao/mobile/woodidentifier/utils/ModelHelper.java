@@ -40,6 +40,7 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -260,6 +261,17 @@ public class ModelHelper {
                     continue;
                 }
                 Log.d(TAG, "extracting " + extractPath + "/" + itemfilename);
+                String fullPath = extractPath + "/" + itemfilename;
+
+                String[] directoryParts = fullPath.split("/");
+                if (directoryParts.length > 1) {
+                    String pathOnly = String.join("/", Arrays.copyOf(directoryParts, directoryParts.length - 1));
+                    File dirs = new File(pathOnly);
+                    if (!dirs.exists()) {
+                        dirs.mkdirs();
+                    }
+                }
+
                 FileOutputStream fout = new FileOutputStream(extractPath + "/" + itemfilename);
 
                 while ((count = zis.read(buffer)) != -1) {

@@ -36,6 +36,7 @@
         <entry key="app/src/main/res/layout/fragment_first.xml" value="0.335" />
         <entry key="app/src/main/res/layout/model_version_view.xml" value="0.1" />
         <entry key="app/src/main/res/layout/recalibrate_camera.xml" value="0.4078125" />
+        <entry key="app/src/main/res/layout/reference_image.xml" value="0.16983695652173914" />
         <entry key="app/src/main/res/layout/surface_view.xml" value="0.4078125" />
         <entry key="app/src/main/res/menu/menu_main.xml" value="0.196875" />
         <entry key="app/src/main/res/xml/root_preferences.xml" value="0.196875" />

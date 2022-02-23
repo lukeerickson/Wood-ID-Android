@@ -13,14 +13,18 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+
+//Routines for looking up species information
 public class SpeciesLookupService {
 
+    private final String modelRootPath; //contains the root path of the currently selected Model
     private JSONObject jObject;
 
     public SpeciesLookupService(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String modelPath = prefs.getString(ModelHelper.MODEL_PATH, null);
         assert modelPath != null;
+        this.modelRootPath = modelPath;
         try {
             this.jObject = ModelHelper.getSpeciesDatabase(context, modelPath);
         } catch (IOException | JSONException e) {
@@ -49,7 +53,7 @@ public class SpeciesLookupService {
                 JSONArray referenceImages = speciesInfo.getJSONArray("reference_images");
                 String[] referenceImageArr = new String[referenceImages.length()];
                 for (int i = 0; i < referenceImages.length(); i++)
-                    referenceImageArr[i] = referenceImages.getString(i);
+                    referenceImageArr[i] = "file://" + modelRootPath + "/" + referenceImages.getString(i);
                 species.setReferenceImages(referenceImageArr);
             } else {
                 species.setReferenceImages(new String[0]);

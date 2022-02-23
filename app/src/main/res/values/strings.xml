@@ -104,4 +104,5 @@
     <string name="model_settings">Model Settings</string>
     <string name="model_accuracy_threshold">Model Accuracy Threshold</string>
     <string name="unknown">Unidentified</string>
+    <string name="reference_images_label">Reference Images</string>
 </resources>
