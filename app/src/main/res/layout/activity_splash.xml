@@ -20,7 +20,7 @@
             android:layout_height="match_parent"
             android:layout_centerInParent="true"
             android:scaleType="centerCrop"
-            android:src="@drawable/wood_id_splash" />
+            android:src="@drawable/background_assorted" />
         <LinearLayout
             android:gravity="center_vertical"
             android:background="@color/white"

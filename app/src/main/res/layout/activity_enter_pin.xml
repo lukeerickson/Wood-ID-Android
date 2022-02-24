@@ -8,7 +8,7 @@
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:src="@drawable/wood_id_splash"/>
+        android:src="@drawable/background_assorted"/>
     <EditText
         android:id="@+id/pinCodeField"
         android:layout_width="wrap_content"
