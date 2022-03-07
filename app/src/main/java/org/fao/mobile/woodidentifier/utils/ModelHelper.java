@@ -439,7 +439,7 @@ public class ModelHelper {
         prefs.edit().putString(MODEL_PATH, modelVersion.path).
                 putLong(MODEL_VERSION, modelVersion.version).
                 putString(MODEL_NAME, modelVersion.name).
-                putFloat(ACCURACY_THRESHOLD, (float)modelVersion.threshold).
+                putString(ACCURACY_THRESHOLD, Double.toString(modelVersion.threshold)).
                 commit();
         ModelHelper.refreshInstance(context);
     }
