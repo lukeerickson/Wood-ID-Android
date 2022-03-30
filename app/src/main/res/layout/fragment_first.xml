@@ -80,7 +80,7 @@
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-
+            android:layout_marginTop="10dp"
             android:layout_below="@id/header_group"
             android:layout_weight="1">
 
