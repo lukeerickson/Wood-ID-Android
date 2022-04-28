@@ -28,6 +28,7 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import androidx.room.Room;
+import androidx.room.util.StringUtil;
 
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 
@@ -54,10 +55,12 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -208,8 +211,16 @@ public class MainActivity extends AppCompatActivity {
                     this.progressGroup.setVisibility(View.VISIBLE);
                     this.exportProgressIndicator.setProgressCompat(0, true);
                 });
+                boolean developerMode = SharedPrefsUtil.isDeveloperMode(this);
+                String headers;
+                if (developerMode) {
+                    headers = "uid,first_name,last_name,timestamp,class,img,lat,long,location,model_name,version,correction,scores,score,comment\n";
+                } else {
+                    headers = "uid,first_name,last_name,timestamp,class,img,lat,long,location,model_name,version,correction,comment\n";
+                }
                 try (FileWriter fileWriter = new FileWriter(exportFileTarget)) {
-                    fileWriter.write("uid,first_name,last_name,timestamp,class,img,lat,long,location,model_name,version,correction,comment\n");
+
+                    fileWriter.write(headers);
                     for (InferencesLog log : db.inferencesLogDAO().getByDate(application.getFromDateContext(), application.getToDateContext())) {
                         Log.i(TAG, "adding " + log.imagePath);
                         Date date = new Date(log.timestamp);
@@ -224,10 +235,28 @@ public class MainActivity extends AppCompatActivity {
                         }
                         String archiveFileName = log.expectedLabel + "/" + dfname.format(date) + "_" + log.uid + suffix;
                         inputFiles.add(new Pair<>(archiveFileName, log.imagePath.replace("file://", "")));
+                        ArrayList<String> columnValues = new ArrayList<>();
+                        columnValues.add(Long.toString(log.uid));
+                        columnValues.add(log.firstName);
+                        columnValues.add(log.lastName);
+                        columnValues.add(df.format(date));
+                        columnValues.add(log.classLabel);
+                        columnValues.add(archiveName);
+                        columnValues.add(Double.toString(log.latitude));
+                        columnValues.add(Double.toString(log.longitude));
+                        columnValues.add(csvEscape(currentLocation));
+                        columnValues.add(csvEscape(log.modelName));
+                        columnValues.add(Long.toString(log.modelVersion));
+                        columnValues.add(correction);
+                        columnValues.add(Float.toString(log.score));
+                        if (developerMode) {
+                            String scores = Arrays.stream(log.scores).map(v -> Double.toString(v)).collect(Collectors.joining("|"));
+                            columnValues.add(scores);
+                            columnValues.add(Float.toString(log.score));
+                        }
+                        columnValues.add(csvEscape(log.comment));
 
-                        fileWriter.write(log.uid + "," + log.firstName + "," + log.lastName + "," + df.format(date) + "," + csvEscape(log.classLabel) + "," + archiveFileName + "," +
-                                log.latitude + "," + log.longitude + "," + csvEscape(currentLocation) + "," + csvEscape(log.modelName) + "," +
-                                log.modelVersion + "," + correction + "," + csvEscape(log.comment) + "\n");
+                        fileWriter.write(String.join(",", columnValues));
                     }
                 } catch (IOException e) {
                     e.printStackTrace();

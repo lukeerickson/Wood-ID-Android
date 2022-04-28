@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
@@ -53,11 +54,13 @@ import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class FirstFragment extends Fragment implements InferenceLogViewAdapter.ItemListener, View.OnClickListener {
 
@@ -269,6 +272,24 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
                 log.setLongitude(location.getLongitude());
                 log.setLatitude(location.getLatitude());
                 log.setLocationAccuracy(location.getAccuracy());
+            }
+            ExifInterface exif = null;
+            try {
+                exif = new ExifInterface(localCopyPath);
+                exif.setAttribute(ExifInterface.TAG_IMAGE_UNIQUE_ID, Long.toString(log.uid));
+                exif.setAttribute("label", log.classLabel);
+                exif.setAttribute("location", log.locationName);
+                exif.setAttribute("score", Float.toString(log.score));
+                exif.setAttribute("scores", Arrays.stream(log.scores).map(v->Double.toString(v)).collect(Collectors.joining(",")));
+                exif.setAttribute("model", log.modelName);
+                exif.setAttribute("version", Long.toString(log.modelVersion));
+                if (location != null) {
+                    exif.setAttribute(ExifInterface.TAG_GPS_LONGITUDE, Double.toString(location.getLongitude()));
+                    exif.setAttribute(ExifInterface.TAG_GPS_LATITUDE, Double.toString(location.getLatitude()));
+                }
+                exif.saveAttributes();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
 
             updateLog(db, log, new DBCallback() {
