@@ -119,12 +119,12 @@ public class ImageCaptureActivity extends AbstractCameraXActivity implements Sli
             setCameraZoom(sliderValue);
             SharedPreferences prefs = this.getSharedPreferences(
                     "camera_settings", Context.MODE_PRIVATE);
-            prefs.edit().putFloat(ZOOM, sliderValue).commit();
+            prefs.edit().putString(ZOOM, Float.toString(sliderValue)).commit();
         } else if (slider.getId() == R.id.exposure_control) {
             setCameraExposure(sliderValue);
             SharedPreferences prefs = this.getSharedPreferences(
                     "camera_settings", Context.MODE_PRIVATE);
-            prefs.edit().putFloat("exposure", sliderValue).commit();
+            prefs.edit().putString("exposure", Float.toString(sliderValue)).commit();
         }
     }
 

@@ -219,7 +219,6 @@ public class MainActivity extends AppCompatActivity {
                     headers = "uid,first_name,last_name,timestamp,class,img,lat,long,location,model_name,version,correction,comment\n";
                 }
                 try (FileWriter fileWriter = new FileWriter(exportFileTarget)) {
-
                     fileWriter.write(headers);
                     for (InferencesLog log : db.inferencesLogDAO().getByDate(application.getFromDateContext(), application.getToDateContext())) {
                         Log.i(TAG, "adding " + log.imagePath);
@@ -255,8 +254,7 @@ public class MainActivity extends AppCompatActivity {
                             columnValues.add(Float.toString(log.score));
                         }
                         columnValues.add(csvEscape(log.comment));
-
-                        fileWriter.write(String.join(",", columnValues));
+                        fileWriter.write(String.join(",", columnValues) + "\n");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
