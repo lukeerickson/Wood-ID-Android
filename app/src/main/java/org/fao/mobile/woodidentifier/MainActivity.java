@@ -214,9 +214,9 @@ public class MainActivity extends AppCompatActivity {
                 boolean developerMode = SharedPrefsUtil.isDeveloperMode(this);
                 String headers;
                 if (developerMode) {
-                    headers = "uid,first_name,last_name,timestamp,class,img,lat,long,location,model_name,version,correction,scores,score,comment\n";
+                    headers = "uid,first_name,last_name,timestamp,prediction_label_1,img,lat,long,location,model_name,version,true_label,scores,score,prediction_label_2,prediction_label_3,comment\n";
                 } else {
-                    headers = "uid,first_name,last_name,timestamp,class,img,lat,long,location,model_name,version,correction,comment\n";
+                    headers = "uid,first_name,last_name,timestamp,prediction,img,lat,long,location,model_name,version,true_label,comment\n";
                 }
                 try (FileWriter fileWriter = new FileWriter(exportFileTarget)) {
                     fileWriter.write(headers);
@@ -240,18 +240,23 @@ public class MainActivity extends AppCompatActivity {
                         columnValues.add(log.lastName);
                         columnValues.add(df.format(date));
                         columnValues.add(log.classLabel);
-                        columnValues.add(archiveName);
+                        columnValues.add(archiveFileName);
                         columnValues.add(Double.toString(log.latitude));
                         columnValues.add(Double.toString(log.longitude));
                         columnValues.add(csvEscape(currentLocation));
                         columnValues.add(csvEscape(log.modelName));
                         columnValues.add(Long.toString(log.modelVersion));
-                        columnValues.add(correction);
+                        if (StringUtils.isEmpty(correction)) {
+                            columnValues.add(log.classLabel);
+                        } else {
+                            columnValues.add(correction);
+                        }
                         columnValues.add(Float.toString(log.score));
                         if (developerMode) {
                             String scores = Arrays.stream(log.scores).map(v -> Double.toString(v)).collect(Collectors.joining("|"));
-                            columnValues.add(scores);
-                            columnValues.add(Float.toString(log.score));
+                            columnValues.add(Double.toString(log.score));
+                            columnValues.add(log.top[1]);
+                            columnValues.add(log.top[2]);
                         }
                         columnValues.add(csvEscape(log.comment));
                         fileWriter.write(String.join(",", columnValues) + "\n");

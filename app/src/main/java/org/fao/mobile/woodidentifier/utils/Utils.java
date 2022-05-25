@@ -103,9 +103,9 @@ public class Utils {
         return null;
     }
 
-    public static Integer[] topK(float[] a, final int topk) {
-        float[] values = new float[topk];
-        Arrays.fill(values, -Float.MAX_VALUE);
+    public static Integer[] topK(double[] a, final int topk) {
+        double[] values = new double[topk];
+        Arrays.fill(values, -Double.MAX_VALUE);
         Integer[] ixs  = new Integer[topk];
         Arrays.fill(ixs, -1);
 
@@ -123,6 +123,22 @@ public class Utils {
             }
         }
         return ixs;
+    }
+
+    public static Integer[] topK(Double[] a, final int topk) {
+        double buf[] = new double[topk];
+        for(int i = 0; i < topk; i++) {
+            buf[i] = a[i];
+        }
+        return Utils.topK(buf, topk);
+    }
+
+    public static Integer[] topK(float[] a, final int topk) {
+        double buf[] = new double[topk];
+        for(int i = 0; i < topk; i++) {
+            buf[i] = a[i];
+        }
+        return Utils.topK(buf, topk);
     }
 
     public static void verifyCameraPermissions(Activity activity) {
