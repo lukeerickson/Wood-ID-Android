@@ -278,6 +278,12 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
                 exif = new ExifInterface(localCopyPath);
                 exif.setAttribute(ExifInterface.TAG_IMAGE_UNIQUE_ID, Long.toString(log.uid));
                 exif.setAttribute("label", log.classLabel);
+                if (log.top.length > 1) {
+                    exif.setAttribute("label_2", log.top[1]);
+                }
+                if (log.top.length > 2) {
+                    exif.setAttribute("label_3", log.top[2]);
+                }
                 exif.setAttribute("location", log.locationName);
                 exif.setAttribute("score", Float.toString(log.score));
                 exif.setAttribute("scores", Arrays.stream(log.scores).map(v->Double.toString(v)).collect(Collectors.joining(",")));

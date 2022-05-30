@@ -254,9 +254,17 @@ public class MainActivity extends AppCompatActivity {
                         columnValues.add(Float.toString(log.score));
                         if (developerMode) {
                             String scores = Arrays.stream(log.scores).map(v -> Double.toString(v)).collect(Collectors.joining("|"));
-                            columnValues.add(Double.toString(log.score));
-                            columnValues.add(log.top[1]);
-                            columnValues.add(log.top[2]);
+                            columnValues.add(scores);
+                            if (log.top.length > 1) {
+                                columnValues.add(log.top[1]);
+                            } else {
+                                columnValues.add("");
+                            }
+                            if (log.top.length > 2) {
+                                columnValues.add(log.top[2]);
+                            } else {
+                                columnValues.add("");
+                            }
                         }
                         columnValues.add(csvEscape(log.comment));
                         fileWriter.write(String.join(",", columnValues) + "\n");
