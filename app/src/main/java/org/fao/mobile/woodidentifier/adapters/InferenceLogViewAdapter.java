@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +30,7 @@ import org.fao.mobile.woodidentifier.utils.SpeciesLookupService;
 import org.fao.mobile.woodidentifier.utils.Utils;
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.List;
 
 public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogViewAdapter.ViewHolder> implements View.OnClickListener {
@@ -95,15 +97,31 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
             if (inferenceLog.score < SharedPrefsUtil.accuracyThreshold(context)) {
                 label = "Unknown";
             }
-
+            DecimalFormat df = new DecimalFormat("###.##");
+            holder.getTextView().setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
             if (SharedPrefsUtil.isDeveloperMode(context)) {
-                holder.getTextView().setText(label + " (" + index + ")");
-                holder.getScoreView().setText(Float.toString(inferenceLog.score));
-                holder.getScoreView().setVisibility(View.VISIBLE);
+                if (inferenceLog.confidenceScore() >= 45 && inferenceLog.confidenceScore() <= 55) {
+                    String label2 = inferenceLog.top[1];
+                    holder.getTextView().setText(label + " / " + label2);
+                    holder.getTextView().setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
+                    holder.getScoreView().setText(df.format(inferenceLog.score) + "/" + df.format(inferenceLog.scores[inferenceLog.topKRaw[1]]));
+                } else {
+                    holder.getTextView().setText(label);
+                    holder.getScoreView().setText(df.format(inferenceLog.score));
+                }
             } else {
+
                 Species species = speciesLookup.lookupSpeciesInfo(label);
-                holder.getTextView().setText(species.name());
-                holder.getScoreView().setVisibility(View.INVISIBLE);
+                if (inferenceLog.confidenceScore() >= 45 && inferenceLog.confidenceScore() <= 55) {
+                    String label2 = inferenceLog.top[1];
+                    Species species2 = speciesLookup.lookupSpeciesInfo(label2);
+                    holder.getTextView().setText(species.name() + " or " + species2.name());
+                    holder.getScoreView().setText(df.format(inferenceLog.confidenceScore()) + "%");
+                } else {
+                    holder.getTextView().setText(species.name());
+
+                    holder.getScoreView().setText(df.format(inferenceLog.confidenceScore()) + "%");
+                }
             }
 
         }

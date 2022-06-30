@@ -246,8 +246,12 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                     Log.i(TAG, "camera " + cameraId + " is backfacing");
                     Log.i(TAG, "sensor orientation is " + sensorOrientation);
                     Log.i(TAG, "camera resolution " + size.getWidth() + "," + size.getHeight());
-                    Log.i(TAG, "exposure range " + exposureTimeRange.getLower() + " to " + exposureTimeRange.getUpper());
-                    Log.i(TAG, "sensitivity range " + sensitivityRange.getLower() + " to " + sensitivityRange.getUpper());
+                    if (exposureTimeRange!=null) {
+                        Log.i(TAG, "exposure range " + exposureTimeRange.getLower() + " to " + exposureTimeRange.getUpper());
+                    }
+                    if (sensitivityRange!=null) {
+                        Log.i(TAG, "sensitivity range " + sensitivityRange.getLower() + " to " + sensitivityRange.getUpper());
+                    }
                     Log.i(TAG, "max frame duration " + maxFrameDuration);
                     for(float focalLength: focalLengths) {
                         Log.i(TAG, "focal length: " + focalLength);

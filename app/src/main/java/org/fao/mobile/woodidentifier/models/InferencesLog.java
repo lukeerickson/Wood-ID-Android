@@ -1,5 +1,7 @@
 package org.fao.mobile.woodidentifier.models;
 
+import android.util.Log;
+
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -15,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -23,6 +26,7 @@ import java.util.stream.Stream;
 @Entity(tableName = "inferences_log")
 @TypeConverters({org.fao.mobile.woodidentifier.models.converters.TypeConverters.class})
 public class InferencesLog {
+    private static final String TAG = InferencesLog.class.getCanonicalName();
     @PrimaryKey(autoGenerate = true)
     public long uid;
 
@@ -162,5 +166,15 @@ public class InferencesLog {
 
     public String getLocationName() {
         return locationName;
+    }
+
+    public double confidenceScore() {
+        List<Double> sortedScores = Arrays.stream(scores).sorted( (a,b) -> {
+            if (a == b) return 0;
+            return a > b ? -1 : 1;
+        }).collect(Collectors.toList());
+        Log.d(TAG, "max  " + sortedScores.get(0) + " min " + sortedScores.get(sortedScores.size() -1));
+        Double totals = sortedScores.get(0) + sortedScores.get(1);
+        return (score / totals) * 100;
     }
 }
