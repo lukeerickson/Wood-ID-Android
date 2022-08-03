@@ -38,6 +38,8 @@ public class SharedPrefsUtil {
     public static final String PIN_SECURITY = "enable_pin_code";
     public static final String ACCURACY_THRESHOLD = "accuracy_threshold";
     public static final String DEF_THRESHOLD = "4.0";
+    public static final String UNCERTAINTY_MARGIN = "uncertainty_margin";
+    public static final String DEF_MARGIN = "2.0";
 
     public static boolean isDeveloperMode(Context context) {
         SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(context);
@@ -120,5 +122,10 @@ public class SharedPrefsUtil {
     public static float accuracyThreshold(Activity context) {
         SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(context);
         return Float.parseFloat(defaultPrefs.getString(ACCURACY_THRESHOLD, DEF_THRESHOLD));
+    }
+    
+    public static double getUncertaintyMargin(Context context) {
+        SharedPreferences defaultPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return Double.parseDouble(defaultPrefs.getString(UNCERTAINTY_MARGIN, DEF_MARGIN));
     }
 }

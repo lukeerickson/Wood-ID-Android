@@ -38,6 +38,7 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
     private static final int OPEN_DETAIL = 5;
     private final ItemListener itemListener;
     private final SpeciesLookupService speciesLookup;
+    private final double margin;
 
 
     public interface ItemListener {
@@ -53,6 +54,7 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
         this.logs = logs;
         this.itemListener = listener;
         this.speciesLookup = ((WoodIdentifierApplication) context.getApplicationContext()).getSpeciesLookupService();
+        this.margin = SharedPrefsUtil.getUncertaintyMargin(context);
     }
 
     @Override
@@ -100,7 +102,7 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
             DecimalFormat df = new DecimalFormat("###.##");
             holder.getTextView().setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
             if (SharedPrefsUtil.isDeveloperMode(context)) {
-                if (inferenceLog.confidenceScore() >= 45 && inferenceLog.confidenceScore() <= 55) {
+                if (inferenceLog.confidenceScore() >= getLowerBound() && inferenceLog.confidenceScore() <= getHigherBound()) {
                     String label2 = inferenceLog.top[1];
                     holder.getTextView().setText(label + " / " + label2);
                     holder.getTextView().setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
@@ -135,6 +137,14 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
         holder.getFilename().setText(inferenceLog.originalFilename);
         holder.getTimestamp().setText(Utils.timestampToString(inferenceLog.timestamp));
         Glide.with(context).load(Uri.decode(inferenceLog.imagePath)).into(holder.getWoodImage());
+    }
+
+    private double getHigherBound() {
+        return 50 + margin;
+    }
+
+    private double getLowerBound() {
+        return 50 - margin;
     }
 
     @Override

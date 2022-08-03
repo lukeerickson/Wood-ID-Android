@@ -76,5 +76,9 @@
             app:key="accuracy_threshold"
             app:title="@string/model_accuracy_threshold"
             app:useSimpleSummaryProvider="true"/>
+        <EditTextPreference
+            app:key="uncertainty_margin"
+            app:title="@string/uncertainty_margin"
+            app:useSimpleSummaryProvider="true"/>
     </PreferenceCategory>
 </PreferenceScreen>

@@ -7,11 +7,13 @@ import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.AE_COMPENSATIO
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.CROP_FACTOR;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.CUSTOM_AWB;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.CUSTOM_AWB_VALUES;
+import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.DEF_MARGIN;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.DEF_THRESHOLD;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.EXPOSURE_TIME;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.FRAME_DURATION_TIME;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.PIN_SECURITY;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.SENSOR_SENSITIVITY;
+import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.UNCERTAINTY_MARGIN;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.USE_CUSTOM_EXPOSURE;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.WHITE_BALANCE;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.ZOOM;
@@ -60,6 +62,7 @@ public class PhoneAutoConfig {
                 editor.putString(CROP_FACTOR, Integer.toString(cropFactor));
                 editor.putString(CUSTOM_AWB_VALUES, awbSettings);
                 editor.putString(ACCURACY_THRESHOLD, DEF_THRESHOLD);
+                editor.putString(UNCERTAINTY_MARGIN, DEF_MARGIN);
                 editor.putBoolean(PIN_SECURITY, true);
                 if (customExposureSettings) {
                     editor.putBoolean(USE_CUSTOM_EXPOSURE, true);

@@ -214,9 +214,9 @@ public class MainActivity extends AppCompatActivity {
                 boolean developerMode = SharedPrefsUtil.isDeveloperMode(this);
                 String headers;
                 if (developerMode) {
-                    headers = "uid,first_name,last_name,timestamp,prediction_label_1,img,lat,long,location,model_name,version,true_label,scores,score,prediction_label_2,prediction_label_3,comment\n";
+                    headers = "uid,first_name,last_name,timestamp,prediction_label_1,img,lat,long,location,model_name,version,true_label,score,scores,prediction_label_2,prediction_label_3,comment\n";
                 } else {
-                    headers = "uid,first_name,last_name,timestamp,prediction,img,lat,long,location,model_name,version,true_label,comment\n";
+                    headers = "uid,first_name,last_name,timestamp,prediction,img,lat,long,location,model_name,version,wood_id,comment\n";
                 }
                 try (FileWriter fileWriter = new FileWriter(exportFileTarget)) {
                     fileWriter.write(headers);
@@ -251,8 +251,9 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             columnValues.add(correction);
                         }
-                        columnValues.add(Float.toString(log.score));
+
                         if (developerMode) {
+                            columnValues.add(Float.toString(log.score));
                             String scores = Arrays.stream(log.scores).map(v -> Double.toString(v)).collect(Collectors.joining("|"));
                             columnValues.add(scores);
                             if (log.top.length > 1) {

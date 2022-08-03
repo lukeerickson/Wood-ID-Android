@@ -105,4 +105,5 @@
     <string name="model_accuracy_threshold">Model Accuracy Threshold</string>
     <string name="unknown">Unidentified</string>
     <string name="reference_images_label">Reference Images</string>
+    <string name="uncertainty_margin">Show top 2 if scores are within % margin</string>
 </resources>
