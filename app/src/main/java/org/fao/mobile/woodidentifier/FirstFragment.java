@@ -78,6 +78,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
     private TextView dateFromField;
     private TextView dateToField;
     private View clearFilter;
+    private boolean developerMode;
 
     @Override
     public View onCreateView(
@@ -90,6 +91,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
         this.dateFromField = binding.getRoot().findViewById(R.id.dateFromField);
         this.dateToField = binding.getRoot().findViewById(R.id.dateToField);
         this.clearFilter = binding.getRoot().findViewById(R.id.clearFilterButton);
+        this.developerMode = SharedPrefsUtil.isDeveloperMode(getActivity());
 
         DateFormat dfname = new SimpleDateFormat("MM/dd/yyyy");
         WoodIdentifierApplication app = (WoodIdentifierApplication)getActivity().getApplication();
@@ -125,13 +127,24 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
             binding.fabCamera.setVisibility(View.VISIBLE);
             binding.fabCamera.setOnClickListener(this::onClick);
         }
+
+        final RelativeLayout root = binding.getRoot();
+        return root;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (developerMode != SharedPrefsUtil.isDeveloperMode(getActivity())) {
+            developerMode = SharedPrefsUtil.isDeveloperMode(getActivity());
+            refresh();
+        }
+
         if (SharedPrefsUtil.isDeveloperMode(getActivity())) {
             binding.galleryPick.setVisibility(View.VISIBLE);
         } else {
             binding.galleryPick.setVisibility(View.GONE);
         }
-        final RelativeLayout root = binding.getRoot();
-        return root;
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {

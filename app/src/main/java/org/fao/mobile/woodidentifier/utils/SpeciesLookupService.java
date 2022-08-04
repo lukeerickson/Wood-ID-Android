@@ -17,7 +17,7 @@ import java.util.ArrayList;
 //Routines for looking up species information
 public class SpeciesLookupService {
 
-    private final String modelRootPath; //contains the root path of the currently selected Model
+    private String modelRootPath; //contains the root path of the currently selected Model
     private JSONObject jObject;
 
     public SpeciesLookupService(Context context) {
@@ -32,6 +32,17 @@ public class SpeciesLookupService {
         }
     }
 
+    public void refresh(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String modelPath = prefs.getString(ModelHelper.MODEL_PATH, null);
+        assert modelPath != null;
+        this.modelRootPath = modelPath;
+        try {
+            this.jObject = ModelHelper.getSpeciesDatabase(context, modelPath);
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
+    }
     public Species lookupSpeciesInfo(String classLabel) {
         try {
             classLabel = classLabel.toLowerCase().replace(' ', '_');

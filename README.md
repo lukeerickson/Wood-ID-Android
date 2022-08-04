@@ -50,6 +50,8 @@ https://github.com/jedld/fips-wood-id-model/tree/master/model
 This zip file contains the Pytorch "Mobile" model as well as various information about
 the supported species and "reference" images that will be shown in the detail page.
 
-Building the Pytorch model is beyond the scope of this README
+Building and Training the Pytorch model is beyond the scope of this README however the important thing to
+note is that the PyTorch version used in generating the model must be the same as the one
+defined in build.gradle, differences can causes crashes.
 
     

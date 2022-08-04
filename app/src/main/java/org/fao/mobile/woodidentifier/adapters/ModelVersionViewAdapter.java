@@ -21,6 +21,7 @@ import androidx.room.Room;
 
 import org.fao.mobile.woodidentifier.AppDatabase;
 import org.fao.mobile.woodidentifier.R;
+import org.fao.mobile.woodidentifier.WoodIdentifierApplication;
 import org.fao.mobile.woodidentifier.models.InferencesLog;
 import org.fao.mobile.woodidentifier.models.ModelVersion;
 import org.fao.mobile.woodidentifier.utils.ModelHelper;
@@ -53,6 +54,7 @@ public class ModelVersionViewAdapter extends RecyclerView.Adapter<ModelVersionVi
             executor.execute(()-> {
                 ModelVersion modelVersion = (ModelVersion)v.getTag();
                 modelVersion.activateModel(context);
+                ((WoodIdentifierApplication) context.getApplication()).getSpeciesLookupService().refresh(context);
                 context.runOnUiThread(()->{
                     listener.refreshItems();
                 });
