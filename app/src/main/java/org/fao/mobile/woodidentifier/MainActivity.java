@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
     private MediaScannerConnection msConn;
     private LinearProgressIndicator exportProgressIndicator;
     private View progressGroup;
+    private Menu currentMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -180,13 +181,29 @@ public class MainActivity extends AppCompatActivity {
         // inflate menu from xml
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_main, menu);
-        MenuItem item = menu.findItem(R.id.action_recalibrate);
+        this.currentMenu = menu;
+        MenuItem itemRecalibrate = menu.findItem(R.id.action_recalibrate);
         if (!SharedPrefsUtil.isDeveloperMode(this)) {
-            item.setVisible(false);
+            itemRecalibrate.setVisible(false);
         } else {
-            item.setVisible(true);
+            itemRecalibrate.setVisible(true);
         }
         return true;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (currentMenu != null) {
+        MenuItem itemRecalibrate = currentMenu.findItem(R.id.action_recalibrate);
+        if (itemRecalibrate!=null) {
+            if (!SharedPrefsUtil.isDeveloperMode(this)) {
+                itemRecalibrate.setVisible(false);
+            } else {
+                itemRecalibrate.setVisible(true);
+            }
+        }
+        }
     }
 
     private void extractCSV() {
