@@ -1,5 +1,6 @@
 package org.fao.mobile.woodidentifier;
 
+import static android.hardware.camera2.CameraDevice.TEMPLATE_PREVIEW;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.AE_COMPENSATION;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.CROP_X;
 import static org.fao.mobile.woodidentifier.utils.SharedPrefsUtil.CROP_Y;
@@ -27,6 +28,7 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.RggbChannelVector;
 import android.hardware.camera2.params.StreamConfigurationMap;
@@ -71,6 +73,7 @@ import java.util.stream.Collectors;
 public abstract class BaseCamera2Activity extends AppCompatActivity {
     private static final String PHONE_DATABASE = "phone_database.json";
     public static final String CUSTOM_AWB_DEFAULT_VALUE = "2.0,1.0,2.0";
+
     private final String TAG = BaseCamera2Activity.class.getCanonicalName();
     protected CameraProperties currentCameraCharacteristics;
     protected SurfaceHolder holder;
@@ -84,7 +87,252 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
     private View cameraFrame;
     private ImageReader imageReader;
     private ImageReader autoAWBReader;
-    private float[] currentAWBDelta = new float[]  { 255.0f,255.0f,255.0f };
+    private float[] currentAWBDelta = new float[]{255.0f, 255.0f, 255.0f};
+    private static final int STATE_PREVIEW = 0;
+    private static final int STATE_WAITING_LOCK = 1;
+    private static final int STATE_PICTURE_TAKEN = 3;
+    private static final int STATE_WAITING_LOCK_FOCUS_ONLY = 4;
+
+    int mCurrentState = STATE_PREVIEW;
+
+    CameraCaptureSession.StateCallback cameraStateCallback = new CameraCaptureSession.StateCallback() {
+
+        @Override
+        public void onConfigured(@NonNull CameraCaptureSession session) {
+            Log.i(TAG, "camera configured.");
+            BaseCamera2Activity.this.session = session;
+            startPreview(session);
+        }
+
+        private void startPreview(@NonNull CameraCaptureSession session) {
+            try {
+                CaptureRequest.Builder previewRequest = prepareCameraSettings(TEMPLATE_PREVIEW);
+                previewRequest.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO);
+                previewRequest.addTarget(holder.getSurface());
+                previewRequest.addTarget(autoAWBReader.getSurface());
+                autoAWBReader.setOnImageAvailableListener(reader -> {
+                    Image image = reader.acquireNextImage();
+
+                    if (image == null) {
+                        return;
+                    }
+
+                    currentAWBDelta = ImageUtils.computeAWBDelta(image);
+                    try {
+                        image.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }, mAnalysisHandler);
+
+                session.setRepeatingRequest(previewRequest.build(), null, null);
+                for (View button : capureButton) {
+                    button.setOnClickListener(v -> {
+                        try {
+                            lockFocusAndPicture();
+                        } catch (CameraAccessException cameraAccessException) {
+                            cameraAccessException.printStackTrace();
+                        }
+                    });
+                }
+
+
+
+                onCameraConfigured(currentCameraCharacteristics, currentCamera);
+                runOnUiThread(() -> {
+                    tapToFocusLabel.setVisibility(View.VISIBLE);
+                    for (View button : capureButton) {
+                        button.setEnabled(true);
+                    }
+                    cameraFrame.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            try {
+                                Log.i(TAG, "focus start");
+                                lockFocus();
+                            } catch (CameraAccessException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                });
+
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onConfigureFailed(@NonNull CameraCaptureSession session) {
+
+        }
+    };
+
+    private CameraCaptureSession.CaptureCallback mCaptureCallback
+            = new CameraCaptureSession.CaptureCallback() {
+        private void process(CaptureResult result) throws CameraAccessException {
+            switch (mCurrentState) {
+                case STATE_PREVIEW: {
+                    // We have nothing to do when the camera preview is working normally.
+                    break;
+                }
+                case STATE_WAITING_LOCK: {
+                    Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
+                    if (afState == null) {
+                        capture(session);
+                    } else if (CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState ||
+                            CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState) {
+                        mCurrentState = STATE_PICTURE_TAKEN;
+                        capture(session);
+                    }
+                }
+                break;
+                case STATE_WAITING_LOCK_FOCUS_ONLY: {
+                    Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
+                    if (afState == null) {
+                        unlockFocus();
+                    } else if (CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState) {
+                        Log.i(TAG, "focus locked");
+                        unlockFocus();
+                    } else if (CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState) {
+                        Log.i(TAG, "unable to focus");
+                        unlockFocus();
+                    }
+                    tapToFocusLabel.setVisibility(View.VISIBLE);
+                }
+                break;
+            }
+        }
+
+
+        @Override
+        public void onCaptureProgressed(@NonNull CameraCaptureSession session,
+                                        @NonNull CaptureRequest request,
+                                        @NonNull CaptureResult partialResult) {
+            try {
+                process(partialResult);
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onCaptureCompleted(@NonNull CameraCaptureSession session,
+                                       @NonNull CaptureRequest request,
+                                       @NonNull TotalCaptureResult result) {
+            try {
+                process(result);
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
+        }
+
+    };
+    private View tapToFocusLabel;
+
+    private void lockFocusAndPicture() throws CameraAccessException {
+        session.stopRepeating();
+        CaptureRequest.Builder captureRequest = currentCamera.createCaptureRequest(TEMPLATE_PREVIEW);
+        captureRequest.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_OFF);
+        // disable OIS
+        captureRequest.set(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE, CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_OFF);
+        captureRequest.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
+        captureRequest.set(CaptureRequest.CONTROL_AF_TRIGGER,
+                CameraMetadata.CONTROL_AF_TRIGGER_START);
+        // Tell #mCaptureCallback to wait for the lock.
+        mCurrentState = STATE_WAITING_LOCK;
+        tapToFocusLabel.setVisibility(View.GONE);
+        captureRequest.addTarget(holder.getSurface());
+        session.capture(captureRequest.build(), mCaptureCallback, null);
+    }
+
+    private void lockFocus() throws CameraAccessException {
+        CaptureRequest.Builder captureRequest = prepareCameraSettings(TEMPLATE_PREVIEW);
+        captureRequest.set(CaptureRequest.CONTROL_AF_TRIGGER,
+                CameraMetadata.CONTROL_AF_TRIGGER_START);
+        // Tell #mCaptureCallback to wait for the lock.
+        mCurrentState = STATE_WAITING_LOCK_FOCUS_ONLY;
+        captureRequest.addTarget(holder.getSurface());
+        tapToFocusLabel.setVisibility(View.GONE);
+        session.setRepeatingRequest(captureRequest.build(), mCaptureCallback, null);
+    }
+
+    private CaptureRequest.Builder prepareCameraSettings(int template) throws CameraAccessException {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(BaseCamera2Activity.this);
+        float zoomRatio = Float.parseFloat(prefs.getString(ZOOM, "0"));
+        int whiteBalance = Integer.parseInt(prefs.getString(WHITE_BALANCE, "5700"));
+        int aeCompensation = Integer.parseInt(prefs.getString(AE_COMPENSATION, "0"));
+        float[] customAwb = StringUtils.splitToFloatList(prefs.getString(CUSTOM_AWB_VALUES, "255,255,255"));
+        int sensorSensitivity = Integer.parseInt(prefs.getString(SENSOR_SENSITIVITY, "200"));
+        long frameDuration = Long.parseLong(prefs.getString(FRAME_DURATION_TIME, "1000000"));
+        long exposureTime = Long.parseLong(prefs.getString(EXPOSURE_TIME, "40494"));
+        Rect sensorCrop = getSensorRect(prefs, zoomRatio, currentCameraCharacteristics);
+        return prepareCameraSettings(template, aeCompensation, whiteBalance, zoomRatio, sensorCrop, customAwb, exposureTime, sensorSensitivity, frameDuration);
+    }
+
+    private void unlockFocus() {
+        try {
+            // Reset the auto-focus trigger
+            CaptureRequest.Builder captureRequest = prepareCameraSettings(TEMPLATE_PREVIEW);
+            captureRequest.set(CaptureRequest.CONTROL_AF_TRIGGER,
+                    CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
+            captureRequest.addTarget(holder.getSurface());
+            mCurrentState = STATE_PREVIEW;
+            session.capture(captureRequest.build(), mCaptureCallback,
+                    mBackgroundHandler);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void capture(@NonNull CameraCaptureSession session) throws CameraAccessException {
+        try {
+            CaptureRequest.Builder captureRequest = prepareCameraSettings(CameraDevice.TEMPLATE_STILL_CAPTURE);
+            captureRequest.set(CaptureRequest.JPEG_ORIENTATION, currentCameraCharacteristics.sensorOrientation);
+            imageReader.setOnImageAvailableListener(reader -> {
+                DateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault());
+
+                Uri fileUri = ImageUtils.getPhotoFileUri(BaseCamera2Activity.this, "capture_" + simpleDateFormat.format(new Date()) + ".jpg");
+                try (OutputStream outputStream = getContentResolver().openOutputStream(fileUri);
+                     Image image = imageReader.acquireLatestImage();) {
+
+                    ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+                    byte[] bytes = new byte[buffer.remaining()];
+                    buffer.get(bytes);
+                    outputStream.write(bytes);
+                    Log.i(TAG, "captured.");
+                    Intent intent = new Intent();
+                    intent.setData(fileUri);
+                    setResult(Activity.RESULT_OK, intent);
+                    finish();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }, null);
+
+            captureRequest.addTarget(imageReader.getSurface());
+            captureRequest.addTarget(autoAWBReader.getSurface());
+            autoAWBReader.setOnImageAvailableListener(reader -> {
+                Image image = reader.acquireNextImage();
+                float[] avgDelta = ImageUtils.computeAWBDelta(image);
+                Log.i(TAG, "awbDelta " + (avgDelta[0] / 255.0f) * 100f + "% , " + (avgDelta[1] / 255.0f) * 100f + "%, " + (avgDelta[2] / 255.0f) * 100f + "%");
+                image.close();
+            }, mAnalysisHandler);
+
+            session.stopRepeating();
+            session.abortCaptures();
+            session.capture(captureRequest.build(), new CameraCaptureSession.CaptureCallback() {
+                @Override
+                public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+                    super.onCaptureCompleted(session, request, result);
+                }
+            }, mBackgroundHandler);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+    }
 
     @SuppressLint("MissingPermission")
     @Override
@@ -94,6 +342,8 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
         View cancelButton = getCancelButton();
         SurfaceView viewFinder = getCameraPreviewTextureView();
         this.cameraFrame = findViewById(R.id.cameraFrame);
+        this.tapToFocusLabel = findViewById(R.id.tap_to_focus);
+        tapToFocusLabel.setVisibility(View.GONE);
         this.cameraManager = (CameraManager) getSystemService(Service.CAMERA_SERVICE);
         startBackgroundThread();
 
@@ -241,19 +491,18 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                 Range<Integer> aeCompensationRange = characteristics.get(CameraCharacteristics.CONTROL_AE_COMPENSATION_RANGE);
                 StreamConfigurationMap streamConfigurationMap = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 
-
                 if (cameraLensFacing == CameraMetadata.LENS_FACING_BACK) {
                     Log.i(TAG, "camera " + cameraId + " is backfacing");
                     Log.i(TAG, "sensor orientation is " + sensorOrientation);
                     Log.i(TAG, "camera resolution " + size.getWidth() + "," + size.getHeight());
-                    if (exposureTimeRange!=null) {
+                    if (exposureTimeRange != null) {
                         Log.i(TAG, "exposure range " + exposureTimeRange.getLower() + " to " + exposureTimeRange.getUpper());
                     }
-                    if (sensitivityRange!=null) {
+                    if (sensitivityRange != null) {
                         Log.i(TAG, "sensitivity range " + sensitivityRange.getLower() + " to " + sensitivityRange.getUpper());
                     }
                     Log.i(TAG, "max frame duration " + maxFrameDuration);
-                    for(float focalLength: focalLengths) {
+                    for (float focalLength : focalLengths) {
                         Log.i(TAG, "focal length: " + focalLength);
                     }
                     Size[] outputSizes = streamConfigurationMap.getOutputSizes(ImageReader.class);
@@ -309,9 +558,8 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
             public void onOpened(@NonNull CameraDevice camera) {
                 BaseCamera2Activity.this.currentCamera = camera;
 
-
                 ArrayList<Surface> outputs = new ArrayList<>();
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(BaseCamera2Activity.this);
+
                 int autoCropSize = Math.min(cameraProperties.size.getWidth(), cameraProperties.size.getHeight());
                 autoAWBReader = ImageReader.newInstance(autoCropSize, autoCropSize, ImageFormat.YUV_420_888, 1);
                 imageReader = ImageReader.newInstance(autoCropSize, autoCropSize, ImageFormat.JPEG, 1);
@@ -322,125 +570,7 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                 outputs.add(autoAWBReader.getSurface());
 
                 try {
-                    camera.createCaptureSession(outputs, new CameraCaptureSession.StateCallback() {
-
-
-                        @Override
-                        public void onConfigured(@NonNull CameraCaptureSession session) {
-                            Log.i(TAG, "camera configured.");
-                            BaseCamera2Activity.this.session = session;
-
-                            try {
-                                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(BaseCamera2Activity.this);
-                                float zoomRatio = Float.parseFloat(prefs.getString(ZOOM, "0"));
-                                int whiteBalance = Integer.parseInt(prefs.getString(WHITE_BALANCE, "5700"));
-                                int aeCompensation = Integer.parseInt(prefs.getString(AE_COMPENSATION, "0"));
-                                float[] customAwb = StringUtils.splitToFloatList(prefs.getString(CUSTOM_AWB_VALUES, "255,255,255"));
-                                int sensorSensitivity = Integer.parseInt(prefs.getString(SENSOR_SENSITIVITY, "200"));
-                                long frameDuration = Long.parseLong(prefs.getString(FRAME_DURATION_TIME, "1000000"));
-                                long exposureTime = Long.parseLong(prefs.getString(EXPOSURE_TIME, "40494"));
-                                Rect sensorCrop = getSensorRect(prefs, zoomRatio, cameraProperties);
-                                CaptureRequest.Builder previewRequest = prepareCameraSettings(CameraDevice.TEMPLATE_PREVIEW, aeCompensation, whiteBalance, zoomRatio, sensorCrop, customAwb, exposureTime, sensorSensitivity, frameDuration);
-
-                                previewRequest.addTarget(holder.getSurface());
-                                previewRequest.addTarget(autoAWBReader.getSurface());
-                                autoAWBReader.setOnImageAvailableListener(reader -> {
-                                    Image image = reader.acquireNextImage();
-
-                                    if (image == null) {
-                                        return;
-                                    }
-
-                                    currentAWBDelta = ImageUtils.computeAWBDelta(image);
-                                    try {
-                                        image.close();
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                }, mAnalysisHandler);
-
-                                session.setRepeatingRequest(previewRequest.build(), null, null);
-                                for (View button : capureButton) {
-                                    button.setOnClickListener(v -> {
-                                        try {
-                                            capture(session);
-                                        } catch (CameraAccessException cameraAccessException) {
-                                            cameraAccessException.printStackTrace();
-                                        }
-                                    });
-                                }
-                                onCameraConfigured(cameraProperties, camera);
-                                runOnUiThread(() -> {
-                                    for (View button : capureButton) {
-                                        button.setEnabled(true);
-                                    }
-                                });
-
-                            } catch (CameraAccessException e) {
-                                e.printStackTrace();
-                            }
-                        }
-
-                        private void capture(@NonNull CameraCaptureSession session) throws CameraAccessException {
-                            try {
-                                SharedPreferences prefs2 = PreferenceManager.getDefaultSharedPreferences(BaseCamera2Activity.this);
-                                float currentZoomRatio = Float.parseFloat(prefs2.getString(ZOOM, "0"));
-                                int currentWhiteBalance = Integer.parseInt(prefs2.getString(WHITE_BALANCE, "5700"));
-                                float[] customAwb = StringUtils.splitToFloatList(prefs2.getString(CUSTOM_AWB_VALUES, "255,255,255"));
-                                int currentAeCompensation = Integer.parseInt(prefs2.getString(AE_COMPENSATION, "0"));
-                                int sensorSensitivity = Integer.parseInt(prefs2.getString(SENSOR_SENSITIVITY, "200"));
-                                long frameDuration = Long.parseLong(prefs2.getString(FRAME_DURATION_TIME, "1000000"));
-                                long exposureTime = Long.parseLong(prefs2.getString(EXPOSURE_TIME, "40494"));
-                                Rect sensorCrop = getSensorRect(prefs2, currentZoomRatio, cameraProperties);
-                                CaptureRequest.Builder captureRequest = prepareCameraSettings(CameraDevice.TEMPLATE_STILL_CAPTURE, currentAeCompensation, currentWhiteBalance, currentZoomRatio, sensorCrop, customAwb, exposureTime, sensorSensitivity, frameDuration);
-                                captureRequest.set(CaptureRequest.JPEG_ORIENTATION, currentCameraCharacteristics.sensorOrientation);
-                                captureRequest.addTarget(imageReader.getSurface());
-                                captureRequest.addTarget(autoAWBReader.getSurface());
-                                autoAWBReader.setOnImageAvailableListener(reader -> {
-                                    Image image = reader.acquireNextImage();
-                                    float[] avgDelta = ImageUtils.computeAWBDelta(image);
-                                    Log.i(TAG, "awbDelta " + (avgDelta[0]/255.0f) * 100f + "% , " + (avgDelta[1]/255.0f) * 100f + "%, " + (avgDelta[2]/255.0f) * 100f + "%");
-                                    image.close();
-                                }, mAnalysisHandler);
-                                session.capture(captureRequest.build(), new CameraCaptureSession.CaptureCallback() {
-                                    @Override
-                                    public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
-                                        super.onCaptureCompleted(session, request, result);
-                                        imageReader.setOnImageAvailableListener(reader -> {
-                                            DateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault());
-
-                                            Uri fileUri = ImageUtils.getPhotoFileUri(BaseCamera2Activity.this, "capture_" + simpleDateFormat.format(new Date()) + ".jpg");
-                                            try (OutputStream outputStream = getContentResolver().openOutputStream(fileUri);
-                                                 Image image = imageReader.acquireLatestImage();) {
-
-                                                ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-                                                byte[] bytes = new byte[buffer.remaining()];
-                                                buffer.get(bytes);
-                                                outputStream.write(bytes);
-
-                                                Log.i(TAG, "captured.");
-                                                Intent intent = new Intent();
-                                                intent.setData(fileUri);
-                                                setResult(Activity.RESULT_OK, intent);
-                                                finish();
-                                            } catch (IOException e) {
-                                                e.printStackTrace();
-                                            }
-
-                                        }, null);
-
-                                    }
-                                }, mBackgroundHandler);
-                            } catch (CameraAccessException e) {
-                                e.printStackTrace();
-                            }
-                        }
-
-                        @Override
-                        public void onConfigureFailed(@NonNull CameraCaptureSession session) {
-
-                        }
-                    }, mBackgroundHandler);
+                    camera.createCaptureSession(outputs, cameraStateCallback, mBackgroundHandler);
                 } catch (CameraAccessException e) {
                     e.printStackTrace();
                 }
@@ -486,6 +616,7 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
 
     protected CaptureRequest.Builder prepareCameraSettings(int templateType, int aeCompensation, int colorTemp, float zoomRatio, Rect cropRegion, float[] awbDelta, long sensorExposureTime, int sensitivity, long frameDuration) throws CameraAccessException {
         CaptureRequest.Builder captureRequest = currentCamera.createCaptureRequest(templateType);
+        captureRequest.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_AUTO);
         captureRequest.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_OFF);
         // disable OIS
         captureRequest.set(CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE, CaptureRequest.LENS_OPTICAL_STABILIZATION_MODE_OFF);
@@ -536,21 +667,10 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
 
 
     protected void updateCameraState() throws CameraAccessException {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-        int colorTemp = Integer.parseInt(prefs.getString(WHITE_BALANCE, "5700"));
-        int aeCompenstaion = Integer.parseInt(prefs.getString(AE_COMPENSATION, "0"));
-        float[] customAwb = StringUtils.splitToFloatList(prefs.getString(CUSTOM_AWB_VALUES, CUSTOM_AWB_DEFAULT_VALUE));
-        float zoomRatio = Float.parseFloat(prefs.getString(ZOOM, "1.0"));
-        int sensorSensitivity = Integer.parseInt(prefs.getString(SENSOR_SENSITIVITY, "200"));
-        long frameDuration = Long.parseLong(prefs.getString(FRAME_DURATION_TIME, "1000000"));
-        long exposureTime = Long.parseLong(prefs.getString(EXPOSURE_TIME, "40494"));
-        Log.i(TAG, "current awb delta " + currentAWBDelta[0] + " " + currentAWBDelta[1] + " " + currentAWBDelta[2]);
-        Rect sensorCrop = getSensorRect(prefs, zoomRatio, currentCameraCharacteristics);
-        CaptureRequest.Builder captureRequest = prepareCameraSettings(CameraDevice.TEMPLATE_PREVIEW, aeCompenstaion, colorTemp, zoomRatio, sensorCrop, customAwb, exposureTime, sensorSensitivity, frameDuration);
+        CaptureRequest.Builder captureRequest = prepareCameraSettings(TEMPLATE_PREVIEW);
         captureRequest.addTarget(holder.getSurface());
         session.setRepeatingRequest(captureRequest.build(), null, null);
     }
-
 
     protected void acquireAWBLock() throws CameraAccessException {
         SharedPreferences prefs2 = PreferenceManager.getDefaultSharedPreferences(BaseCamera2Activity.this);
@@ -578,7 +698,7 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                 autoAWBReader.setOnImageAvailableListener(reader -> {
                     Image image = reader.acquireNextImage();
                     float[] avgDelta = ImageUtils.computeAWBDelta(image);
-                    Log.i(TAG, "awbDelta " + (avgDelta[0]/255.0f) * 100f + "% , " + (avgDelta[1]/255.0f) * 100f + "%, " + (avgDelta[2]/255.0f) * 100f + "%");
+                    Log.i(TAG, "awbDelta " + (avgDelta[0] / 255.0f) * 100f + "% , " + (avgDelta[1] / 255.0f) * 100f + "%, " + (avgDelta[2] / 255.0f) * 100f + "%");
                     Log.i(TAG, "awbDelta " + avgDelta[0] + " , " + avgDelta[1] + ", " + avgDelta[2]);
                     float min = Math.min(avgDelta[0], Math.min(avgDelta[1], avgDelta[2]));
                     float[] awbDelta = new float[]{255f - (avgDelta[0] - min), 255f - (avgDelta[1] - min), 255f - (avgDelta[2] - min)};
