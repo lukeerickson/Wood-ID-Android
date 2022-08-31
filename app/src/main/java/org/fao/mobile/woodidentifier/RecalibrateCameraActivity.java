@@ -33,6 +33,7 @@ import org.fao.mobile.woodidentifier.utils.ModelHelper;
 import org.fao.mobile.woodidentifier.utils.PhoneAutoConfig;
 import org.fao.mobile.woodidentifier.utils.SharedPrefsUtil;
 import org.fao.mobile.woodidentifier.utils.SpeciesLookupService;
+import org.fao.mobile.woodidentifier.views.AutoFitTextureView;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -186,8 +187,8 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
         return findViewById(R.id.fab_cancel);
     }
 
-    protected SurfaceView getCameraPreviewTextureView() {
-        return (SurfaceView) ((ViewStub) findViewById(R.id.image_classification_texture_view_stub))
+    protected AutoFitTextureView getCameraPreviewTextureView() {
+        return (AutoFitTextureView) ((ViewStub) findViewById(R.id.image_classification_texture_view_stub))
                 .inflate()
                 .findViewById(R.id.image_capture_surface_view);
     }
@@ -207,7 +208,7 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
         CameraProperties properties = (CameraProperties) parent.getAdapter().getItem(position);
         try {
             if (currentCameraCharacteristics != null && !properties.equals(currentCameraCharacteristics)) {
-                setupCamera(holder, properties);
+                setupCamera(properties);
             }
             SharedPrefsUtil.saveCurrentCamera(this, position);
         } catch (CameraAccessException e) {

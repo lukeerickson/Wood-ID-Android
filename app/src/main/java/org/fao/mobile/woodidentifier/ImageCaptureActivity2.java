@@ -11,6 +11,8 @@ import android.view.View;
 import android.view.ViewStub;
 import android.widget.RelativeLayout;
 
+import org.fao.mobile.woodidentifier.views.AutoFitTextureView;
+
 import java.util.ArrayList;
 
 public class ImageCaptureActivity2 extends BaseCamera2Activity {
@@ -35,8 +37,8 @@ public class ImageCaptureActivity2 extends BaseCamera2Activity {
         return findViewById(R.id.fab_cancel);
     }
 
-    protected SurfaceView getCameraPreviewTextureView() {
-        return (SurfaceView) ((ViewStub) findViewById(R.id.image_classification_texture_view_stub))
+    protected AutoFitTextureView getCameraPreviewTextureView() {
+        return (AutoFitTextureView) ((ViewStub) findViewById(R.id.image_classification_texture_view_stub))
                 .inflate()
                 .findViewById(R.id.image_capture_surface_view);
     }
