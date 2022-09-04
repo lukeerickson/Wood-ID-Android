@@ -65,6 +65,7 @@ import java.util.stream.Collectors;
 public class FirstFragment extends Fragment implements InferenceLogViewAdapter.ItemListener, View.OnClickListener {
 
     private static final int CAPTURE_IMAGE = 101;
+    private static final int OPEN_DETAIL = 5;
     private static final String TAG = FirstFragment.class.getCanonicalName();
     private static final String EXIF_TAG_CLASS = "ML_CLASS";
     private static final String EXIF_TOP_K = "ML_TOP_K";
@@ -169,7 +170,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
             WoodIdentifierApplication app = (WoodIdentifierApplication)getActivity().getApplication();
             List<InferencesLog> logs = db.inferencesLogDAO().getByDate(app.getFromDateContext(), app.getToDateContext());
             getActivity().runOnUiThread(() -> {
-                logList.setAdapter(new InferenceLogViewAdapter(getActivity(), logs, this));
+                logList.setAdapter(new InferenceLogViewAdapter(this, logs, this));
             });
         });
     }
@@ -205,7 +206,12 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Log.d(TAG, "XXXXXX on Activity result");
+        Log.d(TAG, "XXXXXX on Activity result " + requestCode + " " + resultCode);
+        if (requestCode == OPEN_DETAIL) {
+            if (resultCode == 1) {
+                refresh();
+            }
+        } else
         if (resultCode == Activity.RESULT_OK) {
             Uri uri = data.getData();
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
@@ -320,7 +326,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
                         Intent intent = new Intent(getActivity(), DetailsActivity.class);
                         intent.putExtra("uid", savedLog.uid);
                         Log.i(TAG, "uid = " + savedLog.uid);
-                        getActivity().startActivity(intent);
+                        startActivity(intent);
                     }
                 }
 
@@ -350,7 +356,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
             WoodIdentifierApplication app = (WoodIdentifierApplication)getActivity().getApplication();
             List<InferencesLog> logs = db.inferencesLogDAO().getByDate(app.getFromDateContext(), app.getToDateContext());
             getActivity().runOnUiThread(() -> {
-                logList.setAdapter(new InferenceLogViewAdapter(getActivity(), logs, this));
+                logList.setAdapter(new InferenceLogViewAdapter(this, logs, this));
                 if (callback != null) {
                     callback.onDone(log);
                 }

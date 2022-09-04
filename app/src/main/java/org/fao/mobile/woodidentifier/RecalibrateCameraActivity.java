@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.Range;
 import android.view.SurfaceView;
+import android.view.TextureView;
 import android.view.View;
 import android.view.ViewStub;
 import android.widget.AdapterView;
@@ -194,8 +195,8 @@ public class RecalibrateCameraActivity extends BaseCamera2Activity implements Sl
     }
 
     @Override
-    protected void onCameraFrameSet(View cameraFrame, int autoCrop) {
-        cameraFrame.setLayoutParams(new RelativeLayout.LayoutParams(autoCrop, autoCrop));
+    protected void onCameraFrameSet(View cameraFrame, int w, int h) {
+        cameraFrame.setLayoutParams(new RelativeLayout.LayoutParams(w, h));
     }
 
     @Override

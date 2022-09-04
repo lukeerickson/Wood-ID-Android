@@ -21,6 +21,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
@@ -145,23 +146,16 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
         if (null == mTextureView || null == mPreviewSize) {
             return;
         }
-        int rotation = getWindowManager().getDefaultDisplay().getRotation();
         Matrix matrix = new Matrix();
-        RectF viewRect = new RectF(0, 0, viewWidth, viewHeight);
-        RectF bufferRect = new RectF(0, 0, mPreviewSize.getHeight(), mPreviewSize.getWidth());
-        float centerX = viewRect.centerX();
-        float centerY = viewRect.centerY();
-        if (Surface.ROTATION_90 == rotation || Surface.ROTATION_270 == rotation) {
-            bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY());
-            matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL);
-            float scale = Math.max(
-                    (float) viewHeight / mPreviewSize.getHeight(),
-                    (float) viewWidth / mPreviewSize.getWidth());
-            matrix.postScale(scale, scale, centerX, centerY);
-            matrix.postRotate(90 * (rotation - 2), centerX, centerY);
-        } else if (Surface.ROTATION_180 == rotation) {
-            matrix.postRotate(180, centerX, centerY);
-        }
+        int cropSize = Math.min(viewWidth, viewHeight);
+        Log.i(TAG, "view Width " + viewWidth + ", view height = " + viewHeight + " crop size " + cropSize);
+        int x = viewWidth / 2 - cropSize / 2;
+        int y = viewHeight/ 2 - cropSize / 2;
+        Log.i(TAG, "crop = " + x + ", " + y + ", crop size = " + (x + cropSize) + " ," + (y + cropSize));
+        RectF viewRect = new RectF(x, y, x + cropSize,  y + cropSize);
+        RectF bufferRect = new RectF(0, 0, cropSize,  cropSize);
+
+        matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.CENTER);
         mTextureView.setTransform(matrix);
     }
 
@@ -383,9 +377,9 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                 Uri fileUri = ImageUtils.getPhotoFileUri(BaseCamera2Activity.this, "capture_" + simpleDateFormat.format(new Date()) + ".jpg");
                 // Release
                 try (OutputStream out = getContentResolver().openOutputStream(fileUri)){
-                    rotated.compress(Bitmap.CompressFormat.JPEG, 90, out);
+                    rotated.compress(Bitmap.CompressFormat.JPEG, 100, out);
                     out.flush();
-                    Log.i(TAG, "captured.");
+                    Log.i(TAG, "captured -> " + image.getWidth() + ","+ image.getHeight());
                     Intent intent = new Intent();
                     intent.setData(fileUri);
                     setResult(Activity.RESULT_OK, intent);
@@ -490,8 +484,6 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
 
         // fix to maintain correct aspect ratio in screen
         runOnUiThread(() -> {
-            int autoCrop = Math.min(cameraFrame.getWidth(), cameraFrame.getHeight());
-            onCameraFrameSet(cameraFrame, autoCrop);
             try {
                 setupCamera(camera);
                 onSetupCameraComplete(backFacingCameras, camera);
@@ -501,7 +493,7 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
         });
     }
 
-    protected abstract void onCameraFrameSet(View cameraFrame, int autoCrop);
+    protected abstract void onCameraFrameSet(View cameraFrame, int w, int h);
 
     protected void onSetupCameraComplete(ArrayList<CameraProperties> backFacingCameras, CameraProperties camera) throws CameraAccessException {
 
@@ -631,10 +623,25 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
                     }
 
                     int autoCrop = Math.min(cameraFrame.getWidth(), cameraFrame.getHeight());
+                    int displayRotation = getWindowManager().getDefaultDisplay().getRotation();
 
+                    Point displaySize = new Point();
+                    getWindowManager().getDefaultDisplay().getSize(displaySize);
+                    int maxPreviewWidth = displaySize.x;
+                    int maxPreviewHeight = displaySize.y;
+                    Log.i(TAG, "display x " + maxPreviewWidth + ", display y = " + maxPreviewHeight);
+                    if (maxPreviewWidth > MAX_PREVIEW_WIDTH) {
+                        maxPreviewWidth = MAX_PREVIEW_WIDTH;
+                    }
+
+                    if (maxPreviewHeight > MAX_PREVIEW_HEIGHT) {
+                        maxPreviewHeight = MAX_PREVIEW_HEIGHT;
+                    }
+
+                    Log.i(TAG, "display rotation " + displayRotation + " preview width = " + maxPreviewWidth + " preview height = " + maxPreviewHeight);
                     Size pSize = chooseOptimalSize(previewSizes,
-                            autoCrop, autoCrop, MAX_PREVIEW_WIDTH,
-                            MAX_PREVIEW_HEIGHT, maxSize);
+                            autoCrop, autoCrop, maxPreviewWidth,
+                            maxPreviewHeight, maxSize);
 
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R && !isForceDigitalZoom(PreferenceManager.getDefaultSharedPreferences(BaseCamera2Activity.this))) {
                         zoomRatioRange = characteristics.get(CameraCharacteristics.CONTROL_ZOOM_RATIO_RANGE);
@@ -725,10 +732,17 @@ public abstract class BaseCamera2Activity extends AppCompatActivity {
 
                 ArrayList<Surface> outputs = new ArrayList<>();
                 mPreviewSize = cameraProperties.previewSize;
-                int autoCropP = Math.min(mPreviewSize.getHeight(), mPreviewSize.getWidth());
-                runOnUiThread(() -> {
+
+                runOnUiThread(()-> {
+                    float ratio = (float)mPreviewSize.getWidth() / (float)mPreviewSize.getHeight();
+//                    Log.i(TAG, "ratio = " + ratio + " preview size w = " + mPreviewSize.getWidth() + " h = " + mPreviewSize.getHeight());
+                    Point displaySize = new Point();
+                    getWindowManager().getDefaultDisplay().getSize(displaySize);
+                    int displayWidth = displaySize.x;
+//                    Log.i(TAG, " camera w = " + displayWidth + ", " + (int) (displayWidth * ratio));
+                    onCameraFrameSet(cameraFrame, displayWidth, (int) ((float)displayWidth * ratio));
                     mTextureView.setAspectRatio(
-                            mPreviewSize.getWidth(), mPreviewSize.getHeight());
+                            mPreviewSize.getHeight(), mPreviewSize.getWidth());
                 });
 
 

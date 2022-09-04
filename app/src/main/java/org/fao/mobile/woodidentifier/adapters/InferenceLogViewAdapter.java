@@ -15,6 +15,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -39,6 +41,7 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
     private final ItemListener itemListener;
     private final SpeciesLookupService speciesLookup;
     private final double margin;
+    private final FragmentActivity activity;
 
 
     public interface ItemListener {
@@ -46,15 +49,16 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
     }
 
     private final List<InferencesLog> logs;
-    private final Activity context;
+    private final Fragment context;
     private ImageView woodImage;
 
-    public InferenceLogViewAdapter(Activity context, List<InferencesLog> logs, ItemListener listener) {
+    public InferenceLogViewAdapter(Fragment context, List<InferencesLog> logs, ItemListener listener) {
         this.context = context;
+        this.activity = context.getActivity();
         this.logs = logs;
         this.itemListener = listener;
-        this.speciesLookup = ((WoodIdentifierApplication) context.getApplicationContext()).getSpeciesLookupService();
-        this.margin = SharedPrefsUtil.getUncertaintyMargin(context);
+        this.speciesLookup = ((WoodIdentifierApplication) context.getContext().getApplicationContext()).getSpeciesLookupService();
+        this.margin = SharedPrefsUtil.getUncertaintyMargin(context.getContext());
     }
 
     @Override
@@ -67,7 +71,7 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
     }
 
     private void onClickMain(View view) {
-        Intent intent = new Intent(context, DetailsActivity.class);
+        Intent intent = new Intent(context.getContext(), DetailsActivity.class);
         InferencesLog inferencesLog = (InferencesLog) view.getTag();
         intent.putExtra("uid", inferencesLog.uid);
         context.startActivityForResult(intent, OPEN_DETAIL);
@@ -77,9 +81,9 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
     public void onBindViewHolder(InferenceLogViewAdapter.ViewHolder holder, int position) {
         InferencesLog inferenceLog = logs.get(position);
         if (position == 0) {
-            holder.getView().setBackgroundColor(context.getResources().getColor(R.color.red, context.getTheme()));
+            holder.getView().setBackgroundColor(context.getResources().getColor(R.color.red, context.getContext().getTheme()));
         } else {
-            holder.getView().setBackgroundColor(context.getResources().getColor(R.color.teal_700, context.getTheme()));
+            holder.getView().setBackgroundColor(context.getResources().getColor(R.color.teal_700, context.getContext().getTheme()));
         }
         holder.getView().setTag(inferenceLog);
         holder.getDeleteButton().setTag(inferenceLog);
@@ -93,15 +97,15 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
 
             if (inferenceLog.expectedLabel!=null && !inferenceLog.expectedLabel.equals(inferenceLog.classLabel)) {
                 label = inferenceLog.expectedLabel;
-                index = ModelHelper.getHelperInstance(context).getClassLabels().indexOf(label);
+                index = ModelHelper.getHelperInstance(activity).getClassLabels().indexOf(label);
             }
 
-            if (inferenceLog.score < SharedPrefsUtil.accuracyThreshold(context)) {
+            if (inferenceLog.score < SharedPrefsUtil.accuracyThreshold(activity)) {
                 label = "Unknown";
             }
             DecimalFormat df = new DecimalFormat("###.##");
             holder.getTextView().setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
-            if (SharedPrefsUtil.isDeveloperMode(context)) {
+            if (SharedPrefsUtil.isDeveloperMode(activity)) {
                 if (inferenceLog.confidenceScore() >= getLowerBound() && inferenceLog.confidenceScore() <= getHigherBound()) {
                     String label2 = inferenceLog.top[1];
                     holder.getTextView().setText(label + " / " + label2);
@@ -129,9 +133,9 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
         }
 
         if (inferenceLog.expectedLabel != null &&  !inferenceLog.expectedLabel.equals(inferenceLog.classLabel)) {
-            holder.getTextView().setTextColor(context.getColor(R.color.red));
+            holder.getTextView().setTextColor(activity.getColor(R.color.red));
         } else {
-            holder.getTextView().setTextColor(context.getColor(R.color.black));
+            holder.getTextView().setTextColor(activity.getColor(R.color.black));
         }
 
         holder.getFilename().setText(inferenceLog.originalFilename);
@@ -156,7 +160,7 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
     public void onClick(View v) {
         if (v.getId() == R.id.deleteLogItem) {
             InferencesLog log = (InferencesLog) v.getTag();
-            AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
             alertDialog.setMessage(R.string.confirm_delete);
             alertDialog.setPositiveButton(R.string.yes, (dialog, which) -> {
                 itemListener.onDeleteItem(this, logs.indexOf(log), log);

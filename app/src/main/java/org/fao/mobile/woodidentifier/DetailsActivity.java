@@ -1,5 +1,6 @@
 package org.fao.mobile.woodidentifier;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -49,6 +50,7 @@ public class DetailsActivity extends AppCompatActivity {
     private EditText commentField;
     private TextView modelVersion;
     private TextView location;
+    private boolean correctionApplied = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,16 +70,23 @@ public class DetailsActivity extends AppCompatActivity {
         this.modelVersion = findViewById(R.id.modelVersion);
         this.referenceImageContainer = findViewById(R.id.reference_images_container);
         this.topKLabel = findViewById(R.id.topk_label);
-        this.commentField = (EditText)findViewById(R.id.commentField);
+        this.commentField = (EditText) findViewById(R.id.commentField);
         this.application = (WoodIdentifierApplication) getApplication();
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
                 AppDatabase.class, "wood-id").build();
         closeButton.setOnClickListener((v) -> {
-            executor.execute(()-> {
+            executor.execute(() -> {
                 InferencesLog inferenceLog = db.inferencesLogDAO().findByUid(uid);
                 inferenceLog.setComment(commentField.getText().toString());
                 db.inferencesLogDAO().update(inferenceLog);
-                runOnUiThread(()-> {
+                runOnUiThread(() -> {
+                    Intent resultIntent = new Intent();
+
+                    if (correctionApplied) {
+                        setResult(1, resultIntent);
+                    } else {
+                        setResult(Activity.RESULT_OK, resultIntent);
+                    }
                     finish();
                 });
             });
@@ -92,8 +101,11 @@ public class DetailsActivity extends AppCompatActivity {
 
         labelSpinner.setAdapter(classes);
         labelSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                correctionApplied = true;
                 executor.execute(() -> {
                     AppDatabase db = Room.databaseBuilder(getApplicationContext(),
                             AppDatabase.class, "wood-id").build();
@@ -154,5 +166,16 @@ public class DetailsActivity extends AppCompatActivity {
             scoreLabel.setText(String.format("%.4g%n", scoreValue));
             topKcontainer.addView(view);
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent resultIntent = new Intent();
+        if (correctionApplied) {
+            setResult(1, resultIntent);
+        } else {
+            setResult(Activity.RESULT_OK, resultIntent);
+        }
+        finish();
     }
 }

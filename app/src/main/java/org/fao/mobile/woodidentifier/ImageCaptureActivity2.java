@@ -7,6 +7,7 @@ import android.hardware.camera2.CameraDevice;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.SurfaceView;
+import android.view.TextureView;
 import android.view.View;
 import android.view.ViewStub;
 import android.widget.RelativeLayout;
@@ -44,8 +45,8 @@ public class ImageCaptureActivity2 extends BaseCamera2Activity {
     }
 
     @Override
-    protected void onCameraFrameSet(View cameraFrame, int autoCrop) {
-        RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(autoCrop, autoCrop);
+    protected void onCameraFrameSet(View cameraFrame, int w, int h) {
+        RelativeLayout.LayoutParams relativeParams = new RelativeLayout.LayoutParams(w, h);
         relativeParams.addRule(RelativeLayout.CENTER_IN_PARENT);
         cameraFrame.setLayoutParams(relativeParams);
     }
