@@ -27,9 +27,7 @@ import org.fao.mobile.woodidentifier.utils.SharedPrefsUtil;
 import org.fao.mobile.woodidentifier.utils.Species;
 import org.fao.mobile.woodidentifier.utils.Utils;
 
-import java.text.DateFormat;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -37,19 +35,19 @@ public class DetailsActivity extends AppCompatActivity {
     private Executor executor = Executors.newSingleThreadExecutor();
     private ImageView sampleImageView;
     private TextView filename;
-    private TextView classLabel;
+    private TextView classLabel1;
     private Button closeButton;
     private WoodIdentifierApplication application;
     private TextView description;
-    private ViewGroup topKcontainer;
-    private ViewGroup referenceImageContainer;
-    private Spinner labelSpinner;
+    //private ViewGroup topKcontainer;
+    //private ViewGroup referenceImageContainer;
+    //private Spinner labelSpinner;
     private ArrayAdapter<String> classes;
-    private View topKLabel;
-    private TextView captureDateTime;
+    //private View topKLabel;
+    //private TextView captureDateTime;
     private EditText commentField;
-    private TextView modelVersion;
-    private TextView location;
+    //private TextView modelVersion;
+    //private TextView location;
     private boolean correctionApplied = false;
 
     @Override
@@ -57,28 +55,29 @@ public class DetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
         Intent intent = getIntent();
+        // id of #1 wood species?
         long uid = intent.getLongExtra("uid", -1);
         this.sampleImageView = findViewById(R.id.imageSample);
         this.filename = findViewById(R.id.label);
-        this.captureDateTime = findViewById(R.id.capture_datetime);
-        this.classLabel = findViewById(R.id.class_label);
+        //this.captureDateTime = findViewById(R.id.capture_datetime);
+        this.classLabel1 = findViewById(R.id.class_label1);
         this.closeButton = findViewById(R.id.close_button);
-        this.description = findViewById(R.id.description);
-        this.topKcontainer = findViewById(R.id.topKcontainer);
-        this.location = findViewById(R.id.location);
-        this.labelSpinner = findViewById(R.id.mislabled_picker);
-        this.modelVersion = findViewById(R.id.modelVersion);
-        this.referenceImageContainer = findViewById(R.id.reference_images_container);
-        this.topKLabel = findViewById(R.id.topk_label);
-        this.commentField = (EditText) findViewById(R.id.commentField);
+        //this.description = findViewById(R.id.description);
+        //this.topKcontainer = findViewById(R.id.topKcontainer);
+        //this.location = findViewById(R.id.location);
+        //this.labelSpinner = findViewById(R.id.mislabled_picker);
+        //this.modelVersion = findViewById(R.id.modelVersion);
+        //this.referenceImageContainer = findViewById(R.id.reference_images_container);
+        //this.topKLabel = findViewById(R.id.topk_label);
+        //this.commentField = (EditText) findViewById(R.id.commentField);
         this.application = (WoodIdentifierApplication) getApplication();
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
                 AppDatabase.class, "wood-id").build();
         closeButton.setOnClickListener((v) -> {
             executor.execute(() -> {
-                InferencesLog inferenceLog = db.inferencesLogDAO().findByUid(uid);
-                inferenceLog.setComment(commentField.getText().toString());
-                db.inferencesLogDAO().update(inferenceLog);
+                //InferencesLog inferenceLog = db.inferencesLogDAO().findByUid(uid);
+                //inferenceLog.setComment(commentField.getText().toString());
+                //db.inferencesLogDAO().update(inferenceLog);
                 runOnUiThread(() -> {
                     Intent resultIntent = new Intent();
 
@@ -91,15 +90,15 @@ public class DetailsActivity extends AppCompatActivity {
                 });
             });
         });
-        if (!SharedPrefsUtil.isDeveloperMode(this)) {
-            topKcontainer.setVisibility(View.GONE);
-            labelSpinner.setVisibility(View.GONE);
-            topKLabel.setVisibility(View.GONE);
-        }
+        //if (!SharedPrefsUtil.isDeveloperMode(this)) {
+            //topKcontainer.setVisibility(View.GONE);
+            //labelSpinner.setVisibility(View.GONE);
+            //topKLabel.setVisibility(View.GONE);
+        //}
         ModelHelper model = ModelHelper.getHelperInstance(this);
         classes = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, model.getClassLabels().toArray(new String[0]));
 
-        labelSpinner.setAdapter(classes);
+        /*labelSpinner.setAdapter(classes);
         labelSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
 
@@ -120,39 +119,42 @@ public class DetailsActivity extends AppCompatActivity {
 
             }
         });
+
+         */
         executor.execute(() -> {
+            // display name of species
             InferencesLog inferenceLog = db.inferencesLogDAO().findByUid(uid);
             runOnUiThread(() -> {
                 Species species = application.getSpeciesLookupService().lookupSpeciesInfo(inferenceLog.classLabel);
                 if (inferenceLog.score < SharedPrefsUtil.accuracyThreshold(this)) {
-                    classLabel.setText(getString(R.string.unknown));
-                    classLabel.setTextColor(getColor(R.color.red));
+                    classLabel1.setText(getString(R.string.unknown));
+                    classLabel1.setTextColor(getColor(R.color.red));
                 } else {
-                    classLabel.setText(species.name() + " ( " + species.getScientificName() + ") ");
-                    classLabel.setTextColor(getColor(R.color.black));
+                    classLabel1.setText(species.name() + " ( " + species.getScientificName() + ") ");
+                    classLabel1.setTextColor(getColor(R.color.black));
                 }
                 filename.setText(inferenceLog.originalFilename);
-                description.setText(species.getDescription());
-                labelSpinner.setSelection(model.getClassLabels().indexOf(inferenceLog.expectedLabel));
-                captureDateTime.setText(Utils.timestampToString(inferenceLog.timestamp));
-                commentField.setText(inferenceLog.getComment());
-                location.setText(inferenceLog.getLocationName());
-                referenceImageContainer.removeAllViews();
-                modelVersion.setText(inferenceLog.modelName + "-" + Long.toString(inferenceLog.modelVersion));
-                Arrays.stream(species.getReferenceImages()).forEachOrdered(imageRef -> {
+                //description.setText(species.getDescription());
+                //labelSpinner.setSelection(model.getClassLabels().indexOf(inferenceLog.expectedLabel));
+                //captureDateTime.setText(Utils.timestampToString(inferenceLog.timestamp));
+                //commentField.setText(inferenceLog.getComment());
+                //location.setText(inferenceLog.getLocationName());
+                //referenceImageContainer.removeAllViews();
+                //modelVersion.setText(inferenceLog.modelName + "-" + Long.toString(inferenceLog.modelVersion));
+                //Arrays.stream(species.getReferenceImages()).forEachOrdered(imageRef -> {
 
-                    View view = LayoutInflater.from(referenceImageContainer.getContext())
-                            .inflate(R.layout.reference_image, referenceImageContainer, false);
-                    ImageView referenceImage = view.findViewById(R.id.reference_image);
-                    Glide.with(DetailsActivity.this).load(imageRef).into(referenceImage);
-                    referenceImageContainer.addView(view);
-                });
-                populateTopK(topKcontainer, inferenceLog.top, inferenceLog.scores, inferenceLog.topKRaw);
+                    //View view = LayoutInflater.from(referenceImageContainer.getContext())
+                            //.inflate(R.layout.reference_image, referenceImageContainer, false);
+                    //ImageView referenceImage = view.findViewById(R.id.reference_image);
+                    //Glide.with(DetailsActivity.this).load(imageRef).into(referenceImage);
+                    //referenceImageContainer.addView(view);
+                //});
+                //populateTopK(topKcontainer, inferenceLog.top, inferenceLog.scores, inferenceLog.topKRaw);
                 Glide.with(DetailsActivity.this).load(Uri.decode(inferenceLog.imagePath)).into(sampleImageView);
             });
         });
     }
-
+/*
     private void populateTopK(ViewGroup viewGroup, String[] names, Double[] scores, Integer[] topKRaw) {
         topKcontainer.removeAllViews();
 
@@ -160,14 +162,14 @@ public class DetailsActivity extends AppCompatActivity {
             Double scoreValue = scores[topKRaw[(int) namesWithIndex.getIndex()].intValue()];
             View view = LayoutInflater.from(viewGroup.getContext())
                     .inflate(R.layout.topk_item, viewGroup, false);
-            TextView classLabel = view.findViewById(R.id.class_label);
+            TextView classLabel = view.findViewById(R.id.class_label1);
             TextView scoreLabel = view.findViewById(R.id.score_value);
             classLabel.setText(namesWithIndex.getValue());
             scoreLabel.setText(String.format("%.4g%n", scoreValue));
-            topKcontainer.addView(view);
+            //topKcontainer.addView(view);
         });
     }
-
+*/
     @Override
     public void onBackPressed() {
         Intent resultIntent = new Intent();

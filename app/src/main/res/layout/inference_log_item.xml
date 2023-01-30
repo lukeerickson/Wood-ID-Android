@@ -21,7 +21,7 @@
                 android:layout_height="80dp"></ImageView>
 
             <TextView
-                android:id="@+id/class_label"
+                android:id="@+id/class_label1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
@@ -36,13 +36,13 @@
                 android:layout_marginLeft="10dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_above="@id/class_label"
+                android:layout_above="@id/class_label1"
                 android:layout_toRightOf="@id/wood_specimen_image"
                 />
             <TextView
                 android:id="@+id/score"
                 android:layout_marginTop="10dp"
-                android:layout_below="@id/class_label"
+                android:layout_below="@id/class_label1"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
                 android:layout_toRightOf="@id/wood_specimen_image"

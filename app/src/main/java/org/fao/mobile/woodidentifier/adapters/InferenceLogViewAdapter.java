@@ -1,11 +1,7 @@
 package org.fao.mobile.woodidentifier.adapters;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -31,7 +27,6 @@ import org.fao.mobile.woodidentifier.utils.Species;
 import org.fao.mobile.woodidentifier.utils.SpeciesLookupService;
 import org.fao.mobile.woodidentifier.utils.Utils;
 
-import java.io.File;
 import java.text.DecimalFormat;
 import java.util.List;
 
@@ -206,7 +201,7 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
             this.view = view;
             // Define click listener for the ViewHolder's View
             filename = (TextView) view.findViewById(R.id.filename);
-            textView = (TextView) view.findViewById(R.id.class_label);
+            textView = (TextView) view.findViewById(R.id.class_label1);
             scoreView = (TextView) view.findViewById(R.id.score);
             woodImage = (ImageView) view.findViewById(R.id.wood_specimen_image);
             deleteButton = (ImageButton) view.findViewById(R.id.deleteLogItem);

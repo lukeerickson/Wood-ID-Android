@@ -28,80 +28,58 @@
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
+
                 <TextView
+                    android:id="@+id/class_label1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:id="@+id/class_label"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
                     android:layout_marginBottom="10dp"
-                    android:layout_height="wrap_content"
-                    android:layout_width="match_parent"/>
-                <TextView
-                    android:id="@+id/capture_datetime"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="12sp"></TextView>
-                <TextView
-                    android:id="@+id/location"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="12sp"></TextView>
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/reference_images_label"
-                    android:textSize="10sp"></TextView>
-                <ScrollView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                    <androidx.appcompat.widget.LinearLayoutCompat
-                        android:layout_margin="5dp"
-                        android:id="@+id/reference_images_container"
-                        android:orientation="horizontal"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-                    </androidx.appcompat.widget.LinearLayoutCompat>
-                </ScrollView>
-                <TextView
-                    android:id="@+id/label"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="filename.jpg"
-                    android:textSize="16sp" />
-                <TextView
-                    android:id="@+id/topk_label"
-                    android:layout_marginTop="10dp"
-                    android:textSize="14sp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Top K scores"></TextView>
-                <LinearLayout
-                    android:orientation="vertical"
-                    android:paddingTop="5dp"
-                    android:id="@+id/topKcontainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                </LinearLayout>
-                <TextView
-                    android:id="@+id/description"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
-                <TextView
-                    android:id="@+id/modelVersion"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"></TextView>
+                    android:text="Class Label1"
+                    android:textSize="20sp" />
+
             </LinearLayout>
         </ScrollView>
-        <Spinner
-            android:id="@+id/mislabled_picker"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
 
-        <EditText
-            android:id="@+id/commentField"
+        <TextView
+            android:id="@+id/capture_datetime"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:singleLine="false"></EditText>
+            android:layout_height="wrap_content"
+            android:text="Capture Date Time"
+            android:textSize="12sp"
+            android:visibility="invisible"></TextView>
+
+        <TextView
+            android:id="@+id/modelVersion"
+            android:layout_width="374dp"
+            android:layout_height="wrap_content"
+            android:text="Model Version"
+            android:visibility="invisible"></TextView>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/reference_images_label"
+            android:textSize="10sp"
+            android:visibility="invisible"></TextView>
+
+        <TextView
+            android:id="@+id/label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="filename.jpg"
+            android:textSize="16sp"
+            android:visibility="invisible" />
+
+        <TextView
+            android:id="@+id/topk_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Top K scores"
+            android:textSize="14sp"
+            android:visibility="invisible"></TextView>
+
         <Button
             android:layout_weight="0"
             android:id="@+id/close_button"
