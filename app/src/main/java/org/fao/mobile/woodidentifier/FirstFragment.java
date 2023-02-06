@@ -281,8 +281,11 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
                 e.printStackTrace();
             }
 
-            Log.i(TAG, "topk " + Utils.showArray(result.getTop()));
-            Log.i(TAG, "scores " + Utils.showArray(result.getScores()));
+            Log.i("FirstFragment", "topk " + Utils.showArray(result.getTop()));
+            Log.i("FirstFragment", "scores " + Utils.showArray(result.getScores()));
+
+            //System.out.println("topk: " + Utils.showArray(result.getTop()));
+            //System.out.println("scores: " + Utils.showArray(result.getScores()));
 
             log.updateResult(result, modelHelper);
             log.locationName = binding.locationMarkerField.getText().toString();
@@ -323,8 +326,11 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
                     refresh();
                     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
                     if (prefs.getBoolean("show_details_after_capture", false)) {
+                        // i think this is where intent is passed to DetailsActivity
+                        // and DetailsActivity is created
                         Intent intent = new Intent(getActivity(), DetailsActivity.class);
                         intent.putExtra("uid", savedLog.uid);
+                        //intent.putExtra("uid", 4);
                         Log.i(TAG, "uid = " + savedLog.uid);
                         startActivity(intent);
                     }

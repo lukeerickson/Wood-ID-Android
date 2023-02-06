@@ -3,6 +3,7 @@ package org.fao.mobile.woodidentifier.adapters;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.net.Uri;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -68,13 +69,27 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
     private void onClickMain(View view) {
         Intent intent = new Intent(context.getContext(), DetailsActivity.class);
         InferencesLog inferencesLog = (InferencesLog) view.getTag();
+        // pass on id of #1 inference
         intent.putExtra("uid", inferencesLog.uid);
+        //intent.putExtra("score1", 12);
+        //Log.i("Score 1: ", String.valueOf(inferencesLog.topKRaw[1]));
+        //Log.i("Score 2: ", String.valueOf(inferencesLog.scores[1]));
+
+
+
+        // df.format(inferenceLog.score) + "/" + df.format(inferenceLog.scores[inferenceLog.topKRaw[1]])
+
+        // pass on labels of all of the inferences
+        intent.putExtra("label1", inferencesLog.top[0]);
+        intent.putExtra("label2", inferencesLog.top[1]);
+        intent.putExtra("label3", inferencesLog.top[2]);
         context.startActivityForResult(intent, OPEN_DETAIL);
     }
 
     @Override
     public void onBindViewHolder(InferenceLogViewAdapter.ViewHolder holder, int position) {
         InferencesLog inferenceLog = logs.get(position);
+        // hard-coded colors
         if (position == 0) {
             holder.getView().setBackgroundColor(context.getResources().getColor(R.color.red, context.getContext().getTheme()));
         } else {

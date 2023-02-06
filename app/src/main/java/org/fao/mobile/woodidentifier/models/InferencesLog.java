@@ -168,6 +168,7 @@ public class InferencesLog {
         return locationName;
     }
 
+    // return confidence score for top element
     public double confidenceScore() {
         List<Double> sortedScores = Arrays.stream(scores).sorted( (a,b) -> {
             if (a == b) return 0;
@@ -175,6 +176,35 @@ public class InferencesLog {
         }).collect(Collectors.toList());
         Log.d(TAG, "max  " + sortedScores.get(0) + " min " + sortedScores.get(sortedScores.size() -1));
         Double totals = sortedScores.get(0) + sortedScores.get(1);
+        //Log.i("ConfidenceScore","Conf Score: " + (score / totals) * 100);
         return (score / totals) * 100;
+    }
+
+    // return confidence score for all elements
+    public Double[] confidenceScores() {
+        List<Double> sortedScores = Arrays.stream(scores).sorted( (a,b) -> {
+            if (a == b) return 0;
+            return a > b ? -1 : 1;
+        }).collect(Collectors.toList());
+        Log.d(TAG, "max  " + sortedScores.get(0) + " min " + sortedScores.get(sortedScores.size() -1));
+        Double totals = sortedScores.get(0) + sortedScores.get(1);
+
+        Double[] confidenceScores = new Double[scores.length];
+        int sumOfScores = 0;
+
+        for(int i = 0; i < scores.length; i++) {
+            confidenceScores[i] = (sortedScores.get(i) / totals) * 100;
+            //sumOfScores += (sortedScores.get(i) / totals) * 100;
+        }
+
+        Log.i("sumScores", "Sum of Scores: " + sumOfScores);
+
+        /*Log.i("Confidence","Score: " + score);
+        Log.i("ConfidenceScores","Scores: " + scores[1]);
+        Log.i("ConfidenceScores","Conf Score 1: " + confidenceScores[0]);
+        Log.i("ConfidenceScores","Conf Score 2: " + confidenceScores[1]);
+
+         */
+        return confidenceScores;
     }
 }
