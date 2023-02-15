@@ -88,6 +88,7 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
 
     @Override
     public void onBindViewHolder(InferenceLogViewAdapter.ViewHolder holder, int position) {
+        // retrieves inference log
         InferencesLog inferenceLog = logs.get(position);
         // hard-coded colors
         if (position == 0) {
@@ -132,11 +133,11 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
                     String label2 = inferenceLog.top[1];
                     Species species2 = speciesLookup.lookupSpeciesInfo(label2);
                     holder.getTextView().setText(species.name() + " or " + species2.name());
-                    holder.getScoreView().setText(df.format(inferenceLog.confidenceScore()) + "%");
+                    holder.getScoreView().setText(df.format(inferenceLog.confidenceScores()[0]) + "%");
                 } else {
                     holder.getTextView().setText(species.name());
 
-                    holder.getScoreView().setText(df.format(inferenceLog.confidenceScore()) + "%");
+                    holder.getScoreView().setText(df.format(inferenceLog.confidenceScores()[0]) + "%");
                 }
             }
 

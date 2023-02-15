@@ -175,27 +175,35 @@ public class InferencesLog {
             return a > b ? -1 : 1;
         }).collect(Collectors.toList());
         Log.d(TAG, "max  " + sortedScores.get(0) + " min " + sortedScores.get(sortedScores.size() -1));
-        Double totals = sortedScores.get(0) + sortedScores.get(1);
+        double totals = sortedScores.get(0) + sortedScores.get(1);
         //Log.i("ConfidenceScore","Conf Score: " + (score / totals) * 100);
         return (score / totals) * 100;
     }
 
     // return confidence score for all elements
-    public Double[] confidenceScores() {
+    public double[] confidenceScores() {
         List<Double> sortedScores = Arrays.stream(scores).sorted( (a,b) -> {
             if (a == b) return 0;
             return a > b ? -1 : 1;
         }).collect(Collectors.toList());
         Log.d(TAG, "max  " + sortedScores.get(0) + " min " + sortedScores.get(sortedScores.size() -1));
-        Double totals = sortedScores.get(0) + sortedScores.get(1);
+        //double totals = sortedScores.get(0) + sortedScores.get(1);
 
-        Double[] confidenceScores = new Double[scores.length];
+        double[] confidenceScores = new double[scores.length];
         int sumOfScores = 0;
 
         for(int i = 0; i < scores.length; i++) {
-            confidenceScores[i] = (sortedScores.get(i) / totals) * 100;
+            //confidenceScores[i] = (sortedScores.get(i) / totals) * 100;
+            confidenceScores[i] = sortedScores.get(i);
             //sumOfScores += (sortedScores.get(i) / totals) * 100;
         }
+
+        confidenceScores = softMax(confidenceScores);
+
+        for(int i = 0; i < confidenceScores.length; i++) {
+            confidenceScores[i] *= 100;
+        }
+
 
         Log.i("sumScores", "Sum of Scores: " + sumOfScores);
 
@@ -206,5 +214,23 @@ public class InferencesLog {
 
          */
         return confidenceScores;
+    }
+
+    public double[] softMax(double[] scores) {
+        double total = 0;
+        double[] outputScores = new double[scores.length];
+        double max = 0;
+        // add max here for numerical stability - find max netInput for all neurons in this layer
+        for(int i = 0; i < scores.length; i++)
+            if(scores[i] > max)
+                max = scores[i];
+
+        for (int i = 0; i < scores.length; i++)
+            total += Math.exp(scores[i]-max);
+
+        for(int i = 0; i < outputScores.length; i++)
+            outputScores[i] = Math.exp(scores[i]-max) / total;
+
+        return outputScores;
     }
 }

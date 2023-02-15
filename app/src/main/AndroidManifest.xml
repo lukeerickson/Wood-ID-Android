@@ -23,10 +23,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WoodIdentifier">
         <activity
-            android:name=".ModelManagerActivity"
-            android:screenOrientation="portrait"
+            android:name=".PictureActivity"
             android:exported="false"
-            android:parentActivityName=".SplashActivity"/>
+            android:label="Image"
+            android:parentActivityName=".SplashActivity" />
+        <activity
+            android:name=".ModelManagerActivity"
+            android:exported="false"
+            android:parentActivityName=".SplashActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".EnterPinActivity"
             android:exported="false"
@@ -35,8 +40,8 @@
         <activity
             android:name=".RegistrationActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:parentActivityName=".SplashActivity" />
+            android:parentActivityName=".SplashActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".SplashActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
@@ -48,25 +53,25 @@
             android:name=".AboutActivity"
             android:exported="true"
             android:label="@string/about"
-            android:screenOrientation="portrait"
-            android:parentActivityName=".SplashActivity" />
+            android:parentActivityName=".SplashActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.login.LoginActivity"
             android:exported="true"
             android:label="@string/title_activity_login"
-            android:screenOrientation="portrait"
-            android:parentActivityName=".SplashActivity" />
+            android:parentActivityName=".SplashActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".SettingsActivity"
             android:exported="true"
             android:label="@string/title_activity_settings"
-            android:screenOrientation="portrait"
-            android:parentActivityName=".SplashActivity" />
+            android:parentActivityName=".SplashActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ImageCaptureActivity2"
+            android:parentActivityName=".SplashActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.WoodIdentifier.Fullscreen"
-            android:parentActivityName=".SplashActivity" />
+            android:theme="@style/Theme.WoodIdentifier.Fullscreen" />
         <activity
             android:name=".FirstRunActivity"
             android:screenOrientation="portrait" />
@@ -76,8 +81,8 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".DetailsActivity"
-            android:screenOrientation="portrait"
-            android:parentActivityName=".SplashActivity" />
+            android:parentActivityName=".SplashActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -90,9 +95,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ImageCaptureActivity"
-             />
+        <activity android:name=".ImageCaptureActivity" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -100,10 +103,10 @@
             android:exported="false"
             android:grantUriPermissions="true">
 
-            <!-- ressource file to create -->
+            <!-- resource file to create -->
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths"></meta-data>
+                android:resource="@xml/file_paths" />
         </provider>
     </application>
 

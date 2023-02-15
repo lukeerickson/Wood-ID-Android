@@ -88,6 +88,10 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
     ) {
         binding = FragmentFirstBinding.inflate(inflater, container, false);
 
+        File rootDataDir = getActivity().getFilesDir();
+        Log.i("Root", rootDataDir.toString());
+
+
         this.performFilterButton = binding.getRoot().findViewById(R.id.performFilterButton);
         this.dateFromField = binding.getRoot().findViewById(R.id.dateFromField);
         this.dateToField = binding.getRoot().findViewById(R.id.dateToField);
@@ -260,6 +264,7 @@ public class FirstFragment extends Fragment implements InferenceLogViewAdapter.I
 
                         @Override
                         public void beforeSave(InferencesLog initialInferenceLog) {
+                            // finds path of image to display
                             initialInferenceLog.imagePath = Uri.fromFile(finalLocalCopyPath).toString();
                             initialInferenceLog.originalFilename = getFileName(uri);
                         }

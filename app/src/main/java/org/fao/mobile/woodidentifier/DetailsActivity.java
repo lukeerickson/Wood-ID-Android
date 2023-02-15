@@ -87,6 +87,28 @@ public class DetailsActivity extends AppCompatActivity {
         this.application = (WoodIdentifierApplication) getApplication();
         AppDatabase db = Room.databaseBuilder(getApplicationContext(),
                 AppDatabase.class, "wood-id").build();
+
+        button1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openNewActivity(uid);
+            }
+        });
+
+        button2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openNewActivity(uid);
+            }
+        });
+
+        button3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openNewActivity(uid);
+            }
+        });
+
         closeButton.setOnClickListener((v) -> {
             executor.execute(() -> {
                 //InferencesLog inferenceLog = db.inferencesLogDAO().findByUid(uid);
@@ -110,7 +132,7 @@ public class DetailsActivity extends AppCompatActivity {
             //topKLabel.setVisibility(View.GONE);
         //}
         ModelHelper model = ModelHelper.getHelperInstance(this);
-        classes = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, model.getClassLabels().toArray(new String[0]));
+        //classes = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, model.getClassLabels().toArray(new String[0]));
 
         /*labelSpinner.setAdapter(classes);
         labelSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -142,7 +164,9 @@ public class DetailsActivity extends AppCompatActivity {
             //Log.i("DetailsActivity", "UID: " + uid);
             //Log.i("DetailsActivity", "UID2: " + uid2);
             runOnUiThread(() -> {
-                //Species species1 = application.getSpeciesLookupService().lookupSpeciesInfo(inferenceLog1.classLabel);
+                //Species species = application.getSpeciesLookupService().lookupSpeciesInfo(inferenceLog.classLabel);
+                //Species species = application.getSpeciesLookupService().lookupSpeciesInfo(label1);
+                //Log.i("Species", "Species: " + species.toString());
                 //Species species2 = application.getSpeciesLookupService().lookupSpeciesInfo(inferenceLog2.classLabel);
 
                 // set names of class labels
@@ -157,7 +181,7 @@ public class DetailsActivity extends AppCompatActivity {
                 } else {
                     //classLabel1.setText(species1.name() + " ( " + species1.getScientificName() + ") ");
                     DecimalFormat df = new DecimalFormat("###.##");
-                    Double[] confidenceScores = inferenceLog.confidenceScores();
+                    double[] confidenceScores = inferenceLog.confidenceScores();
                     classLabel1.setText(label1 + ": " + df.format(confidenceScores[0]) + "%");
                     classLabel1.setTextColor(getColor(R.color.black));
 
@@ -186,10 +210,14 @@ public class DetailsActivity extends AppCompatActivity {
 
                     params = button3.getLayoutParams();
                     params.width = (int) (confidenceScores[2] * button3.getWidth() / 100);
-                    button2.setLayoutParams(params);
+                    button3.setLayoutParams(params);
 
-                    classLabel4.setText("other");
+                    double restOfConfidenceScores = 100 - (confidenceScores[0] + confidenceScores[1] + confidenceScores[2]);
+                    classLabel4.setText("other: " + df.format(restOfConfidenceScores) + "%");
                     classLabel4.setTextColor(getColor(R.color.black));
+                    params = button4.getLayoutParams();
+                    params.width = (int) (restOfConfidenceScores * button4.getWidth() / 100);
+                    button4.setLayoutParams(params);
                 }
                 //filename.setText(inferenceLog1.originalFilename);
                 //description.setText(species.getDescription());
@@ -199,8 +227,10 @@ public class DetailsActivity extends AppCompatActivity {
                 //location.setText(inferenceLog.getLocationName());
                 //referenceImageContainer.removeAllViews();
                 //modelVersion.setText(inferenceLog.modelName + "-" + Long.toString(inferenceLog.modelVersion));
-                //Arrays.stream(species.getReferenceImages()).forEachOrdered(imageRef -> {
+                //Log.i("Reference images", "Reference images: " + species.getReferenceImages().length);
 
+                //Arrays.stream(species.getReferenceImages()).forEachOrdered(imageRef -> {
+                    //Log.i("Reference images", "Reference images: " + imageRef);
                     //View view = LayoutInflater.from(referenceImageContainer.getContext())
                             //.inflate(R.layout.reference_image, referenceImageContainer, false);
                     //ImageView referenceImage = view.findViewById(R.id.reference_image);
@@ -209,9 +239,17 @@ public class DetailsActivity extends AppCompatActivity {
                 //});
                 //populateTopK(topKcontainer, inferenceLog.top, inferenceLog.scores, inferenceLog.topKRaw);
                 Glide.with(DetailsActivity.this).load(Uri.decode(inferenceLog.imagePath)).into(sampleImageView);
+                Log.i("Image path", "Image path: " + inferenceLog.imagePath);
             });
         });
     }
+
+    public void openNewActivity(long id){
+        Intent intent = new Intent(this, PictureActivity.class);
+        intent.putExtra("uid", id);
+        startActivity(intent);
+    }
+
 /*
     private void populateTopK(ViewGroup viewGroup, String[] names, Double[] scores, Integer[] topKRaw) {
         topKcontainer.removeAllViews();
