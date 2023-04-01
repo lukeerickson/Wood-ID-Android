@@ -164,7 +164,11 @@ public class DetailsActivity extends AppCompatActivity {
             //Log.i("DetailsActivity", "UID: " + uid);
             //Log.i("DetailsActivity", "UID2: " + uid2);
             runOnUiThread(() -> {
+                // want to do this to load reference images
+                // but string array is empty
                 //Species species = application.getSpeciesLookupService().lookupSpeciesInfo(inferenceLog.classLabel);
+                //Log.i("Species", "Species Reference Images: " + species.getReferenceImages()[0]);
+
                 //Species species = application.getSpeciesLookupService().lookupSpeciesInfo(label1);
                 //Log.i("Species", "Species: " + species.toString());
                 //Species species2 = application.getSpeciesLookupService().lookupSpeciesInfo(inferenceLog2.classLabel);

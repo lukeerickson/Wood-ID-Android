@@ -60,6 +60,8 @@ public class SpeciesLookupService {
             } else {
                 species.description = "";
             }
+            // finds file path of reference images
+            // i don't know what referenceImages.getString(i) is though
             if (speciesInfo.has("reference_images")) {
                 JSONArray referenceImages = speciesInfo.getJSONArray("reference_images");
                 String[] referenceImageArr = new String[referenceImages.length()];

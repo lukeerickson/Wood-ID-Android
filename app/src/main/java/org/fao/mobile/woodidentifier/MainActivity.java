@@ -311,7 +311,7 @@ public class MainActivity extends AppCompatActivity {
 
                 msConn.connect();
                 runOnUiThread(() -> {
-
+                    // i believe this is the code that stores the reference images in device file explorer
                     Uri zipFileUri = FileProvider.getUriForFile(
                             MainActivity.this,
                             "org.fao.mobile.woodidentifier.provider", //(use your app signature + ".provider" )
@@ -409,6 +409,7 @@ public class MainActivity extends AppCompatActivity {
             DateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMddhhmmss");
             String fname = "wood_id_export_" + simpleDateFormat.format(new Date()) + ".json";
             File exportFileTarget = new File(documentsDir, fname);
+
             try (FileWriter fileWriter = new FileWriter(exportFileTarget)) {
                 fileWriter.write(jsonArray.toString());
             } catch (IOException e) {
@@ -417,6 +418,7 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 try {
                     Toast.makeText(this, getString(R.string.export_successful, exportFileTarget.getCanonicalPath()), Toast.LENGTH_LONG).show();
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
