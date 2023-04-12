@@ -91,21 +91,21 @@ public class DetailsActivity extends AppCompatActivity {
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openNewActivity(uid);
+                openNewActivity(label1);
             }
         });
 
         button2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openNewActivity(uid);
+                openNewActivity(label2);
             }
         });
 
         button3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openNewActivity(uid);
+                openNewActivity(label3);
             }
         });
 
@@ -248,9 +248,9 @@ public class DetailsActivity extends AppCompatActivity {
         });
     }
 
-    public void openNewActivity(long id){
+    public void openNewActivity(String label){
         Intent intent = new Intent(this, PictureActivity.class);
-        intent.putExtra("uid", id);
+        intent.putExtra("label", label);
         startActivity(intent);
     }
 

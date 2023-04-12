@@ -80,6 +80,12 @@ public class InferenceLogViewAdapter extends RecyclerView.Adapter<InferenceLogVi
         // df.format(inferenceLog.score) + "/" + df.format(inferenceLog.scores[inferenceLog.topKRaw[1]])
 
         // pass on labels of all of the inferences
+        Log.i("Banana", "class label: " + inferencesLog.classLabel);
+        Log.i("Banana", "image path: " + inferencesLog.imagePath);
+        Log.i("Banana", "Original file name: " + inferencesLog.originalFilename);
+        Log.i("Banana", "Expected label: " + inferencesLog.expectedLabel);
+        Log.i("Banana", "Model name: " + inferencesLog.modelName);
+
         intent.putExtra("label1", inferencesLog.top[0]);
         intent.putExtra("label2", inferencesLog.top[1]);
         intent.putExtra("label3", inferencesLog.top[2]);

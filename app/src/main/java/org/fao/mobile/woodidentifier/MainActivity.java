@@ -251,6 +251,9 @@ public class MainActivity extends AppCompatActivity {
                         }
                         String archiveFileName = log.expectedLabel + "/" + dfname.format(date) + "_" + log.uid + suffix;
                         inputFiles.add(new Pair<>(archiveFileName, log.imagePath.replace("file://", "")));
+
+                        //Log.i("Input Files", "Input Files: " + inputFiles);
+
                         ArrayList<String> columnValues = new ArrayList<>();
                         columnValues.add(Long.toString(log.uid));
                         columnValues.add(log.firstName);
