@@ -54,4 +54,6 @@ Building and Training the Pytorch model is beyond the scope of this README howev
 note is that the PyTorch version used in generating the model must be the same as the one
 defined in build.gradle, differences can causes crashes.
 
+* 3/8/24 - Luke Notes: The last progress I made was programming the app to load reference images after wood has been identified. I was experimenting with ways to programatically unzip the model.zip folder and move the reference images to the java/assets/imgdb folder, however I was unsuccessful. My latest progress comes from manually moving images 0-27 to the imgdb folder. 
+
     
